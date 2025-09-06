@@ -6,16 +6,10 @@ from prin.adapters.filesystem import FileSystemSource
 from prin.core import DepthFirstPrinter, StringWriter
 from prin.defaults import DEFAULT_BINARY_EXCLUSIONS, DEFAULT_EXCLUSIONS
 from prin.formatters import XmlFormatter
+from tests.utils import write_file, touch_file
 
 
-def _write(p: Path, content: str) -> None:
-    p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(content, encoding="utf-8")
-
-
-def _touch(p: Path) -> None:
-    p.parent.mkdir(parents=True, exist_ok=True)
-    p.touch()
+ 
 
 
 def _run(src: FileSystemSource, roots: list[str]) -> str:
@@ -35,15 +29,15 @@ def _run(src: FileSystemSource, roots: list[str]) -> str:
 def test_explicit_single_ignored_file_is_printed(tmp_path: Path):
     # Create an ignored-by-default file (e.g., binary-like or lock)
     lock = tmp_path / "poetry.lock"
-    _write(lock, "dummy\n")
+    write_file(lock, "dummy\n")
     out = _run(FileSystemSource(root_cwd=tmp_path), [str(lock)])
     assert "<poetry.lock>" in out
 
 
 def test_two_sibling_directories(tmp_path: Path):
     # dirA and dirB siblings, each with printable files
-    _write(tmp_path / "dirA" / "a.py", "print('a')\n")
-    _write(tmp_path / "dirB" / "b.md", "# b\n")
+    write_file(tmp_path / "dirA" / "a.py", "print('a')\n")
+    write_file(tmp_path / "dirB" / "b.md", "# b\n")
     out = _run(
         FileSystemSource(root_cwd=tmp_path), [str(tmp_path / "dirA"), str(tmp_path / "dirB")]
     )
@@ -54,8 +48,8 @@ def test_two_sibling_directories(tmp_path: Path):
 
 def test_directory_and_explicit_ignored_file_inside(tmp_path: Path):
     # directory contains mixed files; specify dir and an otherwise-ignored file
-    _write(tmp_path / "work" / "keep.py", "print('ok')\n")
-    _touch(tmp_path / "work" / "__pycache__" / "junk.pyc")
+    write_file(tmp_path / "work" / "keep.py", "print('ok')\n")
+    touch_file(tmp_path / "work" / "__pycache__" / "junk.pyc")
     # Explicitly pass both the directory and the ignored file path
     out = _run(
         FileSystemSource(root_cwd=tmp_path),
