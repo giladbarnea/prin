@@ -10,21 +10,44 @@
 Note: A feature counts as covered only when it is explicitly specified in the test (not just exercised via defaults), in a dedicated test.
 Only `prin.main`-level tests are acceptable (Engine-level don't count).
 
-// instruction: turn all the items to two checklists like so:
-// - include-tests (`-T/--include-tests`): //  - [] FS
-//  - [] Repo
-- include-tests (`-T/--include-tests`): FS covered; Repo missing
-- include-lock (`-K/--include-lock`): FS missing; Repo missing
-- include-binary (`-a/--text/--include-binary/--binary`): FS missing; Repo missing
-- no-docs (`-d/--no-docs`): FS missing; Repo missing
-- include-empty (`-M/--include-empty`): FS missing; Repo missing
-- only-headers (`-l/--only-headers`): FS missing; Repo missing
-- extension (`-e/--extension`, repeatable): FS covered (engine sets explicitly); Repo missing
-- exclude (`-E/--exclude/--ignore`, repeatable): FS missing; Repo missing
-- no-exclude (`--no-exclude`): FS missing; Repo missing
-- no-ignore (`-I/--no-ignore`): FS missing; Repo missing
-- tag (`--tag xml|md`): FS missing; Repo covered (md)
-- max-files (`--max-files`): FS covered; Repo covered
-- positional roots (multiple inputs): FS covered; Repo covered
+- include-tests (`-T/--include-tests`):
+  - [] FS
+  - [] Repo
+- include-lock (`-K/--include-lock`):
+  - [] FS
+  - [] Repo
+- include-binary (`-a/--text/--include-binary/--binary`):
+  - [] FS
+  - [] Repo
+- no-docs (`-d/--no-docs`):
+  - [] FS
+  - [] Repo
+- include-empty (`-M/--include-empty`):
+  - [] FS
+  - [] Repo
+- only-headers (`-l/--only-headers`):
+  - [] FS
+  - [] Repo
+- extension (`-e/--extension`, repeatable):
+  - [? maybe, needs verification] FS
+  - [] Repo
+- exclude (`-E/--exclude/--ignore`, repeatable):
+  - [] FS
+  - [] Repo
+- no-exclude (`--no-exclude`):
+  - [] FS
+  - [] Repo
+- no-ignore (`-I/--no-ignore`):
+  - [] FS
+  - [] Repo
+- tag (`--tag xml|md`):
+  - [] FS
+  - [] Repo
+- max-files (`--max-files`):
+  - [x] FS
+  - [x] Repo
+- positional roots (multiple inputs):
+  - [x] FS
+  - [x] Repo
   - many planned options remain unimplemented; by definition they’re untested: hidden, no-ignore-vcs toggle, ignore-file, glob/force-glob, size, case-sensitive/ignore-case, unrestricted combos (`-u`/`-uu`/`-uuu`), follow symlinks, max-depth, absolute-paths, line-number.
 
