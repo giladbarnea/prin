@@ -23,9 +23,6 @@ from prin.defaults import (
 )
 from prin.types import _describe_predicate
 
-# Intentionally avoid importing from print_files at module import time to
-# prevent circular imports. We'll import lazily inside functions.
-
 
 @dataclass(slots=True)
 class Context:
