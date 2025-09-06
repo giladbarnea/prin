@@ -71,22 +71,20 @@ def _make_hashable(value: Any) -> Any:
     return value
 
 
-def _get_cache_key(url: str, *, params: Any, stream: bool) -> tuple:
-    return (url, _make_hashable(params), bool(stream))
+def _get_cache_key(url: str, *, params: Any) -> tuple:
+    return (url, _make_hashable(params))
 
 
-def _get(session: requests.Session, url: str, *, params=None, stream=False) -> requests.Response:
-    # Fast path: serve from cache for non-streaming requests
-    cache_key = None
+def _get(session: requests.Session, url: str, *, params=None) -> requests.Response:
+    # Fast path: serve from cache
     global _GET_CACHE_TOTAL_BYTES
-    if not stream:
-        cache_key = _get_cache_key(url, params=params, stream=stream)
-        cached = _GET_CACHE.get(cache_key)
-        if cached is not None:
-            return cached[0]
+    cache_key = _get_cache_key(url, params=params)
+    cached = _GET_CACHE.get(cache_key)
+    if cached is not None:
+        return cached[0]
 
     for attempt in range(2):
-        resp = session.get(url, params=params, stream=stream)
+        resp = session.get(url, params=params)
         if resp.status_code in (403, 429):
             wait = _parse_rate_limit_wait_seconds(resp)
             if wait is not None:
@@ -98,21 +96,20 @@ def _get(session: requests.Session, url: str, *, params=None, stream=False) -> r
                     time.sleep(wait)
                     continue
         if 200 <= resp.status_code < 300:
-            # Cache successful, non-streaming responses only
-            if cache_key is not None:
-                try:
-                    resp_bytes = resp.content  # materialize bytes for sizing
-                except Exception:
-                    resp_bytes = b""
-                size_bytes = len(resp_bytes)
-                # Evict random entries until under cap
-                if size_bytes > 0:
-                    while _GET_CACHE_TOTAL_BYTES + size_bytes > _GET_CACHE_MAX_BYTES and _GET_CACHE:
-                        rand_key = random.choice(list(_GET_CACHE.keys()))
-                        _, evicted_size = _GET_CACHE.pop(rand_key)
-                        _GET_CACHE_TOTAL_BYTES -= evicted_size
-                    _GET_CACHE[cache_key] = (resp, size_bytes)
-                    _GET_CACHE_TOTAL_BYTES += size_bytes
+            # Cache successful responses only
+            try:
+                resp_bytes = resp.content  # materialize bytes for sizing
+            except Exception:
+                resp_bytes = b""
+            size_bytes = len(resp_bytes)
+            # Evict random entries until under cap
+            if size_bytes > 0:
+                while _GET_CACHE_TOTAL_BYTES + size_bytes > _GET_CACHE_MAX_BYTES and _GET_CACHE:
+                    rand_key = random.choice(list(_GET_CACHE.keys()))
+                    _, evicted_size = _GET_CACHE.pop(rand_key)
+                    _GET_CACHE_TOTAL_BYTES -= evicted_size
+                _GET_CACHE[cache_key] = (resp, size_bytes)
+                _GET_CACHE_TOTAL_BYTES += size_bytes
             return resp
         resp.raise_for_status()
     return resp
@@ -186,7 +183,7 @@ class GitHubRepoSource(SourceAdapter):
         dl = info.get("download_url")
         if dl:
             # Reuse shared GET with rate-limit/backoff handling
-            r2 = _get(self._session, dl, stream=True)
+            r2 = _get(self._session, dl)
             return r2.content
         # Fallback to blob by sha
         sha = info.get("sha")
