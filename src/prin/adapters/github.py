@@ -4,8 +4,7 @@ import base64
 import functools
 import os
 import time
-import threading
-from collections import OrderedDict
+import random
 from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import PurePosixPath
@@ -17,11 +16,12 @@ from ..core import Entry, NodeKind, SourceAdapter
 
 API_BASE = "https://api.github.com"
 MAX_WAIT_SECONDS = 180
-_GET_CACHE_MAXSIZE = 512
+_GET_CACHE_MAX_BYTES = 64 * 1024 * 1024  # ~64 MiB rough cap
 
-# LRU cache for non-streaming GET requests, keyed by (url, params, stream)
-_GET_CACHE: "OrderedDict[tuple, requests.Response]" = OrderedDict()
-_GET_CACHE_LOCK = threading.Lock()
+# Simple cache for non-streaming GET requests, keyed by (url, params, stream)
+# Values are (response, size_in_bytes)
+_GET_CACHE: Dict[tuple, tuple[requests.Response, int]] = {}
+_GET_CACHE_TOTAL_BYTES = 0
 
 
 def _auth_headers() -> Dict[str, str]:
@@ -78,13 +78,12 @@ def _get_cache_key(url: str, *, params: Any, stream: bool) -> tuple:
 def _get(session: requests.Session, url: str, *, params=None, stream=False) -> requests.Response:
     # Fast path: serve from cache for non-streaming requests
     cache_key = None
+    global _GET_CACHE_TOTAL_BYTES
     if not stream:
         cache_key = _get_cache_key(url, params=params, stream=stream)
-        with _GET_CACHE_LOCK:
-            cached = _GET_CACHE.get(cache_key)
-            if cached is not None:
-                _GET_CACHE.move_to_end(cache_key)
-                return cached
+        cached = _GET_CACHE.get(cache_key)
+        if cached is not None:
+            return cached[0]
 
     for attempt in range(2):
         resp = session.get(url, params=params, stream=stream)
@@ -101,11 +100,19 @@ def _get(session: requests.Session, url: str, *, params=None, stream=False) -> r
         if 200 <= resp.status_code < 300:
             # Cache successful, non-streaming responses only
             if cache_key is not None:
-                with _GET_CACHE_LOCK:
-                    _GET_CACHE[cache_key] = resp
-                    _GET_CACHE.move_to_end(cache_key)
-                    if len(_GET_CACHE) > _GET_CACHE_MAXSIZE:
-                        _GET_CACHE.popitem(last=False)
+                try:
+                    resp_bytes = resp.content  # materialize bytes for sizing
+                except Exception:
+                    resp_bytes = b""
+                size_bytes = len(resp_bytes)
+                # Evict random entries until under cap
+                if size_bytes > 0:
+                    while _GET_CACHE_TOTAL_BYTES + size_bytes > _GET_CACHE_MAX_BYTES and _GET_CACHE:
+                        rand_key = random.choice(list(_GET_CACHE.keys()))
+                        _, evicted_size = _GET_CACHE.pop(rand_key)
+                        _GET_CACHE_TOTAL_BYTES -= evicted_size
+                    _GET_CACHE[cache_key] = (resp, size_bytes)
+                    _GET_CACHE_TOTAL_BYTES += size_bytes
             return resp
         resp.raise_for_status()
     return resp
