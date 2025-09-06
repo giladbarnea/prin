@@ -12,7 +12,7 @@ Engine-driven depth-first traversal with source adapters; the engine is source-a
 - Engine owns traversal/filters/printing; adapters only list/read/is_empty.
 - Explicit file paths must print regardless of filters (engine handles by treating file paths as force-include).
 - Paths are printed relative to each provided root (single file path prints just its basename).
-- **print_files.py and print_repo.py should behave exactly the same way**: same CLI, same filters, same output. For the user, **they should be interchangeable**. Internally, they should leverage as much shared code as possible. In other words, if something is implemented or changed in one, it should be implemented or changed in the other. And if that change or implementation is relevant to both, it should designed agnostic of the traversal implementation, placed in a shared module, and imported in both.
+ - The CLI dispatching is centralized in `prin/prin.py`. Keep URL detection minimal and robust, and share behavior across sources via common modules.
 
 ### Adapters
 - File system: `is_empty` via AST; raises NotADirectoryError for files (implicit via scandir).
