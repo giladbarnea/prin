@@ -43,9 +43,6 @@ If a piece of documentation, docstring, or comment becomes no longer true due to
 ### Gotchas
 - Don’t apply local `.gitignore` to remote repos. It is illogical: by definition, nothing in .gitignore will match remote files.
 
-## Known Issues
-- Extensionless files (e.g., LICENSE) won’t match by default—must be passed explicitly or add default patterns deliberately.
-
 ## Being an Effective AI Agent
 
 1. You do your best work when you have a way to verify yourself. Run test.sh frequently. With self-verification, you can and should practice continuous trial and error instead of a single shot in the dark. When testing, run both problem-specific tests and wider tests to discover potential regression problems. Trial & error loop goes like this: Run tests; Give me clear and succinct status update; tell me your planned changes; apply them; repeat.
