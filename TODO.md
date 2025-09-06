@@ -7,8 +7,12 @@
 
 # CLI coverage: features and tests
 
-Note: A feature counts as covered only when it is explicitly specified in the test (not just exercised via defaults).  Only `prin.main`-level tests are acceptable (Engine-level don't count).
+Note: A feature counts as covered only when it is explicitly specified in the test (not just exercised via defaults), in a dedicated test.
+Only `prin.main`-level tests are acceptable (Engine-level don't count).
 
+// instruction: turn all the items to two checklists like so:
+// - include-tests (`-T/--include-tests`): //  - [] FS
+//  - [] Repo
 - include-tests (`-T/--include-tests`): FS covered; Repo missing
 - include-lock (`-K/--include-lock`): FS missing; Repo missing
 - include-binary (`-a/--text/--include-binary/--binary`): FS missing; Repo missing
