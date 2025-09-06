@@ -7,7 +7,7 @@
 
 # CLI coverage: features and tests
 
-Note: A feature counts as covered only when it is explicitly specified in the test (not just exercised via defaults). Either engine-level or `prin.main`-level tests are acceptable.
+Note: A feature counts as covered only when it is explicitly specified in the test (not just exercised via defaults).  Only `prin.main`-level tests are acceptable (Engine-level don't count).
 
 - include-tests (`-T/--include-tests`): FS covered; Repo missing
 - include-lock (`-K/--include-lock`): FS missing; Repo missing
