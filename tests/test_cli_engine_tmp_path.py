@@ -6,18 +6,10 @@ from prin.adapters.filesystem import FileSystemSource
 from prin.cli_common import Context, derive_filters_and_print_flags, parse_common_args
 from prin.core import DepthFirstPrinter, StringWriter
 from prin.formatters import XmlFormatter
+from tests.utils import write_file, touch_file
 
 
-def _write(p: Path, content: str) -> None:
-    """
-    Smell: this and similar functions across this tests/ dir should be moved to a shared tests/utils.py file.
-    """
-    p.write_text(content, encoding="utf-8")
-
-
-def _touch(p: Path) -> None:
-    p.parent.mkdir(parents=True, exist_ok=True)
-    p.touch()
+ 
 
 
 def test_cli_engine_happy_path(tmp_path):
@@ -26,21 +18,21 @@ def test_cli_engine_happy_path(tmp_path):
     (tmp_path / "docs").mkdir()
 
     # Included-by-default extensions: pick a subset (py, md, json*)
-    _write(tmp_path / "src" / "main.py", "print('hello')\nprint('world')\n")
-    _write(tmp_path / "docs" / "readme.md", "# Title\n\nSome docs.\n")
-    _write(tmp_path / "src" / "config.json", '{\n  "a": 1,\n  "b": 2\n}\n')
+    write_file(tmp_path / "src" / "main.py", "print('hello')\nprint('world')\n")
+    write_file(tmp_path / "docs" / "readme.md", "# Title\n\nSome docs.\n")
+    write_file(tmp_path / "src" / "config.json", '{\n  "a": 1,\n  "b": 2\n}\n')
 
     # Nested level
-    _write(tmp_path / "src" / "pkg" / "module.py", "def f():\n    return 1\n\nprint(f())\n")
-    _write(tmp_path / "src" / "pkg" / "data.jsonl", '{"x":1}\n{"x":2}\n')
+    write_file(tmp_path / "src" / "pkg" / "module.py", "def f():\n    return 1\n\nprint(f())\n")
+    write_file(tmp_path / "src" / "pkg" / "data.jsonl", '{"x":1}\n{"x":2}\n')
 
     # Default-ignored categories (lock/test/binary)
-    _write(tmp_path / "poetry.lock", "dummy\n")
-    _write(tmp_path / "package-lock.json", "{}\n")
-    _touch(tmp_path / "build" / "artifact.o")
-    _touch(tmp_path / "__pycache__" / "module.pyc")  # binary
+    write_file(tmp_path / "poetry.lock", "dummy\n")
+    write_file(tmp_path / "package-lock.json", "{}\n")
+    touch_file(tmp_path / "build" / "artifact.o")
+    touch_file(tmp_path / "__pycache__" / "module.pyc")  # binary
     (tmp_path / "tests").mkdir()
-    _write(tmp_path / "tests" / "test_something.py", "def test_x():\n    assert True\n")
+    write_file(tmp_path / "tests" / "test_something.py", "def test_x():\n    assert True\n")
 
     # Use hardcoded filters to isolate traversal/printing happy path
     src = FileSystemSource(root_cwd=tmp_path)
@@ -73,9 +65,9 @@ def test_cli_engine_happy_path(tmp_path):
 
 def test_cli_engine_isolation(tmp_path):
     (tmp_path / "dir" / "sub").mkdir(parents=True)
-    _write(tmp_path / "dir" / "a.py", "print('a')\nprint('b')\n")
-    _write(tmp_path / "dir" / "sub" / "b.md", "# b\n\ntext\n")
-    _touch(tmp_path / "__pycache__" / "c.pyc")
+    write_file(tmp_path / "dir" / "a.py", "print('a')\nprint('b')\n")
+    write_file(tmp_path / "dir" / "sub" / "b.md", "# b\n\ntext\n")
+    touch_file(tmp_path / "__pycache__" / "c.pyc")
 
     # Bypass parser-derived filters; hardcode simple includes/excludes
     src = FileSystemSource(root_cwd=tmp_path)

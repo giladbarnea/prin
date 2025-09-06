@@ -1,27 +1,7 @@
 from __future__ import annotations
 
-import os
-from pathlib import Path
-
-import pytest
-
 from prin.core import StringWriter
 from prin.prin import main as prin_main
-
-
-@pytest.fixture(autouse=True)
-def _ensure_github_token(monkeypatch):
-    """Smell: This should be moved to tests/conftest.py to ensure it runs at the beginning of the test SESSION."""
-    # If not set, try to load from ~/.github-token to avoid rate limits
-    if os.environ.get("GITHUB_TOKEN"):
-        return
-    token_path = Path.home() / ".github-token"
-    try:
-        token = token_path.read_text().strip()
-    except Exception:
-        token = ""
-    if token:
-        monkeypatch.setenv("GITHUB_TOKEN", token)
 
 
 def test_repo_explicit_ignored_file_is_printed():
