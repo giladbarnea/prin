@@ -4,10 +4,12 @@ import base64
 import functools
 import os
 import time
+import threading
+from collections import OrderedDict
 from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import PurePosixPath
-from typing import Dict, Iterable, Optional
+from typing import Any, Dict, Iterable, Optional
 
 import requests
 
@@ -15,6 +17,11 @@ from ..core import Entry, NodeKind, SourceAdapter
 
 API_BASE = "https://api.github.com"
 MAX_WAIT_SECONDS = 180
+_GET_CACHE_MAXSIZE = 512
+
+# LRU cache for non-streaming GET requests, keyed by (url, params, stream)
+_GET_CACHE: "OrderedDict[tuple, requests.Response]" = OrderedDict()
+_GET_CACHE_LOCK = threading.Lock()
 
 
 def _auth_headers() -> Dict[str, str]:
@@ -54,7 +61,31 @@ def _parse_rate_limit_wait_seconds(resp: requests.Response) -> Optional[int]:
     return None
 
 
+def _make_hashable(value: Any) -> Any:
+    if isinstance(value, dict):
+        return tuple(sorted((k, _make_hashable(v)) for k, v in value.items()))
+    if isinstance(value, (list, tuple)):
+        return tuple(_make_hashable(v) for v in value)
+    if isinstance(value, set):
+        return tuple(sorted(_make_hashable(v) for v in value))
+    return value
+
+
+def _get_cache_key(url: str, *, params: Any, stream: bool) -> tuple:
+    return (url, _make_hashable(params), bool(stream))
+
+
 def _get(session: requests.Session, url: str, *, params=None, stream=False) -> requests.Response:
+    # Fast path: serve from cache for non-streaming requests
+    cache_key = None
+    if not stream:
+        cache_key = _get_cache_key(url, params=params, stream=stream)
+        with _GET_CACHE_LOCK:
+            cached = _GET_CACHE.get(cache_key)
+            if cached is not None:
+                _GET_CACHE.move_to_end(cache_key)
+                return cached
+
     for attempt in range(2):
         resp = session.get(url, params=params, stream=stream)
         if resp.status_code in (403, 429):
@@ -68,6 +99,13 @@ def _get(session: requests.Session, url: str, *, params=None, stream=False) -> r
                     time.sleep(wait)
                     continue
         if 200 <= resp.status_code < 300:
+            # Cache successful, non-streaming responses only
+            if cache_key is not None:
+                with _GET_CACHE_LOCK:
+                    _GET_CACHE[cache_key] = resp
+                    _GET_CACHE.move_to_end(cache_key)
+                    if len(_GET_CACHE) > _GET_CACHE_MAXSIZE:
+                        _GET_CACHE.popitem(last=False)
             return resp
         resp.raise_for_status()
     return resp
