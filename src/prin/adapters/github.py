@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import base64
 import functools
+import hashlib
+import json
 import os
 import time
-import random
 from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import PurePosixPath
@@ -16,12 +17,7 @@ from ..core import Entry, NodeKind, SourceAdapter
 
 API_BASE = "https://api.github.com"
 MAX_WAIT_SECONDS = 180
-_GET_CACHE_MAX_BYTES = 64 * 1024 * 1024  # ~64 MiB rough cap
-
-# Simple cache for non-streaming GET requests, keyed by (url, params, stream)
-# Values are (response, size_in_bytes)
-_GET_CACHE: Dict[tuple, tuple[requests.Response, int]] = {}
-_GET_CACHE_TOTAL_BYTES = 0
+_GET_CACHE_DIR = os.path.join(os.path.expanduser("~/.cache"), "prin", "gh_get")
 
 
 def _auth_headers() -> Dict[str, str]:
@@ -76,12 +72,34 @@ def _get_cache_key(url: str, *, params: Any) -> tuple:
 
 
 def _get(session: requests.Session, url: str, *, params=None) -> requests.Response:
-    # Fast path: serve from cache
-    global _GET_CACHE_TOTAL_BYTES
-    cache_key = _get_cache_key(url, params=params)
-    cached = _GET_CACHE.get(cache_key)
-    if cached is not None:
-        return cached[0]
+    # Fast path: serve from disk cache
+    os.makedirs(_GET_CACHE_DIR, exist_ok=True)
+    key = repr(_get_cache_key(url, params=params)).encode("utf-8")
+    cache_hash = hashlib.sha256(key).hexdigest()
+    body_path = os.path.join(_GET_CACHE_DIR, f"{cache_hash}.body")
+    meta_path = os.path.join(_GET_CACHE_DIR, f"{cache_hash}.meta.json")
+    if os.path.exists(body_path):
+        try:
+            with open(body_path, "rb") as f:
+                data = f.read()
+            status = 200
+            enc = "utf-8"
+            if os.path.exists(meta_path):
+                with open(meta_path, "r", encoding="utf-8") as mf:
+                    m = json.load(mf)
+                    status = int(m.get("status", 200))
+                    enc = m.get("encoding", "utf-8")
+            resp = requests.Response()
+            resp._content = data
+            resp.status_code = status
+            resp.url = url
+            resp.encoding = enc
+            return resp
+        except Exception:
+            with suppress(Exception):
+                os.remove(body_path)
+            with suppress(Exception):
+                os.remove(meta_path)
 
     for attempt in range(2):
         resp = session.get(url, params=params)
@@ -96,20 +114,19 @@ def _get(session: requests.Session, url: str, *, params=None) -> requests.Respon
                     time.sleep(wait)
                     continue
         if 200 <= resp.status_code < 300:
-            # Cache successful responses only
+            # Cache successful responses only (bytes to disk)
             try:
-                resp_bytes = resp.content  # materialize bytes for sizing
+                data = resp.content
+                with open(body_path, "wb") as f:
+                    f.write(data)
+                meta = {"status": int(resp.status_code), "encoding": resp.encoding or "utf-8"}
+                with open(meta_path, "w", encoding="utf-8") as mf:
+                    json.dump(meta, mf, separators=(",", ":"))
             except Exception:
-                resp_bytes = b""
-            size_bytes = len(resp_bytes)
-            # Evict random entries until under cap
-            if size_bytes > 0:
-                while _GET_CACHE_TOTAL_BYTES + size_bytes > _GET_CACHE_MAX_BYTES and _GET_CACHE:
-                    rand_key = random.choice(list(_GET_CACHE.keys()))
-                    _, evicted_size = _GET_CACHE.pop(rand_key)
-                    _GET_CACHE_TOTAL_BYTES -= evicted_size
-                _GET_CACHE[cache_key] = (resp, size_bytes)
-                _GET_CACHE_TOTAL_BYTES += size_bytes
+                with suppress(Exception):
+                    os.remove(body_path)
+                with suppress(Exception):
+                    os.remove(meta_path)
             return resp
         resp.raise_for_status()
     return resp
