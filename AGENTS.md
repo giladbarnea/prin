@@ -9,12 +9,12 @@ Whatever you do, try to align with the existing design philosophy (What knowledg
 Engine-driven depth-first traversal with source adapters; the engine is source-agnostic while implementations (filesystem, GitHub) provide listing/reading. Shared filters/formatters ensure identical behavior across sources.
 
 ### Core invariants
-- Engine owns traversal/filters/printing; adapters only list/read/is_empty.
+- Engine owns traversal/filters/printing; Source adapters only list/read/is_empty.
 - Explicit file paths must print regardless of filters (engine handles by treating file paths as force-include).
 - Paths are printed relative to each provided root (single file path prints just its basename).
- - The CLI dispatching is centralized in `prin/prin.py`. Keep URL detection minimal and robust, and share behavior across sources via common modules.
+- Source adapters must share as much behavior as possible and reuse common modules. Each adapter must implement as little as possible, only accounting for the thin differentiator of its domain and delegating the rest to common modules. This serves the tool's "Sources are interchangeable" design principle, which lets users forget about the type of source and have it simply printed instead.
 
-### Adapters
+### Source Adapters
 - File system: `is_empty` via AST; raises NotADirectoryError for files (implicit via scandir).
 - GitHub: list via Contents API; for file paths, raise NotADirectoryError so engine force-includes; ignore local .gitignore for repos.
 
@@ -32,9 +32,9 @@ Engine-driven depth-first traversal with source adapters; the engine is source-a
 - Use tmp_path-based tests for FS; minimize GitHub API calls in repo tests; avoid reruns; prefer single small public repo (we use TypingMind/awesome-typingmind and trouchet/rust-hello).
 
 ### uv usage: execution, tooling and packaging
-Everything has be executed, installed, tested and packaged using uv.
+Everything has be executed, installed, tested and packaged using `uv`.
 **If `uv` is not installed in your environment, install it.**
-- Develop and test with: `uv sync`, `uv run pytest [helpful flags to your liking]`.
+- Develop and test with: `uv sync`, `./test.sh [helpful flags to your liking]`. Important: eagerly run tests frequently, even if the user didn't ask for it.
 - Tooling: `uv tool install . --reinstall` (and `uv tool install git+https://github.com/giladbarnea/prin.git --reinstall`). Reinstalling is required to apply code changes to the tool.
 
 ## Ongoing Documentation Maintenance
