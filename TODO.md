@@ -1,6 +1,7 @@
 ### Test coverage conclusion
 
 - Filesystem options now have dedicated CLI-level tests in `tests/test_options_fs.py`.
+- Skipped FS tests are not counted as covered; those features remain unchecked below.
 - Remaining gaps are repo-path scenarios and any repo-specific formatting/flags.
 
 # CLI coverage: features and tests
@@ -12,22 +13,22 @@ Only `prin.main`-level tests are acceptable (Engine-level don't count).
   - [x] FS
   - [] Repo
 - include-lock (`-K/--include-lock`):
-  - [x] FS
+  - [] FS
   - [] Repo
 - include-binary (`-a/--text/--include-binary/--binary`):
-  - [x] FS
+  - [] FS
   - [] Repo
 - no-docs (`-d/--no-docs`):
   - [x] FS
   - [] Repo
 - include-empty (`-M/--include-empty`):
-  - [x] FS
+  - [] FS
   - [] Repo
 - only-headers (`-l/--only-headers`):
   - [x] FS
   - [] Repo
 - extension (`-e/--extension`, repeatable):
-  - [x] FS
+  - [] FS
   - [] Repo
 - exclude (`-E/--exclude/--ignore`, repeatable):
   - [x] FS
@@ -36,7 +37,7 @@ Only `prin.main`-level tests are acceptable (Engine-level don't count).
   - [x] FS
   - [] Repo
 - no-ignore (`-I/--no-ignore`):
-  - [x] FS
+  - [] FS
   - [] Repo
 - tag (`--tag xml|md`):
   - [x] FS
