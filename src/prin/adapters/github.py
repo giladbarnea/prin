@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import base64
 import functools
+import hashlib
+import json
 import os
 import time
 from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import PurePosixPath
-from typing import Dict, Iterable, Optional
+from typing import Any, Dict, Iterable, Optional
 
 import requests
 
@@ -15,6 +17,7 @@ from ..core import Entry, NodeKind, SourceAdapter
 
 API_BASE = "https://api.github.com"
 MAX_WAIT_SECONDS = 180
+_GET_CACHE_DIR = os.path.join(os.path.expanduser("~/.cache"), "prin", "gh_get")
 
 
 def _auth_headers() -> Dict[str, str]:
@@ -54,9 +57,52 @@ def _parse_rate_limit_wait_seconds(resp: requests.Response) -> Optional[int]:
     return None
 
 
-def _get(session: requests.Session, url: str, *, params=None, stream=False) -> requests.Response:
+def _make_hashable(value: Any) -> Any:
+    if isinstance(value, dict):
+        return tuple(sorted((k, _make_hashable(v)) for k, v in value.items()))
+    if isinstance(value, (list, tuple)):
+        return tuple(_make_hashable(v) for v in value)
+    if isinstance(value, set):
+        return tuple(sorted(_make_hashable(v) for v in value))
+    return value
+
+
+def _get_cache_key(url: str, *, params: Any) -> tuple:
+    return (url, _make_hashable(params))
+
+
+def _get(session: requests.Session, url: str, *, params=None) -> requests.Response:
+    # Fast path: serve from disk cache
+    os.makedirs(_GET_CACHE_DIR, exist_ok=True)
+    key = repr(_get_cache_key(url, params=params)).encode("utf-8")
+    cache_hash = hashlib.sha256(key).hexdigest()
+    body_path = os.path.join(_GET_CACHE_DIR, f"{cache_hash}.body")
+    meta_path = os.path.join(_GET_CACHE_DIR, f"{cache_hash}.meta.json")
+    if os.path.exists(body_path):
+        try:
+            with open(body_path, "rb") as f:
+                data = f.read()
+            status = 200
+            enc = "utf-8"
+            if os.path.exists(meta_path):
+                with open(meta_path, "r", encoding="utf-8") as mf:
+                    m = json.load(mf)
+                    status = int(m.get("status", 200))
+                    enc = m.get("encoding", "utf-8")
+            resp = requests.Response()
+            resp._content = data
+            resp.status_code = status
+            resp.url = url
+            resp.encoding = enc
+            return resp
+        except Exception:
+            with suppress(Exception):
+                os.remove(body_path)
+            with suppress(Exception):
+                os.remove(meta_path)
+
     for attempt in range(2):
-        resp = session.get(url, params=params, stream=stream)
+        resp = session.get(url, params=params)
         if resp.status_code in (403, 429):
             wait = _parse_rate_limit_wait_seconds(resp)
             if wait is not None:
@@ -68,6 +114,19 @@ def _get(session: requests.Session, url: str, *, params=None, stream=False) -> r
                     time.sleep(wait)
                     continue
         if 200 <= resp.status_code < 300:
+            # Cache successful responses only (bytes to disk)
+            try:
+                data = resp.content
+                with open(body_path, "wb") as f:
+                    f.write(data)
+                meta = {"status": int(resp.status_code), "encoding": resp.encoding or "utf-8"}
+                with open(meta_path, "w", encoding="utf-8") as mf:
+                    json.dump(meta, mf, separators=(",", ":"))
+            except Exception:
+                with suppress(Exception):
+                    os.remove(body_path)
+                with suppress(Exception):
+                    os.remove(meta_path)
             return resp
         resp.raise_for_status()
     return resp
@@ -141,7 +200,7 @@ class GitHubRepoSource(SourceAdapter):
         dl = info.get("download_url")
         if dl:
             # Reuse shared GET with rate-limit/backoff handling
-            r2 = _get(self._session, dl, stream=True)
+            r2 = _get(self._session, dl)
             return r2.content
         # Fallback to blob by sha
         sha = info.get("sha")
