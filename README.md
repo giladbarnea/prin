@@ -14,6 +14,8 @@ Run `uv tool install git+https://github.com/giladbarnea/prin.git` to install the
 
 Alternatively, clone this repository and run `uv tool install .`.
 
+In both cases, the `prin` executable should be available in your shell.
+
 ## Basic Usage
 
 `prin` accepts one or more paths to directories, files, or remote repositories and prints their contents.
@@ -39,9 +41,8 @@ See `prin --help` for the full list of options.
 
 
 ### Development
-- Setup and test: `uv sync`; `uv run python -m pytest -q`
+- Setup and test: `uv sync` (install uv if needed); `./test.sh`
 - Lint and format: `./lint.sh` and `./format.sh`
-- Install locally as a tool: `uv tool install . --reinstall` or `uv tool install git+https://github.com/giladbarnea/prin.git --reinstall`
 
 ## Options Roadmap (most of these are not implemented yet)
 
