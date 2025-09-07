@@ -10,13 +10,15 @@ The fact that the list types here are sometimes TExclusion and sometimes str is 
 
 from prin.types import TExclusion
 
+HiddenFiles = lambda x: x.startswith(".")
+
 DEFAULT_EXCLUSIONS: list[TExclusion] = [
     lambda x: x.endswith("egg-info"),
     "build",
     "bin",
     "dist",
     "node_modules",
-    lambda x: x.startswith("."),
+    HiddenFiles,
     lambda x: "cache" in str(x).lower(),
     # Build artifacts and dependencies
     "target",
