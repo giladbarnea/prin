@@ -14,24 +14,7 @@ def _run(argv: list[str]) -> str:
 
 
 def test_no_options_specified_everything_is_printed(fs_root):
-    # Work around environment paths containing the substring "test" (e.g., pytest temp dirs),
-    # which are excluded by default. Copy to a neutral location without that substring.
-    import os
-    import shutil
-    import tempfile
-    from pathlib import Path
-
-    neutral_root = Path(tempfile.mkdtemp(prefix="prinfs_"))
-    for root, dirs, files in os.walk(fs_root):
-        rel_dir = os.path.relpath(root, start=fs_root)
-        target_dir = neutral_root / ("." if rel_dir == "." else rel_dir)
-        Path(target_dir).mkdir(parents=True, exist_ok=True)
-        for name in files:
-            src_path = Path(root) / name
-            dst_path = target_dir / name
-            shutil.copy2(src_path, dst_path)
-
-    out = _run(["--tag", "xml", str(neutral_root)])
+    out = _run(["--tag", "xml", str(fs_root)])
 
     # Optional: show a quick sample while developing
     print(out.splitlines()[:20])

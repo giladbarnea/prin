@@ -1,4 +1,6 @@
 import os
+import shutil
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -27,7 +29,9 @@ def fs_root(tmp_path_factory: pytest.TempPathFactory) -> Path:
     The tree includes examples for each filter category: tests, lock, binary, docs,
     hidden, cache/vendor/build, gitignored entry, empty/semantically-empty files, etc.
     """
-    root = tmp_path_factory.mktemp("fake_fs")
+    # Use a neutral temp directory name that won't be excluded by default rules
+    # (avoid substrings like "test" or "tests"). Ensure cleanup after the session.
+    root = Path(tempfile.mkdtemp(prefix="prinfs_"))
 
     # Root-level files
     write_file(root / "README.md", "# Root readme\n")
@@ -75,4 +79,7 @@ def fs_root(tmp_path_factory: pytest.TempPathFactory) -> Path:
     write_file(root / "package-lock.json", "{}\n")
     write_file(root / "uv.lock", "content\n")
 
-    return root
+    try:
+        yield root
+    finally:
+        shutil.rmtree(root, ignore_errors=True)

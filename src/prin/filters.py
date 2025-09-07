@@ -9,6 +9,7 @@ from typeguard import typechecked
 from .defaults import (
     DEFAULT_BINARY_EXCLUSIONS,
     DEFAULT_EXCLUSIONS,
+    DEFAULT_DOC_EXTENSIONS,
     DEFAULT_LOCK_EXCLUSIONS,
     DEFAULT_TEST_EXCLUSIONS,
 )
@@ -73,6 +74,7 @@ def resolve_exclusions(
     include_tests: bool,
     include_lock: bool,
     include_binary: bool,
+    no_docs: bool,
     no_ignore: bool,
     paths: list[str],
 ) -> list[TExclusion]:
@@ -91,6 +93,10 @@ def resolve_exclusions(
 
     if not include_binary:
         exclusions.extend(DEFAULT_BINARY_EXCLUSIONS)
+
+    # Exclude documentation files when requested
+    if no_docs:
+        exclusions.extend(DEFAULT_DOC_EXTENSIONS)
 
     if not no_ignore:
         exclusions.extend(get_gitignore_exclusions(paths))

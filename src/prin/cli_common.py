@@ -194,6 +194,7 @@ def derive_filters_and_print_flags(ctx: Context) -> tuple[list[str], list, bool,
         include_tests=ctx.include_tests,
         include_lock=ctx.include_lock,
         include_binary=ctx.include_binary,
+        no_docs=ctx.no_docs,
         no_ignore=ctx.no_ignore,
         paths=ctx.paths,
     )

@@ -56,6 +56,7 @@ def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None
             include_tests=ctx.include_tests,
             include_lock=ctx.include_lock,
             include_binary=ctx.include_binary,
+            no_docs=ctx.no_docs,
             no_ignore=True,
             paths=[""],
         )
