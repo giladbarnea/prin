@@ -47,11 +47,10 @@ def fs_root(tmp_path_factory: pytest.TempPathFactory) -> VFS:
 
     # Empty and semantically empty
     touch_file(root / "empty.txt")  # truly empty
-    # empty.py should be treated as semantically empty even with a comment
-    write_file(root / "empty.py", "# empty python file with only a comment\n")
+    touch_file(root / "empty.py")  # truly empty .py
     write_file(
         root / "semantically_empty.py",
-        '"""Module docstring"""\nimport os\nfrom sys import version as _v\n__all__ = ["x"]\n',
+        '"""Module docstring"""\n# a comment line\nimport os\nfrom sys import version as _v\n__all__ = ["x"]\n',
     )
 
     # Binary-like and cache/hidden
