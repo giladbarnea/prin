@@ -55,9 +55,8 @@ def test_hidden_includes_dotfiles_and_dotdirs(fs_root):
     out = _run(["--hidden", str(fs_root.root)])
     # The mock fs has a .env at root
     assert ".env" in fs_root.paths
-    assert fs_root.contents[".env"].strip() == "SECRET=1"
     assert "<.env>" in out
-    assert "SECRET=1" in out
+    assert fs_root.contents[".env"].strip() in out
 
 
 def test_include_tests_flag_includes_tests_dir(fs_root):

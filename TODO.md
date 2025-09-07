@@ -39,6 +39,9 @@ Only `prin.main`-level tests are acceptable (Engine-level don't count).
 - no-ignore (`-I/--no-ignore`):
   - [] FS
   - [] Repo
+- hidden (`-H/--hidden`):
+  - [x] FS
+  - [] Repo
 - tag (`--tag xml|md`):
   - [x] FS
   - [x] Repo

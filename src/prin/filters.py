@@ -87,7 +87,11 @@ def resolve_exclusions(
     exclusions = DEFAULT_EXCLUSIONS.copy()
     # If hidden files should be included, drop the hidden predicate from defaults
     if include_hidden:
-        exclusions = [e for e in exclusions if e is not HiddenFiles]
+        try:
+            exclusions.remove(HiddenFiles)
+        except ValueError:
+            # HiddenFiles predicate not present; nothing to remove
+            pass
     exclusions.extend(custom_excludes)
 
     if not include_tests:

@@ -64,6 +64,8 @@ def is_text_semantically_empty(text: str) -> bool:
                 and targets[0].id == "__all__"
             ):
                 continue
+            # Any other assignment means the file is not semantically empty
+            return False
         elif (
             isinstance(node, ast.Expr)
             and isinstance(node.value, ast.Constant)
