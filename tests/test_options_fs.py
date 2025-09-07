@@ -51,6 +51,15 @@ def test_no_options_specified_everything_is_printed(fs_root):
         assert f"</{path}>" not in out
 
 
+def test_hidden_includes_dotfiles_and_dotdirs(fs_root):
+    out = _run(["--hidden", str(fs_root.root)])
+    # The mock fs has a .env at root
+    assert ".env" in fs_root.paths
+    assert fs_root.contents[".env"].strip() == "SECRET=1"
+    assert "<.env>" in out
+    assert "SECRET=1" in out
+
+
 def test_include_tests_flag_includes_tests_dir(fs_root):
     out = _run(["-T", str(fs_root.root)])
     assert "<tests/test_mod.py>" in out

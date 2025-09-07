@@ -16,6 +16,7 @@ from prin.defaults import (
     DEFAULT_NO_DOCS,
     DEFAULT_NO_EXCLUDE,
     DEFAULT_NO_IGNORE,
+    DEFAULT_INCLUDE_HIDDEN,
     DEFAULT_ONLY_HEADERS,
     DEFAULT_RUN_PATH,
     DEFAULT_TAG,
@@ -37,6 +38,7 @@ class Context:
     exclude: list[str] = field(default_factory=lambda: list(DEFAULT_EXCLUDE_FILTER))
     no_exclude: bool = DEFAULT_NO_EXCLUDE
     no_ignore: bool = DEFAULT_NO_IGNORE
+    include_hidden: bool = DEFAULT_INCLUDE_HIDDEN
     tag: Literal["xml", "md"] = DEFAULT_TAG
     max_files: int | None = None
 
@@ -144,6 +146,15 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         default=DEFAULT_NO_EXCLUDE,
     )
     parser.add_argument(
+        "-H",
+        "--hidden",
+        action="store_true",
+        dest="include_hidden",
+        help="Include hidden files and directories (dotfiles and dot-directories).",
+        default=DEFAULT_INCLUDE_HIDDEN,
+    )
+
+    parser.add_argument(
         "-I",
         "--no-ignore",
         action="store_true",
@@ -179,6 +190,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         exclude=list(args.exclude or []),
         no_exclude=bool(args.no_exclude),
         no_ignore=bool(args.no_ignore),
+        include_hidden=bool(args.include_hidden),
         tag=args.tag,
         max_files=args.max_files,
     )
@@ -196,6 +208,7 @@ def derive_filters_and_print_flags(ctx: Context) -> tuple[list[str], list, bool,
         include_binary=ctx.include_binary,
         no_docs=ctx.no_docs,
         no_ignore=ctx.no_ignore,
+        include_hidden=ctx.include_hidden,
         paths=ctx.paths,
     )
     return extensions, exclusions, bool(ctx.include_empty), bool(ctx.only_headers)
