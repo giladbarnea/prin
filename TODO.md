@@ -16,32 +16,32 @@ Only `prin.main`-level tests are acceptable (Engine-level don't count).
   - [] FS
   - [] Repo
 - include-binary (`-a/--text/--include-binary/--binary`):
-  - [] FS
-  - [] Repo
+  - [x] FS
+  - [x] Repo
 - no-docs (`-d/--no-docs`):
   - [x] FS
-  - [] Repo
+  - [x] Repo
 - include-empty (`-M/--include-empty`):
   - [] FS
   - [] Repo
 - only-headers (`-l/--only-headers`):
   - [x] FS
-  - [] Repo
+  - [x] Repo
 - extension (`-e/--extension`, repeatable):
-  - [] FS
-  - [] Repo
+  - [x] FS
+  - [x] Repo
 - exclude (`-E/--exclude/--ignore`, repeatable):
   - [x] FS
-  - [] Repo
+  - [x] Repo
 - no-exclude (`--no-exclude`):
   - [x] FS
-  - [] Repo
+  - [x] Repo
 - no-ignore (`-I/--no-ignore`):
   - [] FS
   - [] Repo
 - tag (`--tag xml|md`):
   - [x] FS
-  - [] Repo
+  - [x] Repo
 - max-files (`--max-files`):
   - [x] FS
   - [x] Repo
