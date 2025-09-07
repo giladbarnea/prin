@@ -79,7 +79,7 @@ Force case-insensitive matching of the search pattern. By default, case sensitiv
 
 - `-H`, `--hidden` (listed above for clarity) — planned ⏳
 
-- `-u`, `--unrestricted` — planned ⏳
+- `-u`, `--unrestricted` — implemented ✅
 Unrestricted search: include hidden files and disable ignore rules (equivalent to --hidden --no-ignore).
 
 - `-uu` — planned ⏳

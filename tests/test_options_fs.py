@@ -140,3 +140,11 @@ def test_tag_md_outputs_markdown_format(fs_root):
     out = _run(["--include-tests", "--tag", "md", str(fs_root.root)])
     assert count_md_headers(out) > 0
     assert "# FILE: foo.py" in out
+
+
+def test_unrestricted_includes_hidden_and_gitignored(fs_root):
+    out = _run(["-u", str(fs_root.root)])
+    # Hidden file should be included
+    assert "<.env>" in out
+    # Gitignored file should be included due to --no-ignore
+    assert "<gitignored.txt>" in out
