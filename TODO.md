@@ -13,22 +13,22 @@ Only `prin.main`-level tests are acceptable (Engine-level don't count).
   - [x] FS
   - [] Repo
 - include-lock (`-K/--include-lock`):
-  - [] FS
+  - [x] FS
   - [] Repo
 - include-binary (`-a/--text/--include-binary/--binary`):
-  - [] FS
+  - [x] FS
   - [] Repo
 - no-docs (`-d/--no-docs`):
   - [x] FS
   - [] Repo
 - include-empty (`-M/--include-empty`):
-  - [] FS
+  - [x] FS
   - [] Repo
 - only-headers (`-l/--only-headers`):
   - [x] FS
   - [] Repo
 - extension (`-e/--extension`, repeatable):
-  - [] FS
+  - [x] FS
   - [] Repo
 - exclude (`-E/--exclude/--ignore`, repeatable):
   - [x] FS
