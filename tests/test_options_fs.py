@@ -38,13 +38,11 @@ def test_no_options_specified_everything_is_printed(fs_root):
 
     # Present by default (non-excluded)
     present = [
-        "README.md",
         "notes.rst",
         "foo.py",
         "src/app.py",
         "src/util.py",
         "src/data.json",
-        "docs/readme.md",
         "docs/guide.rst",
         "gitignored.txt",
     ]
@@ -54,6 +52,8 @@ def test_no_options_specified_everything_is_printed(fs_root):
 
     # Absent by default (excluded by defaults)
     absent = [
+        "README.md",  # considered semantically empty by default
+        "docs/readme.md",  # considered semantically empty by default
         "empty.txt",
         "empty.py",
         "semantically_empty.py",
