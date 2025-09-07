@@ -30,39 +30,19 @@ def test_no_options_specified_everything_is_printed(fs_root):
         "gitignored.txt",
     ]
     for path in present:
+        assert path in fs_root.paths  # Precondition
+        content = fs_root.contents[path]
+        
         assert f"<{path}>" in out
+        assert content in out
         assert f"</{path}>" in out
 
-    # Utilize fixture contents mapping: at least one file's body matches
-    foo_text = fs_root.contents.get("foo.py", "").strip()
-    if foo_text:
-        assert foo_text in out
-
-    # Absent by default (excluded by defaults)
-    absent = [
-        "README.md",  # considered semantically empty by default
-        "docs/readme.md",  # considered semantically empty by default
-        "empty.txt",
-        "empty.py",
-        "semantically_empty.py",
-        "image.png",
-        ".env",
-        ".gitignore",
-        "tests/test_mod.py",
-        "tests/spec.ts",
-        "node_modules/pkg/index.js",
-        "build/artifact.o",
-        "__pycache__/junk.pyc",
-        "cache/tmp.txt",
-        "vendor/vendorlib.py",
-        "logs/app.log",
-        "secrets/key.pem",
-        "poetry.lock",
-        "package-lock.json",
-        "uv.lock",
-    ]
+    absent = set(fs_root.paths) - set(present)
     for path in absent:
-        assert f"<{path}" not in out
+        assert path in fs_root.paths  # Precondition
+        
+        assert f"<{path}>" not in out
+        assert f"</{path}>" not in out
 
 
 def test_include_tests_flag_includes_tests_dir(fs_root):
