@@ -8,7 +8,7 @@ import os
 import time
 from contextlib import suppress
 from dataclasses import dataclass
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 from typing import Any, Dict, Iterable, Optional
 
 import requests
@@ -17,7 +17,7 @@ from ..core import Entry, NodeKind, SourceAdapter
 
 API_BASE = "https://api.github.com"
 MAX_WAIT_SECONDS = 180
-_GET_CACHE_DIR = os.path.join(os.path.expanduser("~/.cache"), "prin", "gh_get")
+_GET_CACHE_DIR = os.path.join(Path("~/.cache").expanduser(), "prin", "gh_get")
 
 
 def _auth_headers() -> Dict[str, str]:
@@ -73,18 +73,18 @@ def _get_cache_key(url: str, *, params: Any) -> tuple:
 
 def _get(session: requests.Session, url: str, *, params=None) -> requests.Response:
     # Fast path: serve from disk cache
-    os.makedirs(_GET_CACHE_DIR, exist_ok=True)
+    Path(_GET_CACHE_DIR).mkdir(exist_ok=True, parents=True)
     key = repr(_get_cache_key(url, params=params)).encode("utf-8")
     cache_hash = hashlib.sha256(key).hexdigest()
     body_path = os.path.join(_GET_CACHE_DIR, f"{cache_hash}.body")
     meta_path = os.path.join(_GET_CACHE_DIR, f"{cache_hash}.meta.json")
-    if os.path.exists(body_path):
+    if Path(body_path).exists():
         try:
             with open(body_path, "rb") as f:
                 data = f.read()
             status = 200
             enc = "utf-8"
-            if os.path.exists(meta_path):
+            if Path(meta_path).exists():
                 with open(meta_path, "r", encoding="utf-8") as mf:
                     m = json.load(mf)
                     status = int(m.get("status", 200))
@@ -97,9 +97,9 @@ def _get(session: requests.Session, url: str, *, params=None) -> requests.Respon
             return resp
         except Exception:
             with suppress(Exception):
-                os.remove(body_path)
+                Path(body_path).unlink()
             with suppress(Exception):
-                os.remove(meta_path)
+                Path(meta_path).unlink()
 
     for attempt in range(2):
         resp = session.get(url, params=params)
@@ -124,9 +124,9 @@ def _get(session: requests.Session, url: str, *, params=None) -> requests.Respon
                     json.dump(meta, mf, separators=(",", ":"))
             except Exception:
                 with suppress(Exception):
-                    os.remove(body_path)
+                    Path(body_path).unlink()
                 with suppress(Exception):
-                    os.remove(meta_path)
+                    Path(meta_path).unlink()
             return resp
         resp.raise_for_status()
     return resp

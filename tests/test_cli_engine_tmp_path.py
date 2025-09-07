@@ -1,15 +1,10 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from prin.adapters.filesystem import FileSystemSource
 from prin.cli_common import Context, derive_filters_and_print_flags, parse_common_args
 from prin.core import DepthFirstPrinter, StringWriter
 from prin.formatters import XmlFormatter
-from tests.utils import write_file, touch_file
-
-
- 
+from tests.utils import touch_file, write_file
 
 
 def test_cli_engine_happy_path(tmp_path):

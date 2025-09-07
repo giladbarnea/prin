@@ -147,6 +147,7 @@ class FileBudget:
         if self._remaining > 0:
             self._remaining -= 1
 
+
 class DepthFirstPrinter:
     def __init__(
         self,

@@ -6,10 +6,7 @@ from prin.adapters.filesystem import FileSystemSource
 from prin.core import DepthFirstPrinter, StringWriter
 from prin.defaults import DEFAULT_BINARY_EXCLUSIONS, DEFAULT_EXCLUSIONS
 from prin.formatters import XmlFormatter
-from tests.utils import write_file, touch_file
-
-
- 
+from tests.utils import touch_file, write_file
 
 
 def _run(src: FileSystemSource, roots: list[str]) -> str:

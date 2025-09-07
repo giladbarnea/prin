@@ -2,7 +2,8 @@ import os
 from pathlib import Path
 
 import pytest
-from tests.utils import write_file, touch_file
+
+from tests.utils import touch_file, write_file
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -20,7 +21,8 @@ def _ensure_github_token():
 
 @pytest.fixture(scope="session")
 def fs_root(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    """A session-cached fake filesystem tree for FS option tests.
+    """
+    A session-cached fake filesystem tree for FS option tests.
 
     The tree includes examples for each filter category: tests, lock, binary, docs,
     hidden, cache/vendor/build, gitignored entry, empty/semantically-empty files, etc.
@@ -34,14 +36,16 @@ def fs_root(tmp_path_factory: pytest.TempPathFactory) -> Path:
 
     # Empty and semantically empty
     touch_file(root / "empty.txt")  # truly empty
-    touch_file(root / "empty.py")   # truly empty .py
+    touch_file(root / "empty.py")  # truly empty .py
     write_file(
         root / "semantically_empty.py",
         '"""Module docstring"""\nimport os\nfrom sys import version as _v\n__all__ = ["x"]\n',
     )
 
     # Binary-like and cache/hidden
-    write_file(root / "image.png", "PNG")  # trivial content, treated as text but matches binary exclude
+    write_file(
+        root / "image.png", "PNG"
+    )  # trivial content, treated as text but matches binary exclude
     write_file(root / ".env", "SECRET=1\n")  # hidden file
 
     # .gitignore and a file it ignores
@@ -72,4 +76,3 @@ def fs_root(tmp_path_factory: pytest.TempPathFactory) -> Path:
     write_file(root / "uv.lock", "content\n")
 
     return root
-

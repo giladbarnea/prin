@@ -8,10 +8,8 @@ from typeguard import typechecked
 
 from .defaults import (
     DEFAULT_BINARY_EXCLUSIONS,
-    DEFAULT_DOC_EXTENSIONS,
     DEFAULT_EXCLUSIONS,
     DEFAULT_LOCK_EXCLUSIONS,
-    DEFAULT_SUPPORTED_EXTENSIONS,
     DEFAULT_TEST_EXCLUSIONS,
 )
 from .types import TExclusion, TExtension, TGlob, _is_extension, _is_glob

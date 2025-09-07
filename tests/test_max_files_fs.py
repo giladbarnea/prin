@@ -4,10 +4,7 @@ from pathlib import Path
 
 from prin.core import StringWriter
 from prin.prin import main as prin_main
-from tests.utils import write_file, count_opening_xml_tags
-
-
- 
+from tests.utils import count_opening_xml_tags, write_file
 
 
 def test_max_files_limits_printed_files_all_included(tmp_path: Path):
@@ -36,4 +33,3 @@ def test_max_files_skips_non_matching_and_still_prints_four(tmp_path: Path):
     prin_main(argv=["--include-tests", "--max-files", "4", str(tmp_path)], writer=buf)
     out = buf.text()
     assert count_opening_xml_tags(out) == 4
-
