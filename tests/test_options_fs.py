@@ -13,6 +13,53 @@ def _run(argv: list[str]) -> str:
     return buf.text()
 
 
+def test_no_options_specified_everything_is_printed(fs_root):
+    out = _run(["--tag", "xml", str(fs_root)])
+
+    # Optional: show a quick sample while developing
+    print(out.splitlines()[:20])
+
+    # Present by default (non-excluded)
+    present = [
+        "notes.rst",
+        "foo.py",
+        "src/app.py",
+        "src/util.py",
+        "src/data.json",
+        "docs/guide.rst",
+        "gitignored.txt",
+    ]
+    for path in present:
+        assert f"<{path}>" in out
+        assert f"</{path}>" in out
+
+    # Absent by default (excluded by defaults)
+    absent = [
+        "README.md",  # considered semantically empty by default
+        "docs/readme.md",  # considered semantically empty by default
+        "empty.txt",
+        "empty.py",
+        "semantically_empty.py",
+        "image.png",
+        ".env",
+        ".gitignore",
+        "tests/test_mod.py",
+        "tests/spec.ts",
+        "node_modules/pkg/index.js",
+        "build/artifact.o",
+        "__pycache__/junk.pyc",
+        "cache/tmp.txt",
+        "vendor/vendorlib.py",
+        "logs/app.log",
+        "secrets/key.pem",
+        "poetry.lock",
+        "package-lock.json",
+        "uv.lock",
+    ]
+    for path in absent:
+        assert f"<{path}" not in out
+
+
 def test_include_tests_flag_includes_tests_dir(fs_root):
     out = _run(["-T", str(fs_root)])
     assert "<tests/test_mod.py>" in out
