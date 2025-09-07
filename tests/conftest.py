@@ -50,7 +50,7 @@ def fs_root(tmp_path_factory: pytest.TempPathFactory) -> VFS:
     touch_file(root / "empty.py")  # truly empty .py
     write_file(
         root / "semantically_empty.py",
-        '"""Module docstring"""\nimport os\nfrom sys import version as _v\n__all__ = ["x"]\n',
+        '"""Module docstring"""\n# a comment line\nimport os\nfrom sys import version as _v\n__all__ = ["x"]\n',
     )
 
     # Binary-like and cache/hidden
