@@ -42,8 +42,8 @@ Everything has be executed, installed, tested and packaged using `uv`.
 ## Ongoing Documentation Maintenance
 If a piece of documentation, docstring, or comment becomes no longer true due to your recent work, modify it to represent the truth or remove it. Stay terse and succinct. Avoid detailing too much.
 
-### Gotchas
-- Don’t apply local `.gitignore` to remote repos. It is illogical: by definition, nothing in .gitignore will match remote files.
+## Gotchas
+- Make sure the environment in which the tests operate doesn't interfere with the test results. This can manifest as unplanned parsing of project's ignore files, inadvertedly honoring the tests directory of the project itself, and so on.
 
 ## Being an Effective AI Agent
 
