@@ -77,12 +77,12 @@ def test_repo_tag_md_outputs_markdown_format():
     assert "# FILE: README.md" in out
 
 
-@pytest.mark.skip("Not supported ATM")
 def test_repo_include_empty():
-    url = "https://github.com/TypingMind/awesome-typingmind"
+    # Use a repo that has a file with only a comment and an import
+    # The file "__init__.py.py" contains a comment and an import, which should be semantically empty
+    url = "https://github.com/mahin-mushfique/scrapers"
     out = _run(["--include-empty", url])
-    # No specific assertion; placeholder to mirror FS coverage
-    assert isinstance(out, str)
+    assert "<__init__.py.py>" in out
 
 
 @pytest.mark.skip("Not supported ATM")
