@@ -213,13 +213,15 @@ class DepthFirstPrinter:
         if not self.extensions:
             return True
         for pattern in self.extensions:
+            # Normalize: accept names with or without leading dot
+            normalized = pattern if pattern.startswith(".") else "." + pattern
             if self._pf_is_glob(pattern):
                 from fnmatch import fnmatch
 
-                if fnmatch(filename, pattern):
+                if fnmatch(filename, pattern) or fnmatch(filename, "*" + normalized):
                     return True
             else:
-                if filename.endswith("." + pattern.removeprefix(".")):
+                if filename.endswith(normalized):
                     return True
         return False
 

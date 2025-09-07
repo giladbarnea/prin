@@ -121,7 +121,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         "-e",
         "--extension",
         type=str,
-        default=DEFAULT_EXTENSIONS_FILTER,
+        default=None,
         action="append",
         help="Only include files with the given extension (repeatable).",
     )
@@ -134,7 +134,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         help="Exclude files or directories by shell-style glob or regex (repeatable). By default, excludes "
         + ", ".join(map(_describe_predicate, DEFAULT_EXCLUSIONS))
         + ", and any files in .gitignore, .git/info/exclude, and ~/.config/git/ignore.",
-        default=DEFAULT_EXCLUDE_FILTER,
+        default=None,
         action="append",
     )
     parser.add_argument(
