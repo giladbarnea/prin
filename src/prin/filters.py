@@ -12,6 +12,7 @@ from .defaults import (
     DEFAULT_DOC_EXTENSIONS,
     DEFAULT_LOCK_EXCLUSIONS,
     DEFAULT_TEST_EXCLUSIONS,
+    HiddenFiles,
 )
 from .types import TExclusion, TExtension, TGlob, _is_extension, _is_glob
 
@@ -76,6 +77,7 @@ def resolve_exclusions(
     include_binary: bool,
     no_docs: bool,
     no_ignore: bool,
+    include_hidden: bool | None = None,
     paths: list[str],
 ) -> list[TExclusion]:
     """Resolve final exclusion list based on command line arguments."""
@@ -83,6 +85,13 @@ def resolve_exclusions(
         return []
 
     exclusions = DEFAULT_EXCLUSIONS.copy()
+    # If hidden files should be included, drop the hidden predicate from defaults
+    if include_hidden:
+        try:
+            exclusions.remove(HiddenFiles)
+        except ValueError:
+            # HiddenFiles predicate not present; nothing to remove
+            pass
     exclusions.extend(custom_excludes)
 
     if not include_tests:

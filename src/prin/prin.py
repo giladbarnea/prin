@@ -58,6 +58,7 @@ def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None
             include_binary=ctx.include_binary,
             no_docs=ctx.no_docs,
             no_ignore=True,
+            include_hidden=ctx.include_hidden,
             paths=[""],
         )
         for url in repo_urls:
