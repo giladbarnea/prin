@@ -2,6 +2,7 @@ import os
 import shutil
 import tempfile
 from pathlib import Path
+from typing import NamedTuple
 
 import pytest
 
@@ -21,8 +22,14 @@ def _ensure_github_token():
         os.environ["GITHUB_TOKEN"] = token
 
 
+class VFS(NamedTuple):
+    root: Path
+    paths: list[str]
+    contents: dict[str, str]
+
+
 @pytest.fixture(scope="session")
-def fs_root(tmp_path_factory: pytest.TempPathFactory) -> Path:
+def fs_root(tmp_path_factory: pytest.TempPathFactory) -> VFS:
     """
     A session-cached fake filesystem tree for FS option tests.
 
@@ -79,7 +86,39 @@ def fs_root(tmp_path_factory: pytest.TempPathFactory) -> Path:
     write_file(root / "package-lock.json", "{}\n")
     write_file(root / "uv.lock", "content\n")
 
+    # Build a traversal-ordered list of file paths and a content mapping
+    import os as _os
+
+    rel_paths: list[str] = []
+    contents: dict[str, str] = {}
+
+    stack: list[Path] = [root]
+    while stack:
+        current = stack.pop()
+        with _os.scandir(current) as it:
+            dirs = []
+            files = []
+            for e in it:
+                if e.is_dir(follow_symlinks=False):
+                    dirs.append(e)
+                elif e.is_file(follow_symlinks=False):
+                    files.append(e)
+            dirs.sort(key=lambda d: d.name.casefold())
+            files.sort(key=lambda f: f.name.casefold())
+            for d in reversed(dirs):
+                stack.append(Path(d.path))
+            for f in files:
+                p = Path(f.path)
+                rel = p.relative_to(root).as_posix()
+                rel_paths.append(rel)
+                try:
+                    blob = p.read_bytes()
+                    text = blob.decode("utf-8", errors="ignore")
+                except Exception:
+                    text = ""
+                contents[rel] = text
+
     try:
-        yield root
+        yield VFS(root=root, paths=rel_paths, contents=contents)
     finally:
         shutil.rmtree(root, ignore_errors=True)
