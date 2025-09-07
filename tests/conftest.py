@@ -82,9 +82,10 @@ def fs_root(tmp_path_factory: pytest.TempPathFactory) -> VFS:
     write_file(root / "logs" / "app.log", "log entry\n")
     write_file(root / "secrets" / "key.pem", "KEY\n")
 
-    write_file(root / "poetry.lock", "content\n")
-    write_file(root / "package-lock.json", "{}\n")
-    write_file(root / "uv.lock", "content\n")
+    # Ensure unique non-empty contents across files to avoid incidental substring collisions
+    write_file(root / "poetry.lock", "poetry-lock-content-unique\n")
+    write_file(root / "package-lock.json", "{\n  \"name\": \"unique-package-lock\"\n}\n")
+    write_file(root / "uv.lock", "uv-lock-content-unique\n")
 
     # Build a traversal-ordered list of file paths and a content mapping
     import os as _os
