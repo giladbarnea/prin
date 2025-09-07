@@ -85,11 +85,10 @@ def test_repo_include_empty():
     assert "<__init__.py.py>" in out
 
 
-@pytest.mark.skip("Not supported ATM")
 def test_repo_include_lock():
-    url = "https://github.com/TypingMind/awesome-typingmind"
+    url = "https://github.com/trouchet/rust-hello"
     out = _run(["--include-lock", url])
-    assert isinstance(out, str)
+    assert "<Cargo.lock>" in out
 
 
 @pytest.mark.skip("Not supported ATM")
