@@ -170,8 +170,8 @@ class DepthFirstPrinter:
         # Use shared filtering primitives
         from . import filters as _filters
 
-        self._pf_is_excluded: Callable[[object, list], bool] = _filters.is_excluded
-        self._pf_is_glob: Callable[[object], bool] = _filters.is_glob
+        self._is_excluded: Callable[[object, list], bool] = _filters.is_excluded
+        self._is_glob: Callable[[object], bool] = _filters.is_glob
 
     def run(self, roots: list[str], writer: Writer, budget: "FileBudget | None" = None) -> None:
         for root_spec in roots or ["."]:
@@ -191,7 +191,7 @@ class DepthFirstPrinter:
                     self._handle_file(file_entry, writer, base=root, force=True, budget=budget)
                     continue
                 except FileNotFoundError:
-                    # Skip missing paths
+                    # Skip missing paths. Smell: will cover-up a bug in list_dir.
                     continue
                 # Sort directories then files, both case-insensitive
                 dirs = [e for e in entries if e.kind is NodeKind.DIRECTORY]
@@ -208,13 +208,13 @@ class DepthFirstPrinter:
 
     def _excluded(self, entry: Entry) -> bool:
         # The reference implementation accepts strings/paths/globs/callables
-        return self._pf_is_excluded(str(entry.path), exclude=self.exclude)
+        return self._is_excluded(str(entry.path), exclude=self.exclude)
 
     def _extension_match(self, filename: str) -> bool:
         if not self.extensions:
             return True
         for pattern in self.extensions:
-            if self._pf_is_glob(pattern):
+            if self._is_glob(pattern):
                 from fnmatch import fnmatch
 
                 if fnmatch(filename, pattern):

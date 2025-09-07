@@ -43,17 +43,18 @@ def read_gitignore_file(gitignore_path: Path) -> list[TExclusion]:
 @typechecked
 def get_gitignore_exclusions(paths: list[str]) -> list[TExclusion]:
     """Get exclusions from gitignore files for given paths."""
+    
+    # Note: .gitignore is parked for now until we figure out how to exclude in development time.
+    return []
     exclusions = []
 
     # Read global git ignore file
-    from pathlib import Path as _P
-
-    home_config_ignore = _P.home() / ".config" / "git" / "ignore"
+    home_config_ignore = Path.home() / ".config" / "git" / "ignore"
     exclusions.extend(read_gitignore_file(home_config_ignore))
 
     # Read gitignore files for each directory path
     for path_str in paths:
-        p = _P(path_str)
+        p = Path(path_str)
         if p.is_dir():
             gitignore_path = p / ".gitignore"
             exclusions.extend(read_gitignore_file(gitignore_path))
@@ -65,7 +66,7 @@ def get_gitignore_exclusions(paths: list[str]) -> list[TExclusion]:
 
 
 @typechecked
-def resolve_exclusions(
+def resolve_exclusions( 
     *,
     no_exclude: bool,
     custom_excludes: list[TExclusion],
@@ -100,7 +101,7 @@ def resolve_exclusions(
 def resolve_extensions(
     *,
     custom_extensions: list[str],
-    no_docs: bool,
+    no_docs: bool,  # no_docs is unused. Can be a subtle bug.
 ) -> list[str]:
     """Resolve final extension list based on command line arguments."""
     # New default behavior: no default inclusions. When no custom extensions
@@ -113,9 +114,8 @@ def resolve_extensions(
 @typechecked
 def is_excluded(entry: Any, *, exclude: list[TExclusion]) -> bool:
     """Shared predicate implementing the legacy matching semantics."""
-    from pathlib import Path as _P
 
-    path = _P(getattr(entry, "path", entry))
+    path = Path(getattr(entry, "path", entry))
     name = path.name
     stem = path.stem
     entry_is_glob = is_glob(entry)

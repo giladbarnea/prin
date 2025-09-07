@@ -18,9 +18,8 @@ def test_include_tests_flag_includes_tests_dir(fs_root):
     assert "<tests/test_mod.py>" in out
 
 
-@pytest.mark.skip("Failing, feature broken")
 def test_include_lock_flag_includes_lock_files(fs_root):
-    out = _run(["-K", str(fs_root)])
+    out = _run(["--include-lock", str(fs_root)])
     assert "<poetry.lock>" in out or "<package-lock.json>" in out or "<uv.lock>" in out
 
 
