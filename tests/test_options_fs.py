@@ -37,11 +37,21 @@ def test_no_options_specified_everything_is_printed(fs_root):
         assert content in out
         assert f"</{path}>" in out
 
+    present_contents = [fs_root.contents[p] for p in present]
     absent = set(fs_root.paths) - set(present)
     for path in absent:
         assert path in fs_root.paths  # Precondition
-        
+        content = fs_root.contents[path]
+        content_is_unique = list(fs_root.contents.values()).count(content) == 1
+        content_is_nonempty = bool(content.strip())
+        content_is_not_substring_of_present = not any(
+            content and (content in pc) for pc in present_contents
+        )
+
         assert f"<{path}>" not in out
+        # Only check body absence when content is unique, nonempty, and not a substring of any present content
+        if content_is_unique and content_is_nonempty and content_is_not_substring_of_present:
+            assert content not in out
         assert f"</{path}>" not in out
 
 
