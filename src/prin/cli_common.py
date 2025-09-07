@@ -4,6 +4,7 @@ import argparse
 import textwrap
 from dataclasses import dataclass, field
 from typing import Literal
+import sys
 
 from prin.defaults import (
     DEFAULT_EXCLUDE_FILTER,
@@ -23,6 +24,33 @@ from prin.defaults import (
     DEFAULT_TAG_CHOICES,
 )
 from prin.types import _describe_predicate
+
+
+# Map shorthand/alias flags to their canonical expanded forms.
+# The expansion occurs before argparse parsing and preserves argument order.
+CLI_OPTIONS_ALIASES: dict[str, tuple[str, ...]] = {
+    "-u": ("--hidden", "--no-ignore"),
+    "--unrestricted": ("--hidden", "--no-ignore"),
+}
+
+
+def _expand_cli_aliases(argv: list[str] | None) -> list[str]:
+    """Expand alias flags in argv into their canonical forms.
+
+    This function does not mutate the provided argv list. It returns a new list
+    where alias tokens are replaced in-place positionally with their mapped
+    sequence of tokens.
+    """
+    if not argv:
+        return []
+    expanded: list[str] = []
+    for token in argv:
+        replacement = CLI_OPTIONS_ALIASES.get(token)
+        if replacement is not None:
+            expanded.extend(replacement)
+        else:
+            expanded.append(token)
+    return expanded
 
 
 @dataclass(slots=True)
@@ -177,7 +205,9 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         help="Maximum number of files to print across all inputs.",
     )
 
-    args = parser.parse_args(argv)
+    # Expand known alias flags before parsing. If argv is None, use sys.argv[1:].
+    effective_argv = _expand_cli_aliases(argv if argv is not None else sys.argv[1:])
+    args = parser.parse_args(effective_argv)
     return Context(
         paths=list(args.paths),
         include_tests=bool(args.include_tests),
