@@ -1,7 +1,7 @@
 # Agents.md
 
 Read and understand the Markdown files of the project before starting a task. 
-Then read the entire codebase (besides uv.lock).
+Then read the entire codebase (besides uv.lock). It's small; this won't clutter your context window.
 Whatever you do, try to align with the existing design philosophy (What knowledge each component holds, what knowledge it intentionally does not hold, responsibility and separation, what should be reused, and so on.)
 
 ### Architecture
@@ -15,12 +15,13 @@ Engine-driven depth-first traversal with source adapters; the engine is source-a
 - Source adapters must share as much behavior as possible and reuse common modules. Each adapter must implement as little as possible, only accounting for the thin differentiator of its domain and delegating the rest to common modules. This serves the tool's "Sources are interchangeable" design principle, which lets users forget about the type of source and have it simply printed instead.
 
 ### Source Adapters
-- File system: `is_empty` via AST; raises NotADirectoryError for files (implicit via scandir).
+- File system: `is_empty` via AST; raises NotADirectoryError for files (implicit via scandir). Note: it's a hack, not something to be very proud of.
 - GitHub: list via Contents API; for file paths, raise NotADirectoryError so engine force-includes; ignore local .gitignore for repos.
 
 ### CLI and flags
 - One shared parser in `cli_common` used by both implementations; no interactive prompts; consistent flags (`-e`, `-E`, `--no-ignore`, `-l`, etc.).
 - `prin` dispatches: GitHub URL → repo implementation; otherwise filesystem. Keep URL detection minimal and robust.
+- New CLI options' defaults should be defined and imported from defaults.py. When relevant, default consts should be reused.
 
 ### Filtering semantics
 <outdated: ignore>
@@ -34,7 +35,8 @@ Engine-driven depth-first traversal with source adapters; the engine is source-a
 ### uv usage: execution, tooling and packaging
 Everything has be executed, installed, tested and packaged using `uv`.
 **If `uv` is not installed in your environment, install it.**
-- Develop and test with: `uv sync`, `./test.sh [helpful flags to your liking]`. Important: eagerly run tests frequently, even if the user didn't ask for it.
+- Develop and test with: `uv sync`, `./test.sh [helpful flags to your liking]`.
+- **Important: eagerly run tests frequently, even if the user didn't ask for it.**
 - Tooling: `uv tool install . --reinstall` (and `uv tool install git+https://github.com/giladbarnea/prin.git --reinstall`). Reinstalling is required to apply code changes to the tool.
 
 ## Ongoing Documentation Maintenance
