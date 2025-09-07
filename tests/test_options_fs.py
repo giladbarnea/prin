@@ -23,7 +23,6 @@ def test_include_lock_flag_includes_lock_files(fs_root):
     assert "<poetry.lock>" in out or "<package-lock.json>" in out or "<uv.lock>" in out
 
 
-@pytest.mark.skip("Failing, feature broken")
 def test_include_binary_includes_binary_like_files(fs_root):
     out = _run(["--include-binary", str(fs_root)])
     # image.png is matched by default binary exclusions; with include-binary it should appear
@@ -37,7 +36,6 @@ def test_no_docs_excludes_markdown_and_rst(fs_root):
     assert "notes.rst" not in out
 
 
-@pytest.mark.skip("Failing, feature broken")
 def test_include_empty_includes_truly_empty_and_semantically_empty(fs_root):
     out = _run(["--include-empty", str(fs_root)])
     assert "<empty.txt>" in out
@@ -54,7 +52,6 @@ def test_only_headers_prints_headers_only(fs_root):
     assert "def app():" not in out
 
 
-@pytest.mark.skip("Failing, feature broken")
 def test_extension_filters_by_extension(fs_root):
     out = _run(["-e", "py", str(fs_root)])
     assert "<foo.py>" in out
@@ -82,7 +79,7 @@ def test_no_exclude_disables_all_default_exclusions(fs_root):
     assert "<secrets/key.pem>" in out
 
 
-@pytest.mark.skip("Failing, feature broken")
+@pytest.mark.skip("Not supported ATM")
 def test_no_ignore_respects_gitignore_unless_disabled(fs_root):
     # By default, gitignored.txt should be excluded
     out_default = _run([str(fs_root)])
