@@ -32,7 +32,11 @@ Engine-driven depth-first traversal with source adapters; the engine is source-a
 
 ## uv usage: execution, tooling and packaging
 Everything has be executed, installed, tested and packaged using `uv`.
-**If `uv` is not installed in your environment, install it.**
+**If `uv` is not installed in your environment, install it by running:**
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+- Ensure your PATH includes `$HOME/.local/bin` so `uv` is available in your shell.
 - Develop and test with: `uv sync`, `./test.sh [helpful flags to your liking]`.
 - **Important: eagerly run tests frequently, even if the user didn't ask for it.**
 - Tooling: `uv tool install . --reinstall` (and `uv tool install git+https://github.com/giladbarnea/prin.git --reinstall`). Reinstalling is required to apply code changes to the tool.
