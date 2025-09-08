@@ -1,10 +1,10 @@
 # `prin`
 
-Print the contents of whole directories, remote GitHub repositories or websites in an LLM-friendly format.
+Print the contents of full directories, remote GitHub repositories or websites in an LLM-friendly format.
 
 ## Basic Usage
 
-`prin` accepts one or more paths to directories, files, remote repositories or websites with llms.txt, and prints their contents.
+`prin` accepts one or more paths to directories, files, remote repositories or websites exposing llms.txt, and prints their contents.
 
 ```sh
 # Print the entire contents of the codebase you're on
@@ -17,10 +17,18 @@ prin docs github.com/rust-lang/book
 prin AGENTS.md src/**/*.py
 ```
 
-This can easily be used together with other tools, such as terminal code agents, for a powerful combination:
+## Recommended Usage
 
+`prin` can easily be used together with other tools, such as terminal code agents and the clipboard for a powerful combination.
+
+#### Piping a local module and code examples from a remote repository to `claude` as context
 ```sh
-prin ./agents/graph/ github.com/pydantic/pydantic-ai/{docs,examples} | claude -p "The graphs are not wired right. Fix them."
+prin agents/graph github.com/pydantic/pydantic-ai/{docs,examples} | claude -p "The graphs are not connected properly. Fix them."
+```
+
+#### Attaching a library's documentation alongside your code
+```sh
+prin agents/graph github.com/pydantic/pydantic-ai/{docs,examples} | claude -p "The graphs are not connected properly. Fix them."
 ```
 
 See `prin --help` for the full list of options.
