@@ -220,4 +220,4 @@ class GitHubRepoSource(SourceAdapter):
         blob = self.read_file_bytes(file_path)
         from ..core import is_blob_semantically_empty
 
-        return is_blob_semantically_empty(blob)
+        return is_blob_semantically_empty(blob, file_path)

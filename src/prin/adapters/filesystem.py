@@ -59,4 +59,5 @@ class FileSystemSource(SourceAdapter):
         if not blob.strip():
             return True
         from ..core import is_blob_semantically_empty
+
         return is_blob_semantically_empty(blob, file_path)
