@@ -25,6 +25,14 @@ DEFAULT_EXCLUSIONS: list[TExclusion] = [
     "vendor",
     "out",
     "coverage",
+    # Additional common directories/files
+    "venv",
+    "DerivedData",
+    "Pods",
+    "Carthage/Build",
+    "Thumbs.db",
+    "coverage.out",
+    "*.test",
     # IDE and editor files
     "*.swp",
     "*.swo",
@@ -88,6 +96,14 @@ DEFAULT_LOCK_EXCLUSIONS: list[TExclusion] = [
     "Cargo.lock",
     "go.sum",
     "mix.lock",
+    # Additional ecosystems
+    "bun.lockb",
+    "deno.lock",
+    "Podfile.lock",
+    "Package.resolved",
+    "gradle.lockfile",
+    "packages.lock.json",
+    "flake.lock",
 ]
 
 
@@ -132,6 +148,37 @@ DEFAULT_BINARY_EXCLUSIONS: list[TExclusion] = [
     "*.sqlite3",
     "*.dat",
     "*.bin",
+    # Additional binary formats
+    "*.node",
+    "*.wasm",
+    "*.zst",
+    "*.lz",
+    # Fonts
+    "*.ttf",
+    "*.otf",
+    "*.woff",
+    "*.woff2",
+    "*.eot",
+    # Windows build outputs
+    "*.obj",
+    "*.lib",
+    "*.pdb",
+    "*.ilk",
+    # Installers/bundles
+    "*.dmg",
+    "*.pkg",
+    "*.msi",
+    "*.apk",
+    "*.ipa",
+    # Scientific/data formats
+    "*.h5",
+    "*.hdf5",
+    "*.npz",
+    "*.npy",
+    "*.mat",
+    "*.parquet",
+    "*.feather",
+    "*.arrow",
 ]
 
 # endregion ---[ Default Paths and Exclusions ]---
