@@ -20,6 +20,13 @@ def is_github_url(token: str) -> bool:
     return tok.startswith("github.com/") or tok.startswith("www.github.com/")
 
 
+def is_http_url(token: str) -> bool:
+    tok = token.strip().lower()
+    if tok.startswith("-"):
+        return False
+    return tok.startswith("http://") or tok.startswith("https://")
+
+
 def find_github_url(argv: Iterable[str]) -> tuple[int, str] | None:
     for i, tok in enumerate(argv):
         if is_github_url(tok):
