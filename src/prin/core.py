@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+import os
 import sys
 from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import PurePosixPath
-from typing import Callable, Iterable, Protocol
+from typing import TYPE_CHECKING, Iterable, Protocol
 
-from prin.types import TExclusion
+from prin import filters
+from prin.formatters import Formatter, HeaderFormatter
+
+if TYPE_CHECKING:
+    from .cli_common import Context
 
 
 class NodeKind(Enum):
@@ -31,12 +36,6 @@ class SourceAdapter(Protocol):
     def list_dir(self, dir_path: PurePosixPath) -> Iterable[Entry]: ...
     def read_file_bytes(self, file_path: PurePosixPath) -> bytes: ...
     def is_empty(self, file_path: PurePosixPath) -> bool: ...
-
-
-class Formatter(Protocol):
-    def body(self, path: str, text: str) -> str: ...
-    def binary(self, path: str) -> str: ...
-    def header(self, path: str) -> str: ...
 
 
 def is_text_semantically_empty(text: str) -> bool:
@@ -157,29 +156,31 @@ class DepthFirstPrinter:
         self,
         source: SourceAdapter,
         formatter: Formatter,
-        *,
-        # Parameter list should match CLI options.
-        include_empty: bool,
-        only_headers: bool,
-        extensions: list[str],
-        exclude: list[TExclusion],
+        ctx: "Context",
     ) -> None:
         self.source = source
+        if ctx.only_headers:
+            if not isinstance(formatter, HeaderFormatter):
+                import logging
+
+                logging.getLogger(__name__).warning(
+                    "[WARNING] --only-headers was specified but formatter passed is not a HeaderFormatter. Forcing to HeaderFormatter."
+                )
+            formatter = HeaderFormatter()
         self.formatter = formatter
-        self.include_empty = include_empty
-        self.only_headers = only_headers
-        self.extensions = extensions
-        self.exclude = exclude
+
+        self._set_from_context(ctx)
         self._printed_paths: set[str] = set()
 
-        # Use shared filtering primitives
-        from . import filters as _filters
-
-        self._is_excluded: Callable[[object, list[TExclusion]], bool] = _filters.is_excluded
-        self._is_glob: Callable[[object], bool] = _filters.is_glob
+    def _set_from_context(self, ctx: "Context") -> None:
+        self.exclusions = ctx.exclusions
+        self.extensions = ctx.extensions
+        self.include_empty = ctx.include_empty
+        self.only_headers = ctx.only_headers
 
     def run(self, roots: list[str], writer: Writer, budget: "FileBudget | None" = None) -> None:
-        for root_spec in roots or ["."]:
+        roots = roots or ["."]
+        for root_spec in roots:
             if budget is not None and budget.spent():
                 return
             root = self.source.resolve_root(root_spec)
@@ -213,18 +214,19 @@ class DepthFirstPrinter:
 
     def _excluded(self, entry: Entry) -> bool:
         # The reference implementation accepts strings/paths/globs/callables
-        return self._is_excluded(str(entry.path), exclude=self.exclude)
+        return filters.is_excluded(entry, exclude=self.exclusions)
 
     def _extension_match(self, filename: str) -> bool:
         if not self.extensions:
             return True
         for pattern in self.extensions:
-            if self._is_glob(pattern):
+            if filters.is_glob(pattern):
                 from fnmatch import fnmatch
 
                 if fnmatch(filename, pattern):
                     return True
             else:
+                # Check exact extension match.
                 if filename.endswith("." + pattern.removeprefix(".")):
                     return True
         return False
@@ -243,7 +245,7 @@ class DepthFirstPrinter:
         if key in self._printed_paths:
             return
 
-        if budget is not None and budget.spent():
+        if budget and budget.spent():
             return
 
         if not force:
@@ -256,27 +258,20 @@ class DepthFirstPrinter:
 
         path_str = self._display_path(entry.path, base)
         if self.only_headers:
-            writer.write(self.formatter.header(path_str))
-            if budget is not None:
-                budget.consume()
-            self._printed_paths.add(key)
-            return
-
-        blob = self.source.read_file_bytes(entry.path)
-        if _is_text_bytes(blob):
-            text = _decode_text(blob)
-            writer.write(self.formatter.body(path_str, text))
+            writer.write(self.formatter.format(path_str, ...))
         else:
-            writer.write(self.formatter.binary(path_str))
-        if budget is not None:
-            budget.consume()
+            blob = self.source.read_file_bytes(entry.path)
+            if _is_text_bytes(blob):
+                text = _decode_text(blob)
+                writer.write(self.formatter.format(path_str, text))
+            else:
+                writer.write(self.formatter.binary(path_str))
+        budget and budget.consume()
         self._printed_paths.add(key)
 
     def _display_path(self, path: PurePosixPath, base: PurePosixPath) -> str:
         # If path is under base, return a relative POSIX path; otherwise absolute
         try:
-            import os
-
             rel = os.path.relpath(str(path), start=str(base))
             if rel == "." or rel == "":
                 return path.name

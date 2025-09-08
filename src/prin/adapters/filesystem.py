@@ -56,6 +56,10 @@ class FileSystemSource(SourceAdapter):
             blob = p.read_bytes()
         except Exception:
             return False
-        from ..core import is_blob_semantically_empty
+        if not blob.strip():
+            return True
+        if file_path.suffix in (".py", ".pyi"):
+            from ..core import is_blob_semantically_empty
 
-        return is_blob_semantically_empty(blob)
+            return is_blob_semantically_empty(blob)
+        return False

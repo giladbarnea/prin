@@ -41,10 +41,11 @@ See `prin --help` for the full list of options.
 
 
 ### Development
-- Setup and test: `uv sync` (install uv if needed); `./test.sh`
+- Install `uv` if needed: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- Setup and test: `uv sync`; `./test.sh`
 - Lint and format: `./lint.sh` and `./format.sh`
 
-## Options Roadmap (most of these are not implemented yet)
+## Options Roadmap
 
 - `-H`, `--hidden` (alias: --include-hidden) — planned ⏳
 Include hidden files and directories in the search (dotfiles and dot-directories).
@@ -80,13 +81,14 @@ Force case-insensitive matching of the search pattern. By default, case sensitiv
 - `-H`, `--hidden` (listed above for clarity) — planned ⏳
 
 - `-u`, `--unrestricted` — implemented ✅
+Equivalent to --no-ignore.
+
+- `-uu` — implemented ✅
 Unrestricted search: include hidden files and disable ignore rules (equivalent to --hidden --no-ignore).
 
-- `-uu` — planned ⏳
-Equivalent to --no-ignore --hidden.
-
-- `-uuu` — planned ⏳
-Equivalent to --no-ignore --hidden --binary.
+- `-uuu` — implemented ✅
+Include everything.
+Equivalent to --no-ignore --hidden --binary, or `--no-exclude`.
 
 - `-L`, `--follow` — planned ⏳
 Follow symbolic links.

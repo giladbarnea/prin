@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from prin.adapters.filesystem import FileSystemSource
-from prin.cli_common import Context, derive_filters_and_print_flags, parse_common_args
+from prin.cli_common import Context
 from prin.core import DepthFirstPrinter, StringWriter
 from prin.formatters import XmlFormatter
 from tests.utils import touch_file, write_file
@@ -34,10 +34,7 @@ def test_cli_engine_happy_path(tmp_path):
     printer = DepthFirstPrinter(
         src,
         XmlFormatter(),
-        include_empty=False,
-        only_headers=False,
-        extensions=[".py", ".md", ".json"],
-        exclude=[],
+        ctx=Context(),
     )
 
     buf = StringWriter()
@@ -69,10 +66,7 @@ def test_cli_engine_isolation(tmp_path):
     printer = DepthFirstPrinter(
         src,
         XmlFormatter(),
-        include_empty=False,
-        only_headers=False,
-        extensions=[".py", ".md"],
-        exclude=[],
+        ctx=Context(),
     )
 
     buf = StringWriter()
@@ -82,15 +76,3 @@ def test_cli_engine_isolation(tmp_path):
     assert "<dir/a.py>" in out
     assert "<dir/sub/b.md>" in out
     assert "__pycache__/c.pyc" not in out
-
-
-def test_derive_filters_defaults(tmp_path):
-    ctx: Context = parse_common_args([str(tmp_path)])
-    extensions, exclusions, include_empty, only_headers = derive_filters_and_print_flags(ctx)
-    # No default inclusions: extensions should be empty by default
-    assert extensions == []
-    # Defaults should not set only_headers or include_empty
-    assert include_empty is False
-    assert only_headers is False
-    # Tests directories are excluded by default
-    assert any(e == "tests" for e in exclusions if isinstance(e, str))

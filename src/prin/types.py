@@ -1,11 +1,6 @@
 import inspect
 import os
-from typing import Annotated, Callable, NewType
-
-from annotated_types import Predicate
-from typeguard import typechecked
-
-from .path_classifier import _is_glob
+from typing import Callable, NewType
 
 TPath = NewType("TPath", str)
 
@@ -14,8 +9,8 @@ def _is_extension(name: str) -> bool:
     return name.startswith(".") and os.path.sep not in name
 
 
-TGlob = Annotated[NewType("TGlob", str), Predicate(_is_glob)]
-TExtension = Annotated[NewType("TExtension", str), Predicate(_is_extension)]
+TGlob = NewType("TGlob", str)
+TExtension = NewType("TExtension", str)
 
 TExclusion = TPath | TGlob | Callable[[TPath | TGlob], bool]
 """
@@ -26,7 +21,6 @@ TExclusion is a union of:
 """
 
 
-@typechecked
 def _describe_predicate(pred: TExclusion) -> str:
     if isinstance(pred, str):
         return pred

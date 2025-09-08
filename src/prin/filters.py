@@ -4,31 +4,18 @@ from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any, TypeIs
 
-from typeguard import typechecked
-
-from .defaults import (
-    DEFAULT_BINARY_EXCLUSIONS,
-    DEFAULT_DOC_EXTENSIONS,
-    DEFAULT_EXCLUSIONS,
-    DEFAULT_LOCK_EXCLUSIONS,
-    DEFAULT_TEST_EXCLUSIONS,
-    HiddenFiles,
-)
 from .path_classifier import _is_glob
 from .types import TExclusion, TExtension, TGlob, _is_extension
 
 
-@typechecked
 def is_glob(path) -> TypeIs[TGlob]:
     return _is_glob(path)
 
 
-@typechecked
 def is_extension(name: str) -> TypeIs[TExtension]:
     return _is_extension(name)
 
 
-@typechecked
 def read_gitignore_file(gitignore_path: Path) -> list[TExclusion]:
     """Read a gitignore-like file and return list of exclusion patterns."""
     exclusions = []
@@ -43,7 +30,6 @@ def read_gitignore_file(gitignore_path: Path) -> list[TExclusion]:
     return exclusions
 
 
-@typechecked
 def get_gitignore_exclusions(paths: list[str]) -> list[TExclusion]:
     """Get exclusions from gitignore files for given paths."""
 
@@ -68,67 +54,6 @@ def get_gitignore_exclusions(paths: list[str]) -> list[TExclusion]:
     return exclusions
 
 
-@typechecked
-def resolve_exclusions(
-    *,
-    # Parameter list should match CLI options.
-    no_exclude: bool,
-    custom_excludes: list[TExclusion],
-    include_tests: bool,
-    include_lock: bool,
-    include_binary: bool,
-    no_docs: bool,
-    no_ignore: bool,
-    include_hidden: bool | None = None,
-    paths: list[str],
-) -> list[TExclusion]:
-    """Resolve final exclusion list based on command line arguments."""
-    if no_exclude:
-        return []
-
-    exclusions = DEFAULT_EXCLUSIONS.copy()
-    # If hidden files should be included, drop the hidden predicate from defaults
-    if include_hidden:
-        try:
-            exclusions.remove(HiddenFiles)
-        except ValueError:
-            # HiddenFiles predicate not present; nothing to remove
-            pass
-    exclusions.extend(custom_excludes)
-
-    if not include_tests:
-        exclusions.extend(DEFAULT_TEST_EXCLUSIONS)
-
-    if not include_lock:
-        exclusions.extend(DEFAULT_LOCK_EXCLUSIONS)
-
-    if not include_binary:
-        exclusions.extend(DEFAULT_BINARY_EXCLUSIONS)
-
-    # Exclude documentation files when requested
-    if no_docs:
-        exclusions.extend(DEFAULT_DOC_EXTENSIONS)
-
-    if not no_ignore:
-        exclusions.extend(get_gitignore_exclusions(paths))
-    return exclusions
-
-
-@typechecked
-def resolve_extensions(
-    *,
-    custom_extensions: list[str],
-    no_docs: bool,  # no_docs is unused. Can be a subtle bug.
-) -> list[str]:
-    """Resolve final extension list based on command line arguments."""
-    # New default behavior: no default inclusions. When no custom extensions
-    # are provided, include all files by leaving the extensions list empty.
-    if custom_extensions:
-        return custom_extensions
-    return []
-
-
-@typechecked
 def is_excluded(entry: Any, *, exclude: list[TExclusion]) -> bool:
     """Shared predicate implementing the legacy matching semantics."""
 
