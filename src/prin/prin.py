@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 
+from . import filters
 from .adapters.filesystem import FileSystemSource
 from .adapters.github import GitHubRepoSource
 from .adapters.website import WebsiteSource
@@ -15,7 +16,7 @@ def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None
     if argv is None:
         argv = sys.argv[1:]
     ctx: Context = parse_common_args(argv)
-    extensions, exclusions, include_empty, only_headers = derive_filters_and_print_flags(ctx)
+    extensions, exclusions = derive_filters_and_print_flags(ctx)
 
     formatter = {"xml": XmlFormatter, "md": MarkdownFormatter}[ctx.tag]()
     out_writer = writer or StdoutWriter()
@@ -39,8 +40,8 @@ def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None
         fs_printer = DepthFirstPrinter(
             FileSystemSource(),
             formatter,
-            include_empty=include_empty,
-            only_headers=only_headers,
+            include_empty=ctx.include_empty,
+            only_headers=ctx.only_headers,
             extensions=extensions,
             exclude=exclusions,
         )
@@ -48,10 +49,8 @@ def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None
 
     # GitHub repos (each rendered independently to the same writer)
     if repo_urls and not (budget and budget.spent()):
-        from .filters import resolve_exclusions as _resolve_exclusions
-
         # For remote repos, do not honor local gitignore by design
-        repo_exclusions = _resolve_exclusions(
+        repo_exclusions = filters.resolve_exclusions(
             no_exclude=ctx.no_exclude,
             custom_excludes=ctx.exclude,
             include_tests=ctx.include_tests,
@@ -74,8 +73,8 @@ def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None
             gh_printer = DepthFirstPrinter(
                 GitHubRepoSource(url),
                 formatter,
-                include_empty=include_empty,
-                only_headers=only_headers,
+                include_empty=ctx.include_empty,
+                only_headers=ctx.only_headers,
                 extensions=extensions,
                 exclude=repo_exclusions,
             )
@@ -92,8 +91,8 @@ def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None
             ws_printer = DepthFirstPrinter(
                 WebsiteSource(base),
                 formatter,
-                include_empty=include_empty,
-                only_headers=only_headers,
+                include_empty=ctx.include_empty,
+                only_headers=ctx.only_headers,
                 extensions=extensions,
                 exclude=exclusions,
             )

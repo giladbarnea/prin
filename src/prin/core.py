@@ -4,9 +4,12 @@ import sys
 from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import PurePosixPath
-from typing import Callable, Iterable, Protocol
+from typing import TYPE_CHECKING, Callable, Iterable, Protocol
 
 from prin.types import TExclusion
+
+if TYPE_CHECKING:
+    from .cli_common import Context
 
 
 class NodeKind(Enum):
@@ -157,6 +160,7 @@ class DepthFirstPrinter:
         self,
         source: SourceAdapter,
         formatter: Formatter,
+        ctx: "Context",
         *,
         # Parameter list should match CLI options.
         include_empty: bool,

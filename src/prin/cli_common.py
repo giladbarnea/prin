@@ -29,8 +29,7 @@ from prin.types import _describe_predicate
 # Map shorthand/alias flags to their canonical expanded forms.
 # The expansion occurs before argparse parsing and preserves argument order.
 CLI_OPTIONS_ALIASES: dict[str, tuple[str, ...]] = {
-    "-u": ("--hidden", "--no-ignore"),
-    "--unrestricted": ("--hidden", "--no-ignore"),
+    "-uu": ("--hidden", "--no-ignore"),
 }
 
 
@@ -74,17 +73,19 @@ class Context:
 
 
 def parse_common_args(argv: list[str] | None = None) -> Context:
-    from prin.filters import resolve_extensions
-
     epilog = textwrap.dedent(
-        f"""
+        """
         DEFAULT MATCH CRITERIA
-        When -e,--extension is unspecified, the following file extensions are matched: {", ".join(resolve_extensions(custom_extensions=[]))}.
-
-        NOTE ABOUT EXCLUSIONS
-        Exclusions match rather eagerly, because each specified exclusion is handled like a substring match. For example, 'o/b' matches 'foo/bar/baz'.
-        Extension exclusions are stricter, so '.py' matches 'foo.py' but not 'foo.pyc'.
-        For more control, use glob patterns; specifying '*o/b' will match 'foo/b' but not 'foo/bar/baz'.
+        prin matches everything except a set of sane defaults typically excluded when loading a directory into an LLM context:
+        - build artifacts and dependency directories
+        - package lock files
+        - cache
+        - binary files
+        - logs
+        - secrets
+        - tests
+        - hidden files
+        - empty files
         """
     )
 
@@ -172,8 +173,9 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
     parser.add_argument(
         "--no-exclude",
         "--include-all",
+        "-uuu",
         action="store_true",
-        help="Disable all exclusions (overrides --exclude).",
+        help="Include all files and directories (overrides --exclude).",
         default=DEFAULT_NO_EXCLUDE,
     )
     parser.add_argument(
@@ -189,6 +191,8 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         "-I",
         "--no-ignore",
         "--no-gitignore",
+        "-u",
+        "--unrestricted",
         action="store_true",
         help="Disable gitignore file processing.",
         default=DEFAULT_NO_IGNORE,
@@ -231,7 +235,6 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
 
 
 def derive_filters_and_print_flags(ctx: Context) -> tuple[list[str], list, bool, bool]:
-    # Smell: Having `bool(ctx.include_empty), bool(ctx.only_headers)` in the returned tuple is arbitrary and should be removed.
     from .filters import resolve_exclusions, resolve_extensions  # shared helpers
 
     extensions = resolve_extensions(custom_extensions=ctx.extensions)
@@ -246,4 +249,4 @@ def derive_filters_and_print_flags(ctx: Context) -> tuple[list[str], list, bool,
         include_hidden=ctx.include_hidden,
         paths=ctx.paths,
     )
-    return extensions, exclusions, bool(ctx.include_empty), bool(ctx.only_headers)
+    return extensions, exclusions
