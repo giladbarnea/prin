@@ -16,18 +16,21 @@ def _run(argv: list[str]) -> str:
 def test_no_options_specified_everything_is_printed(fs_root):
     out = _run(["--tag", "xml", str(fs_root.root)])
 
-    # Optional: show a quick sample while developing
-    print(out.splitlines()[:20])
-
     # Present by default (non-excluded)
     present = [
+        "README.md",
         "notes.rst",
         "foo.py",
         "src/app.py",
         "src/util.py",
         "src/data.json",
         "docs/guide.rst",
-        "gitignored.txt",
+        "gitignored.txt",  # Should be excluded by for now .gitignore parsing is parked
+        "src/app.py",
+        "src/util.py",
+        "src/data.json",
+        "docs/readme.md",
+        "docs/guide.rst",
     ]
     for path in present:
         assert path in fs_root.paths  # Precondition
