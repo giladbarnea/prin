@@ -14,3 +14,13 @@ def test_repo_max_files_one():
     prin_main(argv=[url, "--max-files", "1", "--tag", "md"], writer=buf)
     out = buf.text()
     assert count_md_headers(out) == 1
+
+
+@pytest.mark.network
+def test_repo_max_files_with_extension_filter():
+    # Limit to Markdown files and enforce a strict budget
+    url = "https://github.com/TypingMind/awesome-typingmind"
+    buf = StringWriter()
+    prin_main(argv=[url, "--max-files", "2", "-e", "md", "--tag", "md"], writer=buf)
+    out = buf.text()
+    assert count_md_headers(out) == 2
