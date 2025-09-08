@@ -16,22 +16,7 @@ def _run(argv: list[str]) -> str:
 def test_no_options_specified_everything_is_printed(fs_root):
     out = _run(["--tag", "xml", str(fs_root.root)])
 
-    # Present by default (non-excluded)
-    present = [
-        "README.md",
-        "notes.rst",
-        "foo.py",
-        "src/app.py",
-        "src/util.py",
-        "src/data.json",
-        "docs/guide.rst",
-        "gitignored.txt",  # Should be excluded by for now .gitignore parsing is parked
-        "src/app.py",
-        "src/util.py",
-        "src/data.json",
-        "docs/readme.md",
-        "docs/guide.rst",
-    ]
+    present = list((fs_root.regular_files | fs_root.doc_files).keys())
     for path in present:
         assert path in fs_root.paths  # Precondition
         content = fs_root.contents[path]
@@ -84,6 +69,7 @@ def test_no_docs_excludes_markdown_and_rst(fs_root):
     assert "readme.md" not in out
     assert "README.md" not in out
     assert "notes.rst" not in out
+    assert "docs/guide.rst" not in out
 
 
 def test_include_empty_includes_truly_empty_and_semantically_empty(fs_root):

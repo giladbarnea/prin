@@ -6,7 +6,7 @@ from typing import NamedTuple
 
 import pytest
 
-from tests.utils import touch_file, write_file
+from tests.utils import write_file
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -24,12 +24,24 @@ def _ensure_github_token():
 
 class VFS(NamedTuple):
     root: Path
-    paths: list[str]
-    contents: dict[str, str]
+    paths: list[Path]
+    contents: dict[Path, str]
+    regular_files: dict[str, str]
+    doc_files: dict[str, str]
+    empty_files: dict[str, str]
+    binary_files: dict[str, str]
+    hidden_files: dict[str, str]
+    test_files: dict[str, str]
+    dependency_files: dict[str, str]
+    artifact_files: dict[str, str]
+    cache_files: dict[str, str]
+    log_files: dict[str, str]
+    secret_files: dict[str, str]
+    lock_files: dict[str, str]
 
 
 @pytest.fixture(scope="session")
-def fs_root(tmp_path_factory: pytest.TempPathFactory) -> VFS:
+def fs_root() -> VFS:
     """
     A session-cached fake filesystem tree for FS option tests.
 
@@ -40,57 +52,89 @@ def fs_root(tmp_path_factory: pytest.TempPathFactory) -> VFS:
     """
     # Use a neutral temp directory name that won't be excluded by default rules
     # (avoid substrings like "test" or "tests"). Ensure cleanup after the session.
+    # Ensure unique non-empty contents across files to avoid incidental substring collisions
     root = Path(tempfile.mkdtemp(prefix="prinfs_"))
 
-    # Root-level files
-    write_file(root / "README.md", "# Root readme\n")
-    write_file(root / "notes.rst", "Doc rst\n")
-    write_file(root / "foo.py", "def foo():\n    return 1\n")
+    regular_files: dict[Path, str] = {
+        "README.md": "# Root readme\n",
+        "notes.rst": "Doc rst\n",
+        "foo.py": "def foo():\n    return 1\n",
+        "src/app.py": "def app():\n    return 'ok'\n",
+        "src/util.py": "def util():\n    pass\n",
+        "src/data.json": '{"a":1}\n',
+        "gitignored.txt": "should be ignored by default\n",
+    }
+    doc_files: dict[Path, str] = {
+        "docs/readme.md": "# Docs\n",
+        "docs/guide.rst": "RST content\n",
+    }
 
-    # Empty and semantically empty
-    touch_file(root / "empty.txt")  # truly empty
-    touch_file(root / "empty.py")  # truly empty .py
-    write_file(
-        root / "semantically_empty.py",
-        '"""Module docstring"""\n# a comment line\nimport os\nfrom sys import version as _v\n__all__ = ["x"]\n',
-    )
+    empty_files: dict[Path, str] = {
+        "empty.txt": "",
+        "empty.py": "",
+        "semantically_empty.py": '"""Module docstring"""\n# a comment line\nimport os\nfrom sys import version as _v\n__all__ = ["x"]\n',
+    }
 
-    # Binary-like and cache/hidden
-    write_file(
-        root / "image.png", "PNG"
-    )  # trivial content, treated as text but matches binary exclude
-    write_file(root / ".env", "SECRET=1\n")  # hidden file
+    binary_files: dict[Path, str] = {
+        "image.png": "PNG",
+    }
 
-    # .gitignore and a file it ignores
-    write_file(root / ".gitignore", "gitignored.txt\n")
-    write_file(root / "gitignored.txt", "should be ignored by default\n")
-
-    # Common directories
-    write_file(root / "src" / "app.py", "def app():\n    return 'ok'\n")
-    write_file(root / "src" / "util.py", "def util():\n    pass\n")
-    write_file(root / "src" / "data.json", '{"a":1}\n')
-
-    write_file(root / "docs" / "readme.md", "# Docs\n")
-    write_file(root / "docs" / "guide.rst", "RST content\n")
-
-    write_file(root / "tests" / "test_mod.py", "def test_x():\n    assert True\n")
-    write_file(root / "tests" / "spec.ts", "export {};\n")
-
-    write_file(root / "node_modules" / "pkg" / "index.js", "console.log('x');\n")
-    write_file(root / "build" / "artifact.o", "OBJ\n")
-    write_file(root / "__pycache__" / "junk.pyc", "PYC\n")
-    write_file(root / "cache" / "tmp.txt", "cache file\n")
-    write_file(root / "vendor" / "vendorlib.py", "def v():\n    pass\n")
-    write_file(root / "logs" / "app.log", "log entry\n")
-    write_file(root / "secrets" / "key.pem", "KEY\n")
-
-    # Ensure unique non-empty contents across files to avoid incidental substring collisions
-    write_file(root / "poetry.lock", "poetry-lock-content-unique\n")
-    write_file(root / "package-lock.json", '{\n  "name": "unique-package-lock"\n}\n')
-    write_file(root / "uv.lock", "uv-lock-content-unique\n")
+    hidden_files: dict[Path, str] = {
+        ".env": "SECRET=1\n",
+        ".gitignore": "gitignored.txt\n",
+    }
+    test_files: dict[Path, str] = {
+        "tests/test_mod.py": "def test_x():\n    assert True\n",
+        "tests/spec.ts": "it('should pass', () => { expect(1).toBe(1); });\n",
+    }
+    dependency_files: dict[Path, str] = {
+        "node_modules/pkg/index.js": "console.log('x');\n",
+    }
+    artifact_files: dict[Path, str] = {
+        "build/artifact.o": "OBJ\n",
+        "cache/tmp.txt": "cache file\n",
+        "vendor/vendorlib.py": "def v():\n    pass\n",
+    }
+    cache_files: dict[Path, str] = {
+        "__pycache__/junk.pyc": "PYC\n",
+    }
+    log_files: dict[Path, str] = {
+        "logs/app.log": "log entry\n",
+    }
+    secret_files: dict[Path, str] = {
+        "secrets/key.pem": "KEY\n",
+    }
+    lock_files: dict[Path, str] = {
+        "poetry.lock": "poetry-lock-content-unique\n",
+        "package-lock.json": '{\n  "name": "unique-package-lock"\n}\n',
+        "uv.lock": "uv-lock-content-unique\n",
+    }
+    for regular_file, content in regular_files.items():
+        write_file(root / regular_file, content)
+    for doc_file, content in doc_files.items():
+        write_file(root / doc_file, content)
+    for empty_file, content in empty_files.items():
+        write_file(root / empty_file, content)
+    for binary_file, content in binary_files.items():
+        write_file(root / binary_file, content)
+    for hidden_file, content in hidden_files.items():
+        write_file(root / hidden_file, content)
+    for test_file, content in test_files.items():
+        write_file(root / test_file, content)
+    for dependency_file, content in dependency_files.items():
+        write_file(root / dependency_file, content)
+    for artifact_file, content in artifact_files.items():
+        write_file(root / artifact_file, content)
+    for cache_file, content in cache_files.items():
+        write_file(root / cache_file, content)
+    for log_file, content in log_files.items():
+        write_file(root / log_file, content)
+    for secret_file, content in secret_files.items():
+        write_file(root / secret_file, content)
+    for lock_file, content in lock_files.items():
+        write_file(root / lock_file, content)
 
     # Build a traversal-ordered list of file paths and a content mapping
-
     rel_paths: list[str] = []
     contents: dict[str, str] = {}
 
@@ -121,6 +165,22 @@ def fs_root(tmp_path_factory: pytest.TempPathFactory) -> VFS:
                 contents[rel] = text
 
     try:
-        yield VFS(root=root, paths=rel_paths, contents=contents)
+        yield VFS(
+            root=root,
+            paths=rel_paths,
+            contents=contents,
+            regular_files=regular_files,
+            doc_files=doc_files,
+            empty_files=empty_files,
+            binary_files=binary_files,
+            hidden_files=hidden_files,
+            test_files=test_files,
+            dependency_files=dependency_files,
+            artifact_files=artifact_files,
+            cache_files=cache_files,
+            log_files=log_files,
+            secret_files=secret_files,
+            lock_files=lock_files,
+        )
     finally:
         shutil.rmtree(root, ignore_errors=True)

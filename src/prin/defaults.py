@@ -32,7 +32,6 @@ DEFAULT_EXCLUSIONS: list[TExclusion] = [
     "DerivedData",
     "Pods",
     "Carthage/Build",
-    "Thumbs.db",
     "coverage.out",
     "*.test",
     # Logs and temporary files
