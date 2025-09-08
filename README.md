@@ -7,13 +7,13 @@ Print the contents of full directories, remote GitHub repositories and websites 
 `prin` accepts one or more paths to directories, files, remote repositories or websites exposing llms.txt, and prints their contents.
 
 ```sh
-# Print the entire contents of the codebase you're on
+# Print the contents of the codebase you're in
 prin .
 
 # Print the contents of the `docs` directory alongside the contents of the `rust-lang/book` remote repository
 prin docs github.com/rust-lang/book
 
-# Print the contents of specific files
+# Print specific files
 prin AGENTS.md src/**/*.py
 ```
 
@@ -21,20 +21,20 @@ prin AGENTS.md src/**/*.py
 
 `prin` can easily be used together with other tools, such as terminal code agents and the clipboard for a powerful combination.
 
-#### Piping a local module and code examples from a remote repository to `claude` as context
+#### Piping a local module and code examples from a remote repository to `claude`
 ```sh
 prin agents/graph github.com/pydantic/pydantic-ai/{docs,examples} | claude -p "The graphs are not connected properly. Fix them."
 ```
 
-#### Attaching a library's documentation alongside your code
+#### Attaching a library's documentation to your prompt
 ```sh
-prin . https://docs.framework.io --include-tests | codex 'Leverage framework's API better and minimize reinventing the wheel'
+prin . https://docs.framework.io | codex "Leverage framework's API better and minimize reinventing the wheel"
 ```
 
 See `prin --help` for the full list of options.
 
 ## Sane Defaults for LLM Input
-`prin` omits files and dirs that you probably don't want to clutter the context window. These are:
+`prin` omits files and dirs that you probably don't want in the context window. These are:
 1. Build artifacts (dist/, out/, minified files, etc.)
 2. Lock files
 3. Binary files
@@ -42,7 +42,7 @@ See `prin --help` for the full list of options.
 5. Tests
 6. Git-ignored paths
 
-Each can be included in the output by specifying its corresponding CLI flag.
+Each can be included in the output by specifying its corresponding `--include-...` CLI flag.
 
 ## Output Control
 
@@ -78,7 +78,7 @@ def main(): ...
 
 ## Matching
 
-`prin` treats given patterns as glob:
+`prin` treats given arguments as glob:
 ```sh
 # Print all markdown files in the current dir
 prin '*.md'
@@ -89,6 +89,9 @@ You can specify file extensions:
 # Print all markdown and rst files in the project: .md, .mdx, .mdc, .rst
 prin -e md -e rst -e 'md*'
 ```
+
+## Including paths that are excluded by default
+// todo specify include flags
 
 ## Design
 
