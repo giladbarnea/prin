@@ -1,0 +1,23 @@
+name: tests
+
+on:
+  push:
+
+jobs:
+  tests:
+    name: Run tests (no network)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Add uv to PATH
+        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Run tests
+        run: bash ./test.sh --no-network
+
