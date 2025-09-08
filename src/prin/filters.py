@@ -12,7 +12,7 @@ from .defaults import (
     DEFAULT_EXCLUSIONS,
     DEFAULT_LOCK_EXCLUSIONS,
     DEFAULT_TEST_EXCLUSIONS,
-    HiddenFiles,
+    Hidden,
 )
 from .path_classifier import _is_glob
 from .types import TExclusion, TExtension, TGlob, _is_extension
@@ -87,14 +87,10 @@ def resolve_exclusions(
         return []
 
     exclusions = DEFAULT_EXCLUSIONS.copy()
-    # If hidden files should be included, drop the hidden predicate from defaults
-    if include_hidden:
-        try:
-            exclusions.remove(HiddenFiles)
-        except ValueError:
-            # HiddenFiles predicate not present; nothing to remove
-            pass
     exclusions.extend(custom_excludes)
+
+    if not include_hidden:
+        exclusions.append(Hidden)
 
     if not include_tests:
         exclusions.extend(DEFAULT_TEST_EXCLUSIONS)
@@ -118,14 +114,9 @@ def resolve_exclusions(
 def resolve_extensions(
     *,
     custom_extensions: list[str],
-    no_docs: bool,  # no_docs is unused. Can be a subtle bug.
 ) -> list[str]:
     """Resolve final extension list based on command line arguments."""
-    # New default behavior: no default inclusions. When no custom extensions
-    # are provided, include all files by leaving the extensions list empty.
-    if custom_extensions:
-        return custom_extensions
-    return []
+    return custom_extensions or []
 
 
 @typechecked

@@ -8,9 +8,12 @@ The fact that the list types here are sometimes TExclusion and sometimes str is 
 
 # region ---[ Default Paths and Exclusions ]---
 
+from typing import Literal, LiteralString
+
 from prin.types import TExclusion
 
-HiddenFiles = lambda x: x.startswith(".")
+Hidden = lambda x: x.startswith(".")  # pyright: ignore[reportUnknownLambdaType]
+HasCacheSubstr = lambda x: "cache" in str(x).lower()  # pyright: ignore[reportUnknownLambdaType]
 
 DEFAULT_EXCLUSIONS: list[TExclusion] = [
     lambda x: x.endswith("egg-info"),
@@ -18,21 +21,13 @@ DEFAULT_EXCLUSIONS: list[TExclusion] = [
     "bin",
     "dist",
     "node_modules",
-    HiddenFiles,
-    lambda x: "cache" in str(x).lower(),
+    Hidden,
+    HasCacheSubstr,
     # Build artifacts and dependencies
     "target",
     "vendor",
     "out",
     "coverage",
-    # IDE and editor files
-    "*.swp",
-    "*.swo",
-    # Language-specific
-    "*.class",
-    "*.o",
-    "*.so",
-    "*.dylib",
     # Logs and temporary files
     "logs",
     "*.log",
@@ -41,22 +36,6 @@ DEFAULT_EXCLUSIONS: list[TExclusion] = [
     "secrets",
     "*.key",
     "*.pem",
-]
-
-
-DEFAULT_SUPPORTED_EXTENSIONS: list[str] = [
-    ".py",
-    ".ts",
-    ".tsx",
-    ".json",
-    ".json*",
-    ".html",
-    ".ini",
-    ".toml",
-    ".yaml",
-    ".yml",
-    ".sh",
-    ".zsh",
 ]
 
 
@@ -132,6 +111,14 @@ DEFAULT_BINARY_EXCLUSIONS: list[TExclusion] = [
     "*.sqlite3",
     "*.dat",
     "*.bin",
+    # IDE and editor files
+    "*.swp",
+    "*.swo",
+    # Language-specific
+    "*.class",
+    "*.o",
+    "*.so",
+    "*.dylib",
 ]
 
 # endregion ---[ Default Paths and Exclusions ]---
@@ -151,7 +138,7 @@ DEFAULT_NO_IGNORE = False
 DEFAULT_INCLUDE_HIDDEN = False
 
 # Output format tag defaults
-DEFAULT_TAG = "xml"
-DEFAULT_TAG_CHOICES = ["xml", "md"]
+DEFAULT_TAG: LiteralString = "xml"
+DEFAULT_TAG_CHOICES: Literal["xml", "md"] = [DEFAULT_TAG, "md"]
 
 # endregion ---[ Default CLI Options ]---

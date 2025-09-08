@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 from prin.defaults import (
+    DEFAULT_DOC_EXTENSIONS,
     DEFAULT_EXCLUDE_FILTER,
     DEFAULT_EXCLUSIONS,
     DEFAULT_EXTENSIONS_FILTER,
@@ -63,7 +64,7 @@ class Context:
     no_docs: bool = DEFAULT_NO_DOCS
     include_empty: bool = DEFAULT_INCLUDE_EMPTY
     only_headers: bool = DEFAULT_ONLY_HEADERS
-    extension: list[str] = field(default_factory=lambda: list(DEFAULT_EXTENSIONS_FILTER))
+    extensions: list[str] = field(default_factory=lambda: list(DEFAULT_EXTENSIONS_FILTER))
     exclude: list[str] = field(default_factory=lambda: list(DEFAULT_EXCLUDE_FILTER))
     no_exclude: bool = DEFAULT_NO_EXCLUDE
     no_ignore: bool = DEFAULT_NO_IGNORE
@@ -78,7 +79,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
     epilog = textwrap.dedent(
         f"""
         DEFAULT MATCH CRITERIA
-        When -e,--extension is unspecified, the following file extensions are matched: {", ".join(resolve_extensions(custom_extensions=[], no_docs=False))}.
+        When -e,--extension is unspecified, the following file extensions are matched: {", ".join(resolve_extensions(custom_extensions=[]))}.
 
         NOTE ABOUT EXCLUSIONS
         Exclusions match rather eagerly, because each specified exclusion is handled like a substring match. For example, 'o/b' matches 'foo/bar/baz'.
@@ -131,14 +132,14 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         "-d",
         "--no-docs",
         action="store_true",
-        help="Exclude `.md`, `.mdx` and `.rst` files. Has no effect if -e,--extension is specified.",
+        help=f"Exclude {', '.join(DEFAULT_DOC_EXTENSIONS)} files. Has no effect if -e,--extension is specified.",
         default=DEFAULT_NO_DOCS,
     )
     parser.add_argument(
         "-M",
         "--include-empty",
         action="store_true",
-        help="Include empty files and files that only contain imports and __all__=... expressions.",
+        help="Include empty files and Python files that only contain imports, comments, and __all__=... expressions.",
         default=DEFAULT_INCLUDE_EMPTY,
     )
     parser.add_argument(
@@ -162,7 +163,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         "--exclude",
         "--ignore",
         type=str,
-        help="Exclude files or directories by shell-style glob or regex (repeatable). By default, excludes "
+        help="Exclude files or directories by glob or regex (repeatable). By default, excludes "
         + ", ".join(map(_describe_predicate, DEFAULT_EXCLUSIONS))
         + ", and any files in .gitignore, .git/info/exclude, and ~/.config/git/ignore.",
         default=DEFAULT_EXCLUDE_FILTER,
@@ -170,6 +171,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
     )
     parser.add_argument(
         "--no-exclude",
+        "--include-all",
         action="store_true",
         help="Disable all exclusions (overrides --exclude).",
         default=DEFAULT_NO_EXCLUDE,
@@ -186,6 +188,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
     parser.add_argument(
         "-I",
         "--no-ignore",
+        "--no-gitignore",
         action="store_true",
         help="Disable gitignore file processing.",
         default=DEFAULT_NO_IGNORE,
@@ -195,7 +198,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         type=str,
         choices=DEFAULT_TAG_CHOICES,
         default=DEFAULT_TAG,
-        help="Output format tag: 'xml' or 'md'.",
+        help="Output format tag.",
     )
 
     parser.add_argument(
@@ -217,7 +220,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         no_docs=bool(args.no_docs),
         include_empty=bool(args.include_empty),
         only_headers=bool(args.only_headers),
-        extension=list(args.extension or []),
+        extensions=list(args.extension or []),
         exclude=list(args.exclude or []),
         no_exclude=bool(args.no_exclude),
         no_ignore=bool(args.no_ignore),
@@ -228,9 +231,10 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
 
 
 def derive_filters_and_print_flags(ctx: Context) -> tuple[list[str], list, bool, bool]:
+    # Smell: Having `bool(ctx.include_empty), bool(ctx.only_headers)` in the returned tuple is arbitrary and should be removed.
     from .filters import resolve_exclusions, resolve_extensions  # shared helpers
 
-    extensions = resolve_extensions(custom_extensions=ctx.extension, no_docs=ctx.no_docs)
+    extensions = resolve_extensions(custom_extensions=ctx.extensions)
     exclusions = resolve_exclusions(
         no_exclude=ctx.no_exclude,
         custom_excludes=ctx.exclude,

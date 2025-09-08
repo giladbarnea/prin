@@ -33,8 +33,10 @@ def fs_root(tmp_path_factory: pytest.TempPathFactory) -> VFS:
     """
     A session-cached fake filesystem tree for FS option tests.
 
-    The tree includes examples for each filter category: tests, lock, binary, docs,
+    The tree includes examples for each filter category (as defined in the DEFAULT_* consts in defaults.py): tests, lock, binary, docs,
     hidden, cache/vendor/build, gitignored entry, empty/semantically-empty files, etc.
+
+    As a continuous maintenance responsibility, any inevitable gap between the DEFAULT_* consts and the actual tree should be filled in.
     """
     # Use a neutral temp directory name that won't be excluded by default rules
     # (avoid substrings like "test" or "tests"). Ensure cleanup after the session.
