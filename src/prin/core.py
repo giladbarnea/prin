@@ -219,12 +219,15 @@ class DepthFirstPrinter:
         if not self.extensions:
             return True
         for pattern in self.extensions:
-            if self._is_glob(pattern):
+            # Treat patterns with wildcard metacharacters as globs; otherwise as extensions
+            has_wildcards = any(ch in pattern for ch in ("*", "?", "["))
+            if has_wildcards:
                 from fnmatch import fnmatch
 
                 if fnmatch(filename, pattern):
                     return True
             else:
+                # Support both "py" and ".py" notations
                 if filename.endswith("." + pattern.removeprefix(".")):
                     return True
         return False
