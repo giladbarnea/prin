@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from prin.adapters.filesystem import FileSystemSource
+from prin.cli_common import Context
 from prin.core import DepthFirstPrinter, StringWriter
 from prin.formatters import XmlFormatter
 from tests.utils import touch_file, write_file
@@ -33,10 +34,7 @@ def test_cli_engine_happy_path(tmp_path):
     printer = DepthFirstPrinter(
         src,
         XmlFormatter(),
-        include_empty=False,
-        only_headers=False,
-        extensions=[".py", ".md", ".json"],
-        exclude=[],
+        ctx=Context(),
     )
 
     buf = StringWriter()
@@ -68,10 +66,7 @@ def test_cli_engine_isolation(tmp_path):
     printer = DepthFirstPrinter(
         src,
         XmlFormatter(),
-        include_empty=False,
-        only_headers=False,
-        extensions=[".py", ".md"],
-        exclude=[],
+        ctx=Context(),
     )
 
     buf = StringWriter()

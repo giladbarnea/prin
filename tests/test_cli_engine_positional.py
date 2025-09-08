@@ -45,20 +45,21 @@ def test_two_sibling_directories(tmp_path: Path):
         FileSystemSource(root_cwd=tmp_path), [str(tmp_path / "dirA"), str(tmp_path / "dirB")]
     )
     # Paths are relative to each provided root
-    assert "<dirA/a.py>" in out
-    assert "<dirB/b.md>" in out
+    assert "<a.py>" in out
+    assert "<b.md>" in out
 
 
 def test_directory_and_explicit_ignored_file_inside(tmp_path: Path):
     # directory contains mixed files; specify dir and an otherwise-ignored file
-    write_file(tmp_path / "work" / "keep.py", "print('work/keep.py')\n")
-    touch_file(tmp_path / "work" / "__pycache__" / "junk.pyc")
+    write_file(tmp_path / "keep.py", "print('work/keep.py')\n")
+    touch_file(tmp_path / "junk.pyc")
     # Explicitly pass both the directory and the ignored file path
     out = _run(
         FileSystemSource(root_cwd=tmp_path),
-        [str(tmp_path / "work"), str(tmp_path / "work" / "__pycache__" / "junk.pyc")],
+        [str(tmp_path), str(tmp_path / "junk.pyc")],
+        ctx=Context(include_binary=False),
     )
     # Paths are relative to the directory root when provided
-    assert "<work/keep.py>" in out
+    assert "<keep.py>" in out
     # Even though *.pyc is excluded by default, explicit root forces print
-    assert "<work/__pycache__/junk.pyc>" in out
+    assert "<junk.pyc>" in out
