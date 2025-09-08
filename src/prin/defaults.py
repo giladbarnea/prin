@@ -27,6 +27,14 @@ DEFAULT_EXCLUSIONS: list[TExclusion] = [
     "vendor",
     "out",
     "coverage",
+    # Additional common directories/files
+    "venv",
+    "DerivedData",
+    "Pods",
+    "Carthage/Build",
+    "Thumbs.db",
+    "coverage.out",
+    "*.test",
     # Logs and temporary files
     "logs",
     "*.log",
@@ -52,20 +60,15 @@ DEFAULT_TEST_EXCLUSIONS: list[TExclusion] = [
 
 
 DEFAULT_LOCK_EXCLUSIONS: list[TExclusion] = [
-    # Python
-    "uv.lock",
-    "poetry.lock",
-    "Pipfile.lock",
+    "*.lock",
     # JavaScript/Node
     "package-lock.json",
-    "yarn.lock",
     "pnpm-lock.yaml",
-    # Other languages
-    "Gemfile.lock",
-    "composer.lock",
-    "Cargo.lock",
     "go.sum",
-    "mix.lock",
+    "bun.lockb",
+    "Package.resolved",
+    "gradle.lockfile",
+    "packages.lock.json",
 ]
 
 
@@ -118,6 +121,37 @@ DEFAULT_BINARY_EXCLUSIONS: list[TExclusion] = [
     "*.o",
     "*.so",
     "*.dylib",
+    # Additional binary formats
+    "*.node",
+    "*.wasm",
+    "*.zst",
+    "*.lz",
+    # Fonts
+    "*.ttf",
+    "*.otf",
+    "*.woff",
+    "*.woff2",
+    "*.eot",
+    # Windows build outputs
+    "*.obj",
+    "*.lib",
+    "*.pdb",
+    "*.ilk",
+    # Installers/bundles
+    "*.dmg",
+    "*.pkg",
+    "*.msi",
+    "*.apk",
+    "*.ipa",
+    # Scientific/data formats
+    "*.h5",
+    "*.hdf5",
+    "*.npz",
+    "*.npy",
+    "*.mat",
+    "*.parquet",
+    "*.feather",
+    "*.arrow",
 ]
 
 # endregion ---[ Default Paths and Exclusions ]---
