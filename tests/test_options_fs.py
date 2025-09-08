@@ -1,4 +1,6 @@
 from __future__ import annotations
+import random
+import re
 
 import pytest
 
@@ -82,10 +84,12 @@ def test_include_empty_includes_truly_empty_and_semantically_empty(fs_root):
 def test_only_headers_prints_headers_only(fs_root):
     out = _run(["--include-tests", "--only-headers", str(fs_root.root)])
     # Expect no bodies, only paired headers; count a few known headers
-    assert "</foo.py>" in out
-    assert "</src/app.py>" in out
+    assert re.search("^foo.py$", out, re.MULTILINE)
+    assert re.search("^src/app.py$", out, re.MULTILINE)
+    assert re.search("^tests/test_mod.py$", out, re.MULTILINE)
     # Ensure bodies are not present (no function source snippet)
-    assert "def app():" not in out
+    random_content = random.choice(list(fs_root.contents.values()))
+    assert random_content not in out
 
 
 def test_extension_filters_by_extension(fs_root):
