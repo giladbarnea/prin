@@ -47,14 +47,11 @@ See `prin --help` for the full list of options.
 
 ## Options Roadmap
 
-- `-H`, `--hidden` (alias: --include-hidden) — planned ⏳
+- `-H`, `--hidden` — implemented ✅
 Include hidden files and directories in the search (dotfiles and dot-directories).
 
-- `-I`, `--no-ignore` (re-enable with `--ignore`) — implemented ✅
-Disable all ignore rules (e.g., from .gitignore, .ignore, .fdignore, and global ignore files).
-
-- `--no-ignore-vcs` (alias: `--ignore-gitignore`; re-enable with `--ignore-vcs`) — implemented ✅
-Do not respect Version Control System (VCS) ignore rules (such as .gitignore, .git/info/exclude, and global gitignore).
+- `-I`, `--no-ignore` (aliases: `--no-gitignore`, `-u`, `--unrestricted`) — implemented ✅
+Disable gitignore/VCS ignore processing.
 
 - `--ignore-file <path>` — planned ⏳
 Add an additional ignore-file in .gitignore format (lower precedence than command-line excludes).
@@ -69,6 +66,24 @@ Examples: prin -g '*.py', prin -g 'src/**/test_*.rs'.
 - `-e`, `--extension <ext>` (repeatable) — implemented ✅
 Only include files with the given extension (e.g., -e rs -e toml).
 
+- `-T`, `--include-tests` — implemented ✅
+Include `test`/`tests` directories and spec.ts files.
+
+- `-K`, `--include-lock` — implemented ✅
+Include lock files (e.g., package-lock.json, poetry.lock, Cargo.lock).
+
+- `-M`, `--include-empty` — implemented ✅
+Include empty files and semantically-empty Python files.
+
+- `-l`, `--only-headers` — implemented ✅
+Print only file paths (no bodies).
+
+- `--tag {xml|md}` — implemented ✅
+Choose output format.
+
+- `--max-files <n>` — implemented ✅
+Maximum number of files to print across all inputs.
+
 - `-S`, `--size <constraint>` — planned ⏳
 Filter by file size. Format: <+|-><NUM><UNIT> (e.g., +10k, -2M, 500b). Units: b, k, m, g, t, ki, mi, gi, ti.
 
@@ -77,8 +92,6 @@ Force case-sensitive matching of the search pattern. By default, case sensitivit
 
 - `-i`, `--ignore-case` — planned ⏳
 Force case-insensitive matching of the search pattern. By default, case sensitivity is "smart".
-
-- `-H`, `--hidden` (listed above for clarity) — planned ⏳
 
 - `-u`, `--unrestricted` — implemented ✅
 Equivalent to --no-ignore.
@@ -99,8 +112,8 @@ Limit directory traversal to at most <n> levels.
 - `-A`, `--absolute-paths` — planned ⏳
 Print absolute paths (instead of paths relative to the current working directory).
 
-- `-a`, `--text` — planned ⏳
-Treat binary files as text (search and print them as-is).
+- `-a`, `--text` — implemented ✅
+Alias of --include-binary. Include binary files in output.
 
 - `--binary`, `--include-binary` — implemented ✅
 Include binary files in the output (e.g., *.pyc, images, archives). Binary files are emitted as headers only in some formats.
