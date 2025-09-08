@@ -28,14 +28,71 @@ prin agents/graph github.com/pydantic/pydantic-ai/{docs,examples} | claude -p "T
 
 #### Attaching a library's documentation alongside your code
 ```sh
-prin agents/graph github.com/pydantic/pydantic-ai/{docs,examples} | claude -p "The graphs are not connected properly. Fix them."
+prin . https://docs.framework.io --include-tests | codex 'Leverage framework's API better and minimize reinventing the wheel'
 ```
 
 See `prin --help` for the full list of options.
 
+## Sane Defaults for LLM Input
+`prin` omits files and dirs that you probably don't want to clutter the context window. These are:
+1. Build artifacts (dist/, out/, minified files, etc.)
+2. Lock files
+3. Binary files
+4. Dot-files and dot-dirs (.env, .git, .cache, .vscode, etc.)
+5. Tests
+6. Git-ignored paths
+
+Each can be included in the output by specifying its corresponding CLI flag.
+
+## Output Control
+
+#### `-l`, `--only-headers`
+Prints the matched paths in a plaintext list, without their contents.
+
+Essentially outputs the project's structure.
+
+#### `-t`, `--tag` `{xml,md}` (default: `xml`)
+Sets how the files are separated in the output. 
+- `xml` (the default) wraps each file in xml-like tags:
+```xml
+<LICENSE>
+MIT-whatever
+</LICENSE>
+
+<src/main.py>
+def main(): ...
+</src/main.py>
+```
+
+- `md` preceds the file contents with a H2 heading:
+
+```md
+## LICENSE
+MIT-whatever
+
+---
+
+## src/main.py
+def main(): ...
+```
+
+## Matching
+
+`prin` treats given patterns as glob:
+```sh
+# Print all markdown files in the current dir
+prin '*.md'
+```
+
+You can specify file extensions:
+```sh
+# Print all markdown and rst files in the project: .md, .mdx, .mdc, .rst
+prin -e md -e rst -e 'md*'
+```
+
 ## Design
 
-Inspired by the excellent `fd` and `rg` tools—and their superb CLI usability—`prin` is flexible, has sane defaults, and is highly configurable.
+Inspired by the excellent `fd` and `rg` tools—and their superb CLI usability—`prin` is flexible, has powerful sane defaults, and is highly configurable.
 
 `prin` aims to be compatible with the CLI options of both `fd` and Simon Willison's `files-to-prompt`.
 
