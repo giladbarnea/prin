@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import random
 import re
 
@@ -136,8 +137,16 @@ def test_tag_md_outputs_markdown_format(fs_root):
     assert "# FILE: foo.py" in out
 
 
-def test_unrestricted_includes_hidden_and_gitignored(fs_root):
+def test_unrestricted_includes_gitignored(fs_root):
     out = _run(["-u", str(fs_root.root)])
+    # Hidden file should not be included
+    assert "<.env>" not in out
+    # Gitignored file should be included due to --no-ignore
+    assert "<gitignored.txt>" in out
+
+
+def test_uu_includes_hidden_and_gitignored(fs_root):
+    out = _run(["-uu", str(fs_root.root)])
     # Hidden file should be included
     assert "<.env>" in out
     # Gitignored file should be included due to --no-ignore
