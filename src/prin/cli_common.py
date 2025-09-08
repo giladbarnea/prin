@@ -118,6 +118,23 @@ class Context:
         return replace(self, **kwargs)
 
 
+def _normalize_extension(val: str) -> str:
+    """
+    >>> _normalize_extension("ext")
+    "*.ext"
+    >>> _normalize_extension(".ext")
+    "*.ext"
+    >>> _normalize_extension("*.ext")
+    "*.ext"
+    """
+    v = val.strip()
+    if v.startswith("*."):
+        return v
+    if v.startswith("."):
+        return f"*{v}"
+    return f"*.{v}"
+
+
 def parse_common_args(argv: list[str] | None = None) -> Context:
     epilog = textwrap.dedent(
         """
@@ -199,7 +216,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
     parser.add_argument(
         "-e",
         "--extension",
-        type=str,
+        type=_normalize_extension,
         default=DEFAULT_EXTENSIONS_FILTER,
         action="append",
         help="Only include files with the given extension (repeatable). Overrides exclusions (untested).",

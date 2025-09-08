@@ -45,7 +45,7 @@ DEFAULT_EXCLUSIONS: list[TExclusion] = [
 ]
 
 
-DEFAULT_DOC_EXTENSIONS: list[str] = [".md", ".rst", ".mdx"]
+DEFAULT_DOC_EXTENSIONS: list[str] = ["*.md", "*.rst", "*.mdx"]
 
 
 DEFAULT_TEST_EXCLUSIONS: list[TExclusion] = [

@@ -7,7 +7,6 @@ import pytest
 
 from prin.core import StringWriter
 from prin.prin import main as prin_main
-from tests.utils import count_md_headers
 
 
 def _run(argv: list[str]) -> str:
@@ -58,7 +57,8 @@ def test_include_tests_flag_includes_tests_dir(fs_root):
 
 def test_include_lock_flag_includes_lock_files(fs_root):
     out = _run(["--include-lock", str(fs_root.root)])
-    assert "<poetry.lock>" in out or "<package-lock.json>" in out or "<uv.lock>" in out
+    for lock_file in fs_root.lock_files:
+        assert lock_file in out
 
 
 def test_include_binary_includes_binary_like_files(fs_root):
@@ -69,17 +69,14 @@ def test_include_binary_includes_binary_like_files(fs_root):
 
 def test_no_docs_excludes_markdown_and_rst(fs_root):
     out = _run(["--no-docs", str(fs_root.root)])
-    assert "readme.md" not in out
-    assert "README.md" not in out
-    assert "notes.rst" not in out
-    assert "docs/guide.rst" not in out
+    for doc_file in fs_root.doc_files:
+        assert doc_file not in out
 
 
 def test_include_empty_includes_truly_empty_and_semantically_empty(fs_root):
     out = _run(["--include-empty", str(fs_root.root)])
-    assert "<empty.txt>" in out
-    assert "<empty.py>" in out
-    assert "<semantically_empty.py>" in out
+    for empty_file in fs_root.empty_files:
+        assert empty_file in out
 
 
 def test_only_headers_prints_headers_only(fs_root):
@@ -90,7 +87,7 @@ def test_only_headers_prints_headers_only(fs_root):
     assert re.search("^tests/test_mod.py$", out, re.MULTILINE)
     # Ensure bodies are not present (no function source snippet)
     random_content = random.choice(list(fs_root.contents.values()))
-    assert random_content not in out
+    assert random_content.strip() not in out
 
 
 def test_extension_filters_by_extension(fs_root):
@@ -132,9 +129,11 @@ def test_no_ignore_respects_gitignore_unless_disabled(fs_root):
 
 
 def test_tag_md_outputs_markdown_format(fs_root):
-    out = _run(["--include-tests", "--tag", "md", str(fs_root.root)])
-    assert count_md_headers(out) > 0
-    assert "# FILE: foo.py" in out
+    out = _run(["--tag", "md", str(fs_root.root)])
+    for regular_file, content in fs_root.regular_files.items():
+        assert f"## FILE: {regular_file}" in out
+        assert content in out
+    assert "/>" not in out
 
 
 def test_unrestricted_includes_gitignored(fs_root):

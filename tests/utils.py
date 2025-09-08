@@ -22,4 +22,4 @@ def count_opening_xml_tags(text: str) -> int:
 
 
 def count_md_headers(text: str) -> int:
-    return sum(1 for line in text.splitlines() if line.startswith("# FILE: "))
+    return sum(1 for line in text.splitlines() if line.startswith("## FILE: "))
