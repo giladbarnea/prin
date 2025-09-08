@@ -20,6 +20,19 @@ from .path_classifier import _is_glob
 
 @typechecked
 def is_glob(path) -> TypeIs[TGlob]:
+    """Return True if the string should be treated as a glob pattern.
+
+    Special-case: plain extension tokens (e.g., ".py" or "py") are NOT globs.
+    This allows extension filters and extension-based exclusions to behave
+    intuitively (endswith semantics) instead of fnmatch against a literal.
+    """
+    if isinstance(path, str):
+        # Treat both ".ext" and "ext" as extension tokens (not globs)
+        no_wildcards = not any(ch in path for ch in "*?[]")
+        no_sep = ("/" not in path) and ("\\" not in path)
+        is_plain_token = path.strip(".").isalnum()
+        if (_is_extension(path)) or (no_wildcards and no_sep and is_plain_token):
+            return False
     return _is_glob(path)
 
 

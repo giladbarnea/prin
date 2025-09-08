@@ -12,6 +12,13 @@ from prin.types import TExclusion
 
 HiddenFiles = lambda x: x.startswith(".")
 
+DEFAULT_SECRET_EXCLUSIONS: list[TExclusion] = [
+    # Environment and secrets
+    "secrets",
+    "*.key",
+    "*.pem",
+]
+
 DEFAULT_EXCLUSIONS: list[TExclusion] = [
     lambda x: x.endswith("egg-info"),
     "build",
@@ -28,20 +35,11 @@ DEFAULT_EXCLUSIONS: list[TExclusion] = [
     # IDE and editor files
     "*.swp",
     "*.swo",
-    # Language-specific
-    "*.class",
-    "*.o",
-    "*.so",
-    "*.dylib",
     # Logs and temporary files
     "logs",
     "*.log",
     "*.tmp",
-    # Environment and secrets
-    "secrets",
-    "*.key",
-    "*.pem",
-]
+] + DEFAULT_SECRET_EXCLUSIONS
 
 
 DEFAULT_SUPPORTED_EXTENSIONS: list[str] = [
@@ -96,6 +94,10 @@ DEFAULT_BINARY_EXCLUSIONS: list[TExclusion] = [
     "*.pyc",
     "*.pyo",
     "*.pyd",
+    "*.class",
+    "*.o",
+    "*.so",
+    "*.dylib",
     "*.exe",
     "*.dll",
     "*.app",
