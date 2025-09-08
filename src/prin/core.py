@@ -179,10 +179,32 @@ class DepthFirstPrinter:
         self._is_glob: Callable[[object], bool] = _filters.is_glob
 
     def run(self, roots: list[str], writer: Writer, budget: "FileBudget | None" = None) -> None:
-        for root_spec in roots or ["."]:
+        # Resolve all roots up front to allow computing display bases
+        root_specs = roots or ["."]
+        resolved_roots: list[PurePosixPath] = [self.source.resolve_root(spec) for spec in root_specs]
+
+        # For each resolved root, choose the topmost provided ancestor as the display base
+        base_for_root: dict[PurePosixPath, PurePosixPath] = {}
+        for r in resolved_roots:
+            candidate_base = r
+            for other in resolved_roots:
+                if other is r:
+                    continue
+                try:
+                    # If r is under other, prefer the highest such ancestor
+                    r.relative_to(other)
+                    # Select the shorter (higher) ancestor
+                    if len(other.parts) < len(candidate_base.parts):
+                        candidate_base = other
+                except Exception:
+                    pass
+            base_for_root[r] = candidate_base
+
+        for i, root_spec in enumerate(root_specs):
             if budget is not None and budget.spent():
                 return
-            root = self.source.resolve_root(root_spec)
+            root = resolved_roots[i]
+            display_base = base_for_root.get(root, root)
             stack: list[PurePosixPath] = [root]
             while stack:
                 if budget is not None and budget.spent():
@@ -193,7 +215,8 @@ class DepthFirstPrinter:
                 except NotADirectoryError:
                     # Treat the current path as a file
                     file_entry = Entry(path=current, name=current.name, kind=NodeKind.FILE)
-                    self._handle_file(file_entry, writer, base=root, force=True, budget=budget)
+                    # For explicit file roots, display basename (base=current)
+                    self._handle_file(file_entry, writer, base=current, force=True, budget=budget)
                     continue
                 except FileNotFoundError:
                     # Skip missing paths. Smell: will cover-up a bug in list_dir.
@@ -209,7 +232,7 @@ class DepthFirstPrinter:
                         stack.append(entry.path)
 
                 for entry in files:
-                    self._handle_file(entry, writer, base=root, budget=budget)
+                    self._handle_file(entry, writer, base=display_base, budget=budget)
 
     def _excluded(self, entry: Entry) -> bool:
         # The reference implementation accepts strings/paths/globs/callables
@@ -219,12 +242,15 @@ class DepthFirstPrinter:
         if not self.extensions:
             return True
         for pattern in self.extensions:
-            if self._is_glob(pattern):
+            # Treat patterns with wildcard metacharacters as globs; otherwise as extensions
+            has_wildcards = any(ch in pattern for ch in ("*", "?", "["))
+            if has_wildcards:
                 from fnmatch import fnmatch
 
                 if fnmatch(filename, pattern):
                     return True
             else:
+                # Support both "py" and ".py" notations
                 if filename.endswith("." + pattern.removeprefix(".")):
                     return True
         return False
@@ -275,12 +301,9 @@ class DepthFirstPrinter:
     def _display_path(self, path: PurePosixPath, base: PurePosixPath) -> str:
         # If path is under base, return a relative POSIX path; otherwise absolute
         try:
-            import os
-
-            rel = os.path.relpath(str(path), start=str(base))
+            rel = path.relative_to(base).as_posix()
             if rel == "." or rel == "":
                 return path.name
-            # Make sure we use POSIX separators in output
-            return rel.replace("\\", "/")
+            return rel
         except Exception:
             return str(path)
