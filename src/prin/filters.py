@@ -4,23 +4,18 @@ from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any, TypeIs
 
-from typeguard import typechecked
-
 from .path_classifier import _is_glob
 from .types import TExclusion, TExtension, TGlob, _is_extension
 
 
-@typechecked
 def is_glob(path) -> TypeIs[TGlob]:
     return _is_glob(path)
 
 
-@typechecked
 def is_extension(name: str) -> TypeIs[TExtension]:
     return _is_extension(name)
 
 
-@typechecked
 def read_gitignore_file(gitignore_path: Path) -> list[TExclusion]:
     """Read a gitignore-like file and return list of exclusion patterns."""
     exclusions = []
@@ -35,7 +30,6 @@ def read_gitignore_file(gitignore_path: Path) -> list[TExclusion]:
     return exclusions
 
 
-@typechecked
 def get_gitignore_exclusions(paths: list[str]) -> list[TExclusion]:
     """Get exclusions from gitignore files for given paths."""
 
@@ -60,7 +54,6 @@ def get_gitignore_exclusions(paths: list[str]) -> list[TExclusion]:
     return exclusions
 
 
-@typechecked
 def is_excluded(entry: Any, *, exclude: list[TExclusion]) -> bool:
     """Shared predicate implementing the legacy matching semantics."""
 

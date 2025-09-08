@@ -5,8 +5,8 @@ from pathlib import Path
 
 from prin.adapters.filesystem import FileSystemSource
 from prin.cli_common import Context
-from prin.core import DepthFirstPrinter, Formatter, SourceAdapter, StringWriter
-from prin.formatters import XmlFormatter
+from prin.core import DepthFirstPrinter, SourceAdapter, StringWriter
+from prin.formatters import Formatter, XmlFormatter
 from tests.utils import touch_file, write_file
 
 

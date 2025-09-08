@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sys
 from dataclasses import dataclass
 from enum import Enum, auto
@@ -7,6 +8,7 @@ from pathlib import PurePosixPath
 from typing import TYPE_CHECKING, Iterable, Protocol
 
 from prin import filters
+from prin.formatters import Formatter, HeaderFormatter
 
 if TYPE_CHECKING:
     from .cli_common import Context
@@ -34,12 +36,6 @@ class SourceAdapter(Protocol):
     def list_dir(self, dir_path: PurePosixPath) -> Iterable[Entry]: ...
     def read_file_bytes(self, file_path: PurePosixPath) -> bytes: ...
     def is_empty(self, file_path: PurePosixPath) -> bool: ...
-
-
-class Formatter(Protocol):
-    def body(self, path: str, text: str) -> str: ...
-    def binary(self, path: str) -> str: ...
-    def header(self, path: str) -> str: ...
 
 
 def is_text_semantically_empty(text: str) -> bool:
@@ -163,6 +159,14 @@ class DepthFirstPrinter:
         ctx: "Context",
     ) -> None:
         self.source = source
+        if ctx.only_headers:
+            if not isinstance(formatter, HeaderFormatter):
+                import logging
+
+                logging.getLogger(__name__).warning(
+                    "[WARNING] --only-headers was specified but formatter passed is not a HeaderFormatter. Forcing to HeaderFormatter."
+                )
+            formatter = HeaderFormatter()
         self.formatter = formatter
 
         self._set_from_context(ctx)
@@ -241,7 +245,7 @@ class DepthFirstPrinter:
         if key in self._printed_paths:
             return
 
-        if budget is not None and budget.spent():
+        if budget and budget.spent():
             return
 
         if not force:
@@ -254,27 +258,20 @@ class DepthFirstPrinter:
 
         path_str = self._display_path(entry.path, base)
         if self.only_headers:
-            writer.write(self.formatter.header(path_str))
-            if budget is not None:
-                budget.consume()
-            self._printed_paths.add(key)
-            return
-
-        blob = self.source.read_file_bytes(entry.path)
-        if _is_text_bytes(blob):
-            text = _decode_text(blob)
-            writer.write(self.formatter.body(path_str, text))
+            writer.write(self.formatter.format(path_str, ...))
         else:
-            writer.write(self.formatter.binary(path_str))
-        if budget is not None:
-            budget.consume()
+            blob = self.source.read_file_bytes(entry.path)
+            if _is_text_bytes(blob):
+                text = _decode_text(blob)
+                writer.write(self.formatter.format(path_str, text))
+            else:
+                writer.write(self.formatter.binary(path_str))
+        budget and budget.consume()
         self._printed_paths.add(key)
 
     def _display_path(self, path: PurePosixPath, base: PurePosixPath) -> str:
         # If path is under base, return a relative POSIX path; otherwise absolute
         try:
-            import os
-
             rel = os.path.relpath(str(path), start=str(base))
             if rel == "." or rel == "":
                 return path.name
