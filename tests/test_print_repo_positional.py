@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from prin.core import StringWriter
+import pytest
 from prin.prin import main as prin_main
 
 
+@pytest.mark.network
 def test_repo_explicit_ignored_file_is_printed():
     # LICENSE has no extension; treat it as ignored by default, but explicit path must print it
     url = "https://github.com/TypingMind/awesome-typingmind/LICENSE"
@@ -13,6 +15,7 @@ def test_repo_explicit_ignored_file_is_printed():
     assert "<LICENSE>" in out
 
 
+@pytest.mark.network
 def test_pass_two_repositories_positionally_print_both():
     url1 = "https://github.com/TypingMind/awesome-typingmind"
     url2 = "https://github.com/trouchet/rust-hello"
@@ -24,6 +27,7 @@ def test_pass_two_repositories_positionally_print_both():
     assert "<Cargo.toml>" in out
 
 
+@pytest.mark.network
 def test_repo_dir_and_explicit_ignored_file():
     # Embed LICENSE in URL, and also traverse repo root by adding an empty root
     url = "https://github.com/TypingMind/awesome-typingmind/LICENSE"

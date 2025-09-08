@@ -13,6 +13,7 @@ def _run(argv: list[str]) -> str:
     return buf.text()
 
 
+@pytest.mark.network
 def test_repo_defaults_readme_present_binaries_excluded():
     url = "https://github.com/TypingMind/awesome-typingmind"
     out = _run(["--tag", "xml", url])
@@ -25,6 +26,7 @@ def test_repo_defaults_readme_present_binaries_excluded():
     assert "<logos/made_for_typingmind_transparent.png>" not in out
 
 
+@pytest.mark.network
 def test_repo_include_binary_includes_pngs():
     url = "https://github.com/TypingMind/awesome-typingmind"
     out = _run(["--include-binary", url])
@@ -35,12 +37,14 @@ def test_repo_include_binary_includes_pngs():
     )
 
 
+@pytest.mark.network
 def test_repo_no_docs_excludes_markdown_and_rst():
     url = "https://github.com/TypingMind/awesome-typingmind"
     out = _run(["--no-docs", url])
     assert "README.md" not in out
 
 
+@pytest.mark.network
 def test_repo_only_headers_prints_headers_only():
     url = "https://github.com/TypingMind/awesome-typingmind"
     out = _run(["--only-headers", url])
@@ -48,6 +52,7 @@ def test_repo_only_headers_prints_headers_only():
     assert "Awesome TypingMind" not in out
 
 
+@pytest.mark.network
 def test_repo_extension_filters():
     rust_repo = "https://github.com/trouchet/rust-hello"
     out_rs = _run(["-e", "rs", rust_repo])
@@ -61,6 +66,7 @@ def test_repo_extension_filters():
     assert "<logos/made_for_typingmind.png" not in out_md
 
 
+@pytest.mark.network
 def test_repo_exclude_glob_and_literal():
     url = "https://github.com/TypingMind/awesome-typingmind"
     out = _run(["-E", "logos", "-E", "*.md", url])
@@ -68,6 +74,7 @@ def test_repo_exclude_glob_and_literal():
     assert "<README.md>" not in out
 
 
+@pytest.mark.network
 def test_repo_no_exclude_disables_all_default_exclusions():
     url = "https://github.com/TypingMind/awesome-typingmind"
     out = _run(["--no-exclude", url])
@@ -77,6 +84,7 @@ def test_repo_no_exclude_disables_all_default_exclusions():
     )
 
 
+@pytest.mark.network
 def test_repo_tag_md_outputs_markdown_format():
     url = "https://github.com/TypingMind/awesome-typingmind"
     out = _run(["--tag", "md", url])
@@ -84,6 +92,7 @@ def test_repo_tag_md_outputs_markdown_format():
     assert "# FILE: README.md" in out
 
 
+@pytest.mark.network
 def test_repo_include_empty():
     # Use a repo that has a file with only a comment and an import
     # The file "__init__.py.py" contains a comment and an import, which should be semantically empty
@@ -92,6 +101,7 @@ def test_repo_include_empty():
     assert "<__init__.py.py>" in out
 
 
+@pytest.mark.network
 def test_repo_include_lock():
     url = "https://github.com/trouchet/rust-hello"
     out = _run(["--include-lock", url])
