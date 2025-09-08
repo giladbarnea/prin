@@ -22,16 +22,15 @@ from .path_classifier import _is_glob
 def is_glob(path) -> TypeIs[TGlob]:
     """Return True if the string should be treated as a glob pattern.
 
-    Special-case: plain extension tokens (e.g., ".py" or "py") are NOT globs.
-    This allows extension filters and extension-based exclusions to behave
-    intuitively (endswith semantics) instead of fnmatch against a literal.
+    Rules:
+    - If there are no wildcard characters (*, ?, [) present, treat as NOT a glob.
+    - Always treat plain extension tokens (".py" or "py") as NOT globs.
+    - Otherwise, fall back to regex-style classification.
     """
     if isinstance(path, str):
-        # Treat both ".ext" and "ext" as extension tokens (not globs)
-        no_wildcards = not any(ch in path for ch in "*?[]")
-        no_sep = ("/" not in path) and ("\\" not in path)
-        is_plain_token = path.strip(".").isalnum()
-        if (_is_extension(path)) or (no_wildcards and no_sep and is_plain_token):
+        if _is_extension(path):
+            return False
+        if not any(ch in path for ch in "*?[]"):
             return False
     return _is_glob(path)
 
