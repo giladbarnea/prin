@@ -50,3 +50,13 @@ _RE_SIGNS = re.compile(' | '.join(_REGEX_ONLY_PATTERNS), re.VERBOSE)
 def classify_pattern(p: str) -> Literal["regex", "glob"]:
     """Return 'regex' if p looks like a regular expression, else 'glob'."""
     return "regex" if _RE_SIGNS.search(p) else "glob"
+
+
+def _is_glob(path) -> bool:
+    if not isinstance(path, str):
+        return False
+    return classify_pattern(path) == "glob"
+
+
+def is_glob(path) -> bool:
+    return _is_glob(path)
