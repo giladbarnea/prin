@@ -1,8 +1,8 @@
 # test_classifier.py
 import pytest
 
-# Adjust import path if needed.
-from classifier import classify_pattern
+# Adjust import path to package module.
+from prin.path_classifier import classify_pattern
 
 
 # --- One focused test per detector pattern ---

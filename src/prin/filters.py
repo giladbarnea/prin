@@ -14,7 +14,8 @@ from .defaults import (
     DEFAULT_TEST_EXCLUSIONS,
     HiddenFiles,
 )
-from .types import TExclusion, TExtension, TGlob, _is_extension, _is_glob
+from .types import TExclusion, TExtension, TGlob, _is_extension
+from .path_classifier import _is_glob
 
 
 @typechecked
