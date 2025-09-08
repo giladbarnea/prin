@@ -60,28 +60,31 @@ def is_excluded(entry: Any, *, exclude: list[TExclusion]) -> bool:
     path = Path(getattr(entry, "path", entry))
     name = path.name
     stem = path.stem
-    entry_is_glob = is_glob(entry)
     for _exclude in exclude:
-        excluded_is_glob = entry_is_glob or is_glob(_exclude)
         if callable(_exclude):
             if _exclude(name) or _exclude(stem) or _exclude(str(path)):
                 return True
-        elif excluded_is_glob:
-            if fnmatch(name, _exclude) or fnmatch(str(path), _exclude) or fnmatch(stem, _exclude):
-                return True
-        elif (
+            continue
+        if (
             name == _exclude
             or str(path) == _exclude
             or stem == _exclude
             or (is_extension(_exclude) and name.endswith(_exclude))
         ):
             return True
-        else:
-            _exclude_glob = f"*{_exclude}" if is_extension(_exclude) else f"*{_exclude}*"
-            if (
-                fnmatch(name, _exclude_glob)
-                or fnmatch(str(path), _exclude_glob)
-                or fnmatch(stem, _exclude_glob)
-            ):
+
+        if is_glob(_exclude):
+            if fnmatch(name, _exclude) or fnmatch(str(path), _exclude) or fnmatch(stem, _exclude):
                 return True
+            continue
+
+        # Note: I'm really not sure about this fallback from a product behavior standpoint.
+        # Is it limited per path part? Or the entire path? :asciishrug:
+        _exclude_glob = f"*{_exclude}" if is_extension(_exclude) else f"*{_exclude}*"
+        if (
+            fnmatch(name, _exclude_glob)
+            or fnmatch(str(path), _exclude_glob)
+            or fnmatch(stem, _exclude_glob)
+        ):
+            return True
     return False
