@@ -21,7 +21,6 @@ DEFAULT_EXCLUSIONS: list[TExclusion] = [
     "bin",
     "dist",
     "node_modules",
-    Hidden,
     HasCacheSubstr,
     # Build artifacts and dependencies
     "target",

@@ -4,9 +4,9 @@ import sys
 from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import PurePosixPath
-from typing import TYPE_CHECKING, Callable, Iterable, Protocol
+from typing import TYPE_CHECKING, Iterable, Protocol
 
-from prin.types import TExclusion
+from prin import filters
 
 if TYPE_CHECKING:
     from .cli_common import Context
@@ -161,26 +161,18 @@ class DepthFirstPrinter:
         source: SourceAdapter,
         formatter: Formatter,
         ctx: "Context",
-        *,
-        # Parameter list should match CLI options.
-        include_empty: bool,
-        only_headers: bool,
-        extensions: list[str],
-        exclude: list[TExclusion],
     ) -> None:
         self.source = source
         self.formatter = formatter
-        self.include_empty = include_empty
-        self.only_headers = only_headers
-        self.extensions = extensions
-        self.exclude = exclude
+
+        self._set_from_context(ctx)
         self._printed_paths: set[str] = set()
 
-        # Use shared filtering primitives
-        from . import filters as _filters
-
-        self._is_excluded: Callable[[object, list[TExclusion]], bool] = _filters.is_excluded
-        self._is_glob: Callable[[object], bool] = _filters.is_glob
+    def _set_from_context(self, ctx: "Context") -> None:
+        self.exclusions = ctx.exclusions
+        self.extensions = ctx.extensions
+        self.include_empty = ctx.include_empty
+        self.only_headers = ctx.only_headers
 
     def run(self, roots: list[str], writer: Writer, budget: "FileBudget | None" = None) -> None:
         for root_spec in roots or ["."]:
@@ -217,18 +209,19 @@ class DepthFirstPrinter:
 
     def _excluded(self, entry: Entry) -> bool:
         # The reference implementation accepts strings/paths/globs/callables
-        return self._is_excluded(str(entry.path), exclude=self.exclude)
+        return filters.is_excluded(entry, exclude=self.exclusions)
 
     def _extension_match(self, filename: str) -> bool:
         if not self.extensions:
             return True
         for pattern in self.extensions:
-            if self._is_glob(pattern):
+            if filters.is_glob(pattern):
                 from fnmatch import fnmatch
 
                 if fnmatch(filename, pattern):
                     return True
             else:
+                # Check exact extension match.
                 if filename.endswith("." + pattern.removeprefix(".")):
                     return True
         return False

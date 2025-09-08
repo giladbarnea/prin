@@ -6,14 +6,6 @@ from typing import Any, TypeIs
 
 from typeguard import typechecked
 
-from .defaults import (
-    DEFAULT_BINARY_EXCLUSIONS,
-    DEFAULT_DOC_EXTENSIONS,
-    DEFAULT_EXCLUSIONS,
-    DEFAULT_LOCK_EXCLUSIONS,
-    DEFAULT_TEST_EXCLUSIONS,
-    Hidden,
-)
 from .path_classifier import _is_glob
 from .types import TExclusion, TExtension, TGlob, _is_extension
 
@@ -66,57 +58,6 @@ def get_gitignore_exclusions(paths: list[str]) -> list[TExclusion]:
             exclusions.extend(read_gitignore_file(git_exclude_path))
 
     return exclusions
-
-
-@typechecked
-def resolve_exclusions(
-    *,
-    # Parameter list should match CLI options.
-    no_exclude: bool,
-    custom_excludes: list[TExclusion],
-    include_tests: bool,
-    include_lock: bool,
-    include_binary: bool,
-    no_docs: bool,
-    no_ignore: bool,
-    include_hidden: bool | None = None,
-    paths: list[str],
-) -> list[TExclusion]:
-    """Resolve final exclusion list based on command line arguments."""
-    if no_exclude:
-        return []
-
-    exclusions = DEFAULT_EXCLUSIONS.copy()
-    exclusions.extend(custom_excludes)
-
-    if not include_hidden:
-        exclusions.append(Hidden)
-
-    if not include_tests:
-        exclusions.extend(DEFAULT_TEST_EXCLUSIONS)
-
-    if not include_lock:
-        exclusions.extend(DEFAULT_LOCK_EXCLUSIONS)
-
-    if not include_binary:
-        exclusions.extend(DEFAULT_BINARY_EXCLUSIONS)
-
-    # Exclude documentation files when requested
-    if no_docs:
-        exclusions.extend(DEFAULT_DOC_EXTENSIONS)
-
-    if not no_ignore:
-        exclusions.extend(get_gitignore_exclusions(paths))
-    return exclusions
-
-
-@typechecked
-def resolve_extensions(
-    *,
-    custom_extensions: list[str],
-) -> list[str]:
-    """Resolve final extension list based on command line arguments."""
-    return custom_extensions or []
 
 
 @typechecked

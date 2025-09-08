@@ -3,10 +3,11 @@ from __future__ import annotations
 import argparse
 import sys
 import textwrap
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Literal
 
 from prin.defaults import (
+    DEFAULT_BINARY_EXCLUSIONS,
     DEFAULT_DOC_EXTENSIONS,
     DEFAULT_EXCLUDE_FILTER,
     DEFAULT_EXCLUSIONS,
@@ -16,6 +17,7 @@ from prin.defaults import (
     DEFAULT_INCLUDE_HIDDEN,
     DEFAULT_INCLUDE_LOCK,
     DEFAULT_INCLUDE_TESTS,
+    DEFAULT_LOCK_EXCLUSIONS,
     DEFAULT_NO_DOCS,
     DEFAULT_NO_EXCLUDE,
     DEFAULT_NO_IGNORE,
@@ -23,7 +25,10 @@ from prin.defaults import (
     DEFAULT_RUN_PATH,
     DEFAULT_TAG,
     DEFAULT_TAG_CHOICES,
+    DEFAULT_TEST_EXCLUSIONS,
+    Hidden,
 )
+from prin.filters import get_gitignore_exclusions
 from prin.types import _describe_predicate
 
 # Map shorthand/alias flags to their canonical expanded forms.
@@ -62,14 +67,55 @@ class Context:
     include_binary: bool = DEFAULT_INCLUDE_BINARY
     no_docs: bool = DEFAULT_NO_DOCS
     include_empty: bool = DEFAULT_INCLUDE_EMPTY
-    only_headers: bool = DEFAULT_ONLY_HEADERS
+    include_hidden: bool = DEFAULT_INCLUDE_HIDDEN
     extensions: list[str] = field(default_factory=lambda: list(DEFAULT_EXTENSIONS_FILTER))
-    exclude: list[str] = field(default_factory=lambda: list(DEFAULT_EXCLUDE_FILTER))
+    exclusions: list[str] = field(default_factory=lambda: list(DEFAULT_EXCLUDE_FILTER))
     no_exclude: bool = DEFAULT_NO_EXCLUDE
     no_ignore: bool = DEFAULT_NO_IGNORE
-    include_hidden: bool = DEFAULT_INCLUDE_HIDDEN
+
+    # Formatting and output
+    only_headers: bool = DEFAULT_ONLY_HEADERS
     tag: Literal["xml", "md"] = DEFAULT_TAG
     max_files: int | None = None
+
+    def __post_init__(self):
+        """
+        Resolve final exclusion list based on command line arguments.
+        Specified exclusions are added on top of the default exclusions.
+        Some boolean flags toggle off specific default exclusions (e.g., --include-*, --no-ignore).
+        Some boolean flags toggle on an additional exclusion category (e.g., --no-docs and --hidden).
+        The --no-exclude flag overrides everything and includes all files and directories.
+        """
+        if self.no_exclude:
+            self.exclusions = []
+            return
+
+        exclusions = DEFAULT_EXCLUSIONS.copy()
+        exclusions.extend(self.exclusions)
+
+        if not self.include_hidden:
+            exclusions.append(Hidden)
+
+        if not self.include_tests:
+            exclusions.extend(DEFAULT_TEST_EXCLUSIONS)
+
+        if not self.include_lock:
+            exclusions.extend(DEFAULT_LOCK_EXCLUSIONS)
+
+        if not self.include_binary:
+            exclusions.extend(DEFAULT_BINARY_EXCLUSIONS)
+
+        if not self.no_ignore:
+            exclusions.extend(get_gitignore_exclusions(self.paths))
+
+        if self.no_docs:
+            exclusions.extend(DEFAULT_DOC_EXTENSIONS)
+
+        self.exclusions = exclusions
+
+    def replace(self, **kwargs) -> Context:
+        """Creates a new copy of the context with the given kwargs updated."""
+        return replace(self, **kwargs)
 
 
 def parse_common_args(argv: list[str] | None = None) -> Context:
@@ -133,7 +179,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         "-d",
         "--no-docs",
         action="store_true",
-        help=f"Exclude {', '.join(DEFAULT_DOC_EXTENSIONS)} files. Has no effect if -e,--extension is specified.",
+        help=f"Exclude {', '.join(DEFAULT_DOC_EXTENSIONS)} files.",
         default=DEFAULT_NO_DOCS,
     )
     parser.add_argument(
@@ -156,7 +202,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         type=str,
         default=DEFAULT_EXTENSIONS_FILTER,
         action="append",
-        help="Only include files with the given extension (repeatable).",
+        help="Only include files with the given extension (repeatable). Overrides exclusions (untested).",
     )
 
     parser.add_argument(
@@ -225,28 +271,10 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         include_empty=bool(args.include_empty),
         only_headers=bool(args.only_headers),
         extensions=list(args.extension or []),
-        exclude=list(args.exclude or []),
+        exclusions=list(args.exclude or []),
         no_exclude=bool(args.no_exclude),
         no_ignore=bool(args.no_ignore),
         include_hidden=bool(args.include_hidden),
         tag=args.tag,
         max_files=args.max_files,
     )
-
-
-def derive_filters_and_print_flags(ctx: Context) -> tuple[list[str], list, bool, bool]:
-    from .filters import resolve_exclusions, resolve_extensions  # shared helpers
-
-    extensions = resolve_extensions(custom_extensions=ctx.extensions)
-    exclusions = resolve_exclusions(
-        no_exclude=ctx.no_exclude,
-        custom_excludes=ctx.exclude,
-        include_tests=ctx.include_tests,
-        include_lock=ctx.include_lock,
-        include_binary=ctx.include_binary,
-        no_docs=ctx.no_docs,
-        no_ignore=ctx.no_ignore,
-        include_hidden=ctx.include_hidden,
-        paths=ctx.paths,
-    )
-    return extensions, exclusions

@@ -1,27 +1,11 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Literal
 
 from prin.adapters.filesystem import FileSystemSource
-from prin.cli_common import Context, derive_filters_and_print_flags
+from prin.cli_common import Context
 from prin.core import DepthFirstPrinter, Formatter, SourceAdapter, StringWriter
-from prin.defaults import (
-    DEFAULT_EXCLUSIONS,
-    DEFAULT_EXTENSIONS_FILTER,
-    DEFAULT_INCLUDE_BINARY,
-    DEFAULT_INCLUDE_EMPTY,
-    DEFAULT_INCLUDE_HIDDEN,
-    DEFAULT_INCLUDE_LOCK,
-    DEFAULT_INCLUDE_TESTS,
-    DEFAULT_NO_DOCS,
-    DEFAULT_NO_EXCLUDE,
-    DEFAULT_NO_IGNORE,
-    DEFAULT_ONLY_HEADERS,
-    DEFAULT_TAG,
-)
 from prin.formatters import XmlFormatter
-from prin.types import TExclusion
 from tests.utils import touch_file, write_file
 
 
@@ -30,50 +14,17 @@ def _run(
     roots: list[str],
     formatter: Formatter = None,
     *,
-    # Parameter list should match CLI options.
-    include_tests: bool = DEFAULT_INCLUDE_TESTS,
-    include_lock: bool = DEFAULT_INCLUDE_LOCK,
-    include_binary: bool = DEFAULT_INCLUDE_BINARY,
-    no_docs: bool = DEFAULT_NO_DOCS,
-    include_empty: bool = DEFAULT_INCLUDE_EMPTY,
-    only_headers: bool = DEFAULT_ONLY_HEADERS,
-    extensions: list[str] = DEFAULT_EXTENSIONS_FILTER,
-    exclude: list[TExclusion] = DEFAULT_EXCLUSIONS,
-    no_exclude: bool = DEFAULT_NO_EXCLUDE,
-    no_ignore: bool = DEFAULT_NO_IGNORE,
-    include_hidden: bool = DEFAULT_INCLUDE_HIDDEN,
-    tag: Literal["xml", "md"] = DEFAULT_TAG,
-    max_files: int | None = None,
+    ctx: Context,
 ) -> str:
     # The StringWriter and XmlFormatter defaults make sense here before they're required for testing purposes (yet they are still configurable if needed).
     buf = StringWriter()
     formatter = formatter or XmlFormatter()
-
-    # The other parameters are completely inconsequential for testing purposes, therefore should be a transparent pass-through. Individual tests can override them if needed.
-    ctx = Context(
-        include_tests=include_tests,
-        include_lock=include_lock,
-        include_binary=include_binary,
-        no_docs=no_docs,
-        include_empty=include_empty,
-        only_headers=only_headers,
-        extensions=extensions,
-        exclude=exclude,
-        no_exclude=no_exclude,
-        no_ignore=no_ignore,
-        include_hidden=include_hidden,
-        tag=tag,
-        max_files=max_files,
-    )
-    extensions, exclusions, include_empty, only_headers = derive_filters_and_print_flags(ctx)
+    ctx = ctx or Context()
 
     printer = DepthFirstPrinter(
         source,
         formatter,
-        include_empty=include_empty,
-        only_headers=only_headers,
-        extensions=extensions,
-        exclude=exclusions,
+        ctx=ctx,
     )
     printer.run(roots, buf)
     return buf.text()
