@@ -21,7 +21,8 @@ Engine-driven depth-first traversal with source adapters; the engine is source-a
 ## CLI and flags
 - One shared parser in `cli_common` used by both implementations; no interactive prompts; consistent flags (`-e`, `-E`, `--no-ignore`, `-l`, etc.).
 - `prin` dispatches: GitHub URL → repo implementation; otherwise filesystem. Keep URL detection minimal and robust.
-- New CLI options' defaults should be defined and imported from defaults.py. When relevant, default consts should be reused.
+- New CLI options' defaults should be defined and imported from defaults.py. When relevant, default consts should be reused consistently.
+- Some function signatures and class field lists should match CLI options, and updated accordingly when new options are added. These are the features of the tool as a whole as well as its main user interface. As of writing, these are src/prin/cli_common.Context, src/prin/core.DepthFirstPrinter.__init__, and src/prin/filters.resolve_exclusions, but there may be more — keep an eye for comments saying "{Parameter,Field} list should match CLI options."
 
 ## Filtering semantics
 // missing; todo
@@ -77,3 +78,52 @@ Repeat the following until all new tests pass:
 2.	Ask first: Request approval for the refactor scope.
 3.	Execute safely: Refactor in small steps, running the full suite frequently.
 4.	Close out: Briefly state the refactor’s purpose and what changed.
+
+
+## A Note About Tests
+1. The test suite should not have any implementation footprint, nor acrobatics to make up for what the tool does or doesn't expose. If such a need arises, the tool's design is flawed and should be improved until the test suite "can just test the tool".
+   For example, here is a wrapper in a test file which was written with the intention of sparing repeating the boilerplate necessary to capture the tool's output, but on top of that it also deviates from the tool's behavior, therefore it's a bad wrapper:
+   ```python
+   def _run(src: FileSystemSource, roots: list[str]) -> str:
+		buf = StringWriter()
+		printer = DepthFirstPrinter(
+			src,
+			XmlFormatter(),
+			include_empty=True,
+			only_headers=False,
+			extensions=[".py", ".md", ".json"],
+			exclude=[*DEFAULT_EXCLUSIONS, *DEFAULT_BINARY_EXCLUSIONS],
+		)
+		printer.run(roots, buf)
+		return buf.text()
+	```
+	
+	Instead, the wrapper should be unnoticeable, a drop-in replacement for the tool's main, besides capturing the tool's output:
+	```python
+	def _run(
+		source: SourceAdapter,
+		roots: list[str],
+		formatter: Formatter = None,
+		*,
+		# Parameter list should match CLI options.
+		include_empty: bool,
+		only_headers: bool,
+		extensions: list[str],
+		exclude: list[TExclusion],
+	) -> str:
+		# The StringWriter and XmlFormatter defaults make sense here before they're required for testing purposes (yet they are still configurable if needed).
+		buf = StringWriter()
+		formatter = formatter or XmlFormatter()
+		
+		# The other parameters are completely inconsequential for testing purposes, therefore should be a transparent pass-through. Individual tests can override them if needed.
+		printer = DepthFirstPrinter(
+			source,
+			formatter,
+			include_empty=include_empty,
+			only_headers=only_headers,
+			extensions=extensions,
+			exclude=exclude,
+		)
+		printer.run(roots, buf)
+		return buf.text()
+	```
