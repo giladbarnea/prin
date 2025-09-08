@@ -1,5 +1,8 @@
 # `prin`
 
+[![build](https://github.com/giladbarnea/prin/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/giladbarnea/prin/actions/workflows/build.yml)
+[![tests](https://github.com/giladbarnea/prin/actions/workflows/tests.yml/badge.svg?branch=master)](https://github.com/giladbarnea/prin/actions/workflows/tests.yml)
+
 Print the contents of full directories, remote GitHub repositories and websites in an LLM-friendly format.
 
 ## Basic Usage
