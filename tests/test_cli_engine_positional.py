@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import tempfile
 from pathlib import Path
 
 from prin.adapters.filesystem import FileSystemSource
@@ -37,7 +38,7 @@ def test_explicit_single_ignored_file_is_printed(tmp_path: Path):
     assert "<poetry.lock>" in out
 
 
-def test_two_sibling_directories(tmp_path: Path):
+def test_two_sibling_directories_both_subdirs_of_root_print_relative_paths_to_cwd(tmp_path: Path):
     # dirA and dirB siblings, each with printable files
     write_file(tmp_path / "dirA" / "a.py", "print('dirA/a.py')\n")
     write_file(tmp_path / "dirB" / "b.md", "# dirB/b.md\n")
@@ -45,8 +46,27 @@ def test_two_sibling_directories(tmp_path: Path):
         FileSystemSource(root_cwd=tmp_path), [str(tmp_path / "dirA"), str(tmp_path / "dirB")]
     )
     # Paths are relative to each provided root
-    assert "<a.py>" in out
-    assert "<b.md>" in out
+    assert "<dirA/a.py>" in out
+    assert "<dirB/b.md>" in out
+
+
+def test_one_dir_outside_root_assumes_root_and_subdir_of_root_prints_relative_path_to_root(
+    tmp_path: Path,
+):
+    """
+    Given root: /foo
+    Scripts is passed two positional arguments: /foo/dirA /entirely-different-dir/dirB
+    Expect files in /foo/dirA to be printed relative to /foo, and files in /entirely-different-dir/dirB to be printed relative to /entirely-different-dir/dirB
+    """
+    source = FileSystemSource(root_cwd=tmp_path)
+    subdir_to_source = tmp_path / "dirA"
+    dir_outside_source = Path(tempfile.mkdtemp(prefix="outside_source"))
+    write_file(subdir_to_source / "a.py", "print('dirA/a.py')\n")
+    write_file(dir_outside_source / "dirX" / "b.txt", "outside_source/dirX/b.txt\n")
+    out = _run(source, [str(subdir_to_source), str(dir_outside_source)])
+    # Paths are relative to each provided root
+    assert "<dirA/a.py>" in out
+    assert "<dirX/b.txt>" in out
 
 
 def test_directory_and_explicit_ignored_file_inside(tmp_path: Path):
