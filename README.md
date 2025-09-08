@@ -1,6 +1,6 @@
 # `prin`
 
-Print the contents of full directories, remote GitHub repositories or websites in an LLM-friendly format.
+Print the contents of full directories, remote GitHub repositories and websites in an LLM-friendly format.
 
 ## Basic Usage
 
