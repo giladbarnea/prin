@@ -17,7 +17,7 @@ from ..core import Entry, NodeKind, SourceAdapter
 
 API_BASE = "https://api.github.com"
 MAX_WAIT_SECONDS = 180
-_GET_CACHE_DIR = os.path.join(Path("~/.cache").expanduser(), "prin", "gh_get")
+_GET_CACHE_DIR = Path("~/.cache").expanduser() / "prin" / "gh_get"
 
 
 def _auth_headers() -> Dict[str, str]:
@@ -29,18 +29,22 @@ def _auth_headers() -> Dict[str, str]:
 
 
 def _parse_owner_repo(url: str) -> tuple[str, str]:
-    import re
-
-    raw = url.strip()
-    if raw.startswith("git+"):
-        raw = raw[4:]
-    if not re.match(r"^[a-z]+://", raw):
-        raw = "https://" + raw  # allow scheme-less inputs like github.com/owner/repo
-    m = re.match(r"https?://github\.com/([^/]+)/([^/]+?)(?:\.git)?(?:/|$)", raw)
-    if not m:
+    owner_repo = (
+        url.strip()
+        .removeprefix("git+")
+        .removeprefix("http://")
+        .removeprefix("https://")
+        .removeprefix("www.")
+        .removeprefix("api.")
+        .removeprefix("github.com/")
+        .removeprefix("repos/")
+    )
+    try:
+        owner, repo, *_ = owner_repo.split("/")
+    except ValueError:
         msg = f"Unrecognized GitHub URL: {url}"
-        raise ValueError(msg)
-    return m.group(1), m.group(2)
+        raise ValueError(msg) from None
+    return owner, repo
 
 
 def _parse_rate_limit_wait_seconds(resp: requests.Response) -> Optional[int]:
@@ -76,8 +80,8 @@ def _get(session: requests.Session, url: str, *, params=None) -> requests.Respon
     Path(_GET_CACHE_DIR).mkdir(exist_ok=True, parents=True)
     key = repr(_get_cache_key(url, params=params)).encode("utf-8")
     cache_hash = hashlib.sha256(key).hexdigest()
-    body_path = os.path.join(_GET_CACHE_DIR, f"{cache_hash}.body")
-    meta_path = os.path.join(_GET_CACHE_DIR, f"{cache_hash}.meta.json")
+    body_path = _GET_CACHE_DIR / f"{cache_hash}.body"
+    meta_path = _GET_CACHE_DIR / f"{cache_hash}.meta.json"
     if Path(body_path).exists():
         try:
             with open(body_path, "rb") as f:

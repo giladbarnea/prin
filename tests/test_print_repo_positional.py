@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from prin.core import StringWriter
 import pytest
+
+from prin.core import StringWriter
 from prin.prin import main as prin_main
 
 
