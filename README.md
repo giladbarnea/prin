@@ -12,7 +12,7 @@ Inspired by the excellent `fd` and `rg` toolsâ€”and their superb CLI usabilityâ€
 
 Run `uv tool install git+https://github.com/giladbarnea/prin.git` to install the latest version of `prin` as a tool on your local machine.
 
-Alternatively, clone this repository and run `uv tool install .`.
+Alternatively, clone this repository and run `./install.sh` (Wraps `uv tool install`).
 
 In both cases, the `prin` executable should be available in your shell.
 
@@ -42,7 +42,7 @@ See `prin --help` for the full list of options.
 
 ### Development
 - Install `uv` if needed: `curl -LsSf https://astral.sh/uv/install.sh | sh`
-- Setup and test: `uv sync`; `./test.sh`
+- Setup and test: `uv sync`; `./test.sh`. Network tests can be skipped with `./test.sh --no-network`.
 - Lint and format: `./lint.sh` and `./format.sh`
 
 ## Options Roadmap
