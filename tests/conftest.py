@@ -184,3 +184,26 @@ def fs_root() -> VFS:
         )
     finally:
         shutil.rmtree(root, ignore_errors=True)
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--no-network",
+        action="store_true",
+        default=False,
+        help="Skip tests that require network access (marked with @pytest.mark.network)",
+    )
+
+
+def pytest_configure(config):
+    # Redundant with pyproject markers, but safe if running in isolation
+    config.addinivalue_line("markers", "network: tests that require network access")
+
+
+def pytest_collection_modifyitems(config, items):
+    if not config.getoption("--no-network"):
+        return
+    skip_network = pytest.mark.skip(reason="network disabled via --no-network")
+    for item in items:
+        if "network" in item.keywords:
+            item.add_marker(skip_network)

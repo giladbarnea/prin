@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from prin.core import StringWriter
+import pytest
 from prin.prin import main as prin_main
 
 
+@pytest.mark.network
 def test_website_llms_txt_presence_and_one_file_md_output():
     base = "https://www.fastht.ml/docs"
     buf = StringWriter()
