@@ -1,6 +1,29 @@
 # `prin`
 
-Prints LLM-friendly content from directories and remote repositories in XML or Markdown.
+Print the contents of whole directories, remote GitHub repositories or websites in an LLM-friendly format.
+
+## Basic Usage
+
+`prin` accepts one or more paths to directories, files, remote repositories or websites with llms.txt, and prints their contents.
+
+```sh
+# Print the entire contents of the codebase you're on
+prin .
+
+# Print the contents of the `docs` directory alongside the contents of the `rust-lang/book` remote repository
+prin docs github.com/rust-lang/book
+
+# Print the contents of specific files
+prin AGENTS.md src/**/*.py
+```
+
+This can easily be used together with other tools, such as terminal code agents, for a powerful combination:
+
+```sh
+prin ./agents/graph/ github.com/pydantic/pydantic-ai/{docs,examples} | claude -p "The graphs are not wired right. Fix them."
+```
+
+See `prin --help` for the full list of options.
 
 ## Design
 
@@ -15,29 +38,6 @@ Run `uv tool install git+https://github.com/giladbarnea/prin.git` to install the
 Alternatively, clone this repository and run `./install.sh` (Wraps `uv tool install`).
 
 In both cases, the `prin` executable should be available in your shell.
-
-## Basic Usage
-
-`prin` accepts one or more paths to directories, files, or remote repositories and prints their contents.
-
-```sh
-# Print the entire contents of the codebase
-prin path/to/codebase
-
-# Print the contents of the `docs` directory alongside the contents of the `rust-lang/book` remote repository
-prin path/to/codebase/docs github.com/rust-lang/book
-
-# Print the contents of specific files
-prin path/to/codebase/AGENTS.md path/to/codebase/src/**/*.py
-```
-
-This can easily be used together with other tools, such as terminal code agents, for a powerful combination:
-
-```sh
-prin ./agents/graph/ github.com/pydantic/pydantic-ai/{docs,examples} | claude -p "The graphs are not wired right. Fix them."
-```
-
-See `prin --help` for the full list of options.
 
 
 ### Development
