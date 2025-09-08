@@ -49,6 +49,31 @@ If a piece of documentation, docstring, or comment becomes no longer true due to
 
 ## Important: Being an Effective AI Agent
 
-1. You do your best work when you have a way to verify yourself. Run test.sh frequently. With self-verification, you can and should practice continuous trial and error instead of a single shot in the dark. When testing, run both problem-specific tests and wider tests to discover potential regression problems. Trial & error loop goes like this: Run tests; Give me clear and succinct status update; tell me your planned changes; apply them; repeat.
-2. Know your weaknesses: your eagerness to solve a problem can lead to tunnel vision. You may fix the issue but unintentionally create code duplication, deviate from the existing design, or introduce a regression in other coupled parts of the project you didn’t consider. The solution is to often literally look around beyond the immediate problem, be aware of (and account for) coupling around the codebase, try to integrate with the existing design, and periodically refactor.
-3. Do TDD when possible. Write a few simple tests before starting development. Work against them.
+1. Know your weaknesses: your eagerness to solve a problem can cause tunnel vision. You may fix the issue but unintentionally create code duplication, deviate from the existing design, or introduce a regression in other coupled parts of the project you didn’t consider. The solution is to literally look around beyond the immediate fix, be aware of (and account for) coupling around the codebase, integrate with the existing design, and periodically refactor.
+2. You do your best work when you can verify yourself. With self-verification, you can and should practice continuous trial and error instead of a single shot in the dark. See Development Cycle (Tight TDD Loop) below for how to work, verify, and report progress.
+
+## Development Cycle (Tight TDD Loop)
+
+#### Prep (before any code)
+1.	Read first: All root markdown docs, then all Python files. The codebase is small—load it fully.
+2.	Baseline: Run the full suite via ./test.sh to establish current behavior.
+3.	Targeted tests: Add minimal, surgical tests that express the desired behavior. Because this project centers on filtering/formatting, include negative tests (e.g., “filter includes all type-A and excludes all non-A”), which also clarifies the intended boundaries.
+
+#### The loop
+Repeat the following until all new tests pass:
+1.	Smallest viable change: Implement the minimal change to pass the next failing test.
+2.	Verify: Run that test and the pre-existing suite to catch regressions.
+3.	Report (each iteration): Post a short update: what you tried, current result, and your next step.
+4.	Branch:
+	- If passing: Move to the next failing test.
+	- If stuck: Assume an “unknown unknown.” Form a hypothesis, try a focused fix. After a few failed attempts, stop and tell me: what’s failing, what you tried, and your current hypothesis.
+
+#### After the loop
+1.	Full verification: Run the entire suite again with ./test.sh.
+2.	Final update: Summarize what passed, what changed, and what remains (if anything).
+
+#### Refactor (optional, with approval)
+1.	Assess fit: Step back. Check how your changes interact with the architecture and invariants. Identify any mild refactor that would align the code with the project’s intent.
+2.	Ask first: Request approval for the refactor scope.
+3.	Execute safely: Refactor in small steps, running the full suite frequently.
+4.	Close out: Briefly state the refactor’s purpose and what changed.
