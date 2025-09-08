@@ -183,10 +183,24 @@ class DepthFirstPrinter:
 
     def run(self, roots: list[str], writer: Writer, budget: "FileBudget | None" = None) -> None:
         roots = roots or ["."]
+        # Anchor base corresponds to the execution root (e.g., cwd for filesystem)
+        try:
+            anchor_base = self.source.resolve_root(".")
+        except Exception:
+            anchor_base = None  # Fallback: no anchor; each root is its own base
+
         for root_spec in roots:
             if budget is not None and budget.spent():
                 return
             root = self.source.resolve_root(root_spec)
+            # Decide display base: if root is under anchor_base, use anchor; otherwise the root itself
+            display_base = root
+            if anchor_base is not None:
+                try:
+                    _ = root.relative_to(anchor_base)
+                    display_base = anchor_base
+                except Exception:
+                    display_base = root
             stack: list[PurePosixPath] = [root]
             while stack:
                 if budget is not None and budget.spent():
@@ -197,7 +211,7 @@ class DepthFirstPrinter:
                 except NotADirectoryError:
                     # Treat the current path as a file
                     file_entry = Entry(path=current, name=current.name, kind=NodeKind.FILE)
-                    self._handle_file(file_entry, writer, base=root, force=True, budget=budget)
+                    self._handle_file(file_entry, writer, base=display_base, force=True, budget=budget)
                     continue
                 except FileNotFoundError:
                     # Skip missing paths. Smell: will cover-up a bug in list_dir.
@@ -213,7 +227,7 @@ class DepthFirstPrinter:
                         stack.append(entry.path)
 
                 for entry in files:
-                    self._handle_file(entry, writer, base=root, budget=budget)
+                    self._handle_file(entry, writer, base=display_base, budget=budget)
 
     def _excluded(self, entry: Entry) -> bool:
         # The reference implementation accepts strings/paths/globs/callables
