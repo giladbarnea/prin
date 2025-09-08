@@ -58,8 +58,5 @@ class FileSystemSource(SourceAdapter):
             return False
         if not blob.strip():
             return True
-        if file_path.suffix in (".py", ".pyi"):
-            from ..core import is_blob_semantically_empty
-
-            return is_blob_semantically_empty(blob)
-        return False
+        from ..core import is_blob_semantically_empty
+        return is_blob_semantically_empty(blob, file_path)

@@ -192,25 +192,25 @@ class GitHubRepoSource(SourceAdapter):
     def read_file_bytes(self, file_path: PurePosixPath) -> bytes:
         owner, repo, ref = self._ctx.owner, self._ctx.repo, self._ctx.ref
         # Try contents API first
-        r = _get(
+        file_contents_response = _get(
             self._session,
             f"{API_BASE}/repos/{owner}/{repo}/contents/{str(file_path)}",
             params={"ref": ref},
         )
-        info = r.json()
+        info = file_contents_response.json()
         if info.get("encoding") == "base64" and info.get("content"):
             with suppress(Exception):
                 return base64.b64decode(info["content"], validate=False)
-        dl = info.get("download_url")
-        if dl:
+        download_url = info.get("download_url")
+        if download_url:
             # Reuse shared GET with rate-limit/backoff handling
-            r2 = _get(self._session, dl)
-            return r2.content
+            downloaded_file_response = _get(self._session, download_url)
+            return downloaded_file_response.content
         # Fallback to blob by sha
         sha = info.get("sha")
         if sha:
-            r3 = _get(self._session, f"{API_BASE}/repos/{owner}/{repo}/git/blobs/{sha}")
-            data = r3.json()
+            blob_response = _get(self._session, f"{API_BASE}/repos/{owner}/{repo}/git/blobs/{sha}")
+            data = blob_response.json()
             if data.get("encoding") == "base64" and data.get("content"):
                 return base64.b64decode(data["content"], validate=False)
         return b""
@@ -221,5 +221,3 @@ class GitHubRepoSource(SourceAdapter):
         from ..core import is_blob_semantically_empty
 
         return is_blob_semantically_empty(blob)
-
-    # no __post_init__ needed; ref fetched during __init__

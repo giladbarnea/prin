@@ -38,7 +38,7 @@ class SourceAdapter(Protocol):
     def is_empty(self, file_path: PurePosixPath) -> bool: ...
 
 
-def is_text_semantically_empty(text: str) -> bool:
+def _is_text_semantically_empty(text: str) -> bool:
     """
     Return True if text contains only imports, __all__=..., or docstrings.
 
@@ -80,8 +80,6 @@ def is_text_semantically_empty(text: str) -> bool:
 
 
 def _is_text_bytes(blob: bytes) -> bool:
-    if not blob:
-        return True
     if b"\x00" in blob:
         return False
     try:
@@ -98,12 +96,17 @@ def _decode_text(blob: bytes) -> str:
         return blob.decode("latin-1")
 
 
-def is_blob_semantically_empty(blob: bytes) -> bool:
+def is_blob_semantically_empty(blob: bytes, file_path: PurePosixPath) -> bool:
     """Return True if the provided blob represents a semantically empty text file."""
+    blob = blob.strip()
+    if not blob:
+        return True
+    if file_path.suffix not in (".py", ".pyi"):
+        return False
     if not _is_text_bytes(blob):
         return False
     text = _decode_text(blob)
-    return is_text_semantically_empty(text)
+    return _is_text_semantically_empty(text)
 
 
 class StdoutWriter(Writer):
