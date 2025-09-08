@@ -175,7 +175,8 @@ class DepthFirstPrinter:
         self.only_headers = ctx.only_headers
 
     def run(self, roots: list[str], writer: Writer, budget: "FileBudget | None" = None) -> None:
-        for root_spec in roots or ["."]:
+        roots = roots or ["."]
+        for root_spec in roots:
             if budget is not None and budget.spent():
                 return
             root = self.source.resolve_root(root_spec)
