@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+import re
 
 from prin.core import StringWriter
 from prin.prin import main as prin_main
@@ -48,7 +49,13 @@ def test_repo_no_docs_excludes_markdown_and_rst():
 def test_repo_only_headers_prints_headers_only():
     url = "https://github.com/TypingMind/awesome-typingmind"
     out = _run(["--only-headers", url])
-    assert "</README.md>" in out
+    # Expect plaintext list of file paths, one per line
+    assert re.search(r"^README\.md$", out, re.MULTILINE)
+    assert re.search(r"^LICENSE$", out, re.MULTILINE)
+    assert re.search(r"^logos/README\.md$", out, re.MULTILINE)
+    # Ensure XML tags and bodies are not present
+    assert "<README.md>" not in out
+    assert "</README.md>" not in out
     assert "Awesome TypingMind" not in out
 
 
