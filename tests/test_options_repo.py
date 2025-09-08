@@ -120,3 +120,26 @@ def test_repo_no_ignore():
     url = "https://github.com/TypingMind/awesome-typingmind"
     out = _run(["--no-ignore", url])
     assert isinstance(out, str)
+
+
+@pytest.mark.network
+def test_repo_hidden_includes_dotfiles_and_dotdirs():
+    # A tiny repo that contains a .gitignore at the root
+    url = "https://github.com/trouchet/rust-hello"
+
+    # By default, dotfiles should be excluded
+    out_default = _run(["--only-headers", url])
+    assert ".gitignore\n" not in out_default
+
+    # With --hidden, dotfiles should be included
+    out_hidden = _run(["--only-headers", "--hidden", url])
+    assert ".gitignore\n" in out_hidden
+
+
+@pytest.mark.network
+def test_repo_uu_includes_hidden_and_no_ignore():
+    # -uu expands to --hidden --no-ignore; for repos we already ignore local gitignore,
+    # so we assert that hidden files are included when using -uu.
+    url = "https://github.com/trouchet/rust-hello"
+    out = _run(["--only-headers", "-uu", url])
+    assert ".gitignore\n" in out
