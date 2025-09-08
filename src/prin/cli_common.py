@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import argparse
+import sys
 import textwrap
 from dataclasses import dataclass, field
 from typing import Literal
-import sys
 
 from prin.defaults import (
     DEFAULT_EXCLUDE_FILTER,
@@ -12,19 +12,18 @@ from prin.defaults import (
     DEFAULT_EXTENSIONS_FILTER,
     DEFAULT_INCLUDE_BINARY,
     DEFAULT_INCLUDE_EMPTY,
+    DEFAULT_INCLUDE_HIDDEN,
     DEFAULT_INCLUDE_LOCK,
     DEFAULT_INCLUDE_TESTS,
     DEFAULT_NO_DOCS,
     DEFAULT_NO_EXCLUDE,
     DEFAULT_NO_IGNORE,
-    DEFAULT_INCLUDE_HIDDEN,
     DEFAULT_ONLY_HEADERS,
     DEFAULT_RUN_PATH,
     DEFAULT_TAG,
     DEFAULT_TAG_CHOICES,
 )
 from prin.types import _describe_predicate
-
 
 # Map shorthand/alias flags to their canonical expanded forms.
 # The expansion occurs before argparse parsing and preserves argument order.
@@ -35,7 +34,8 @@ CLI_OPTIONS_ALIASES: dict[str, tuple[str, ...]] = {
 
 
 def _expand_cli_aliases(argv: list[str] | None) -> list[str]:
-    """Expand alias flags in argv into their canonical forms.
+    """
+    Expand alias flags in argv into their canonical forms.
 
     This function does not mutate the provided argv list. It returns a new list
     where alias tokens are replaced in-place positionally with their mapped
@@ -55,6 +55,7 @@ def _expand_cli_aliases(argv: list[str] | None) -> list[str]:
 
 @dataclass(slots=True)
 class Context:
+    # Field list should match CLI options.
     paths: list[str] = field(default_factory=lambda: [DEFAULT_RUN_PATH])
     include_tests: bool = DEFAULT_INCLUDE_TESTS
     include_lock: bool = DEFAULT_INCLUDE_LOCK

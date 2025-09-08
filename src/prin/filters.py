@@ -8,14 +8,14 @@ from typeguard import typechecked
 
 from .defaults import (
     DEFAULT_BINARY_EXCLUSIONS,
-    DEFAULT_EXCLUSIONS,
     DEFAULT_DOC_EXTENSIONS,
+    DEFAULT_EXCLUSIONS,
     DEFAULT_LOCK_EXCLUSIONS,
     DEFAULT_TEST_EXCLUSIONS,
     HiddenFiles,
 )
-from .types import TExclusion, TExtension, TGlob, _is_extension
 from .path_classifier import _is_glob
+from .types import TExclusion, TExtension, TGlob, _is_extension
 
 
 @typechecked
@@ -46,7 +46,7 @@ def read_gitignore_file(gitignore_path: Path) -> list[TExclusion]:
 @typechecked
 def get_gitignore_exclusions(paths: list[str]) -> list[TExclusion]:
     """Get exclusions from gitignore files for given paths."""
-    
+
     # Note: .gitignore is parked for now until we figure out how to exclude in development time.
     return []
     exclusions = []
@@ -69,8 +69,9 @@ def get_gitignore_exclusions(paths: list[str]) -> list[TExclusion]:
 
 
 @typechecked
-def resolve_exclusions( 
+def resolve_exclusions(
     *,
+    # Parameter list should match CLI options.
     no_exclude: bool,
     custom_excludes: list[TExclusion],
     include_tests: bool,

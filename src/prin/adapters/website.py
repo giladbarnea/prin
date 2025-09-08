@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Iterable, List
-
-import re
-import requests
 from urllib.parse import urljoin, urlparse
+
+import requests
 
 from ..core import Entry, NodeKind, SourceAdapter
 
@@ -142,4 +142,3 @@ class WebsiteSource(SourceAdapter):
     def is_empty(self, file_path: PurePosixPath) -> bool:
         # Defer emptiness determination to shared semantic check after read
         return False
-

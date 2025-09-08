@@ -4,6 +4,7 @@ from typing import Annotated, Callable, NewType
 
 from annotated_types import Predicate
 from typeguard import typechecked
+
 from .path_classifier import _is_glob
 
 TPath = NewType("TPath", str)

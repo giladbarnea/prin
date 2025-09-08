@@ -17,7 +17,7 @@ def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None
     ctx: Context = parse_common_args(argv)
     extensions, exclusions, include_empty, only_headers = derive_filters_and_print_flags(ctx)
 
-    formatter = XmlFormatter() if ctx.tag == "xml" else MarkdownFormatter()
+    formatter = {"xml": XmlFormatter, "md": MarkdownFormatter}[ctx.tag]()
     out_writer = writer or StdoutWriter()
 
     # Split positional inputs into local paths and GitHub URLs

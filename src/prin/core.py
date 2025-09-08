@@ -6,6 +6,8 @@ from enum import Enum, auto
 from pathlib import PurePosixPath
 from typing import Callable, Iterable, Protocol
 
+from prin.types import TExclusion
+
 
 class NodeKind(Enum):
     DIRECTORY = auto()
@@ -156,10 +158,11 @@ class DepthFirstPrinter:
         source: SourceAdapter,
         formatter: Formatter,
         *,
+        # Parameter list should match CLI options.
         include_empty: bool,
         only_headers: bool,
         extensions: list[str],
-        exclude: list,
+        exclude: list[TExclusion],
     ) -> None:
         self.source = source
         self.formatter = formatter
@@ -172,7 +175,7 @@ class DepthFirstPrinter:
         # Use shared filtering primitives
         from . import filters as _filters
 
-        self._is_excluded: Callable[[object, list], bool] = _filters.is_excluded
+        self._is_excluded: Callable[[object, list[TExclusion]], bool] = _filters.is_excluded
         self._is_glob: Callable[[object], bool] = _filters.is_glob
 
     def run(self, roots: list[str], writer: Writer, budget: "FileBudget | None" = None) -> None:

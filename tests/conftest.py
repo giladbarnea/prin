@@ -84,7 +84,7 @@ def fs_root(tmp_path_factory: pytest.TempPathFactory) -> VFS:
 
     # Ensure unique non-empty contents across files to avoid incidental substring collisions
     write_file(root / "poetry.lock", "poetry-lock-content-unique\n")
-    write_file(root / "package-lock.json", "{\n  \"name\": \"unique-package-lock\"\n}\n")
+    write_file(root / "package-lock.json", '{\n  "name": "unique-package-lock"\n}\n')
     write_file(root / "uv.lock", "uv-lock-content-unique\n")
 
     # Build a traversal-ordered list of file paths and a content mapping
