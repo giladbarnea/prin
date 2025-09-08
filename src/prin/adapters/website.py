@@ -1,0 +1,145 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path, PurePosixPath
+from typing import Iterable, List
+
+import re
+import requests
+from urllib.parse import urljoin, urlparse
+
+from ..core import Entry, NodeKind, SourceAdapter
+
+
+def _ensure_trailing_slash(url: str) -> str:
+    return url if url.endswith("/") else url + "/"
+
+
+def _fetch_text(url: str, *, session: requests.Session) -> str:
+    r = session.get(url, timeout=20)
+    r.raise_for_status()
+    enc = r.encoding or "utf-8"
+    try:
+        return r.content.decode(enc, errors="replace")
+    except Exception:
+        return r.text
+
+
+def _parse_llms_txt(text: str) -> List[str]:
+    urls: List[str] = []
+    md_link_re = re.compile(r"\[[^\]]+\]\(([^)\s]+)\)")
+    raw_url_re = re.compile(r"https?://[^\s)]+")
+
+    for raw in text.splitlines():
+        s = raw.strip()
+        if not s:
+            continue
+        if s.startswith("#") or s.startswith(">"):
+            continue
+        # Strip common list markers
+        for prefix in ("- ", "* ", "• "):
+            if s.startswith(prefix):
+                s = s[len(prefix) :].strip()
+                break
+
+        m = md_link_re.search(s)
+        if m:
+            urls.append(m.group(1))
+            continue
+        m2 = raw_url_re.search(s)
+        if m2:
+            urls.append(m2.group(0))
+            continue
+    return urls
+
+
+@dataclass
+class _Ctx:
+    base_url: str
+    urls: List[str]
+    key_to_url: dict[str, str]
+
+
+class WebsiteSource(SourceAdapter):
+    """
+    Website adapter that expects an llms.txt file under the provided base URL.
+    - resolve_root: takes a base website URL (e.g., https://example.com/docs)
+    - list_dir: returns entries corresponding to URLs listed in llms.txt as FILE nodes
+    - read_file_bytes: downloads the content at the URL
+    - is_empty: always False (emptiness determined later after download)
+    """
+
+    def __init__(self, base_url: str, session: requests.Session | None = None) -> None:
+        self._session = session or requests.Session()
+        self._ctx: _Ctx | None = None
+        self._base_url = base_url
+
+    def _ensure_ctx(self) -> _Ctx:
+        if self._ctx is not None:
+            return self._ctx
+        base = self._base_url.strip()
+        if not base.startswith("http://") and not base.startswith("https://"):
+            base = "https://" + base
+        base = _ensure_trailing_slash(base)
+        llms_url = base + "llms.txt"
+        # If llms.txt is not found, raise FileNotFoundError as per spec (fails if doesn't exist)
+        r = self._session.get(llms_url, timeout=20)
+        if r.status_code == 404:
+            raise FileNotFoundError(llms_url)
+        if r.status_code >= 400:
+            r.raise_for_status()  # will raise HTTPError
+        text = r.text
+        urls = _parse_llms_txt(text)
+        # Normalize to absolute URLs; if any entry is relative, resolve against base
+        resolved: List[str] = []
+        key_to_url: dict[str, str] = {}
+
+        for u in urls:
+            abs_u = urljoin(base, u)
+            resolved.append(abs_u)
+            # Create a stable display key (basename; if empty, use host)
+            p = urlparse(abs_u)
+            key = Path(p.path.rstrip("/")).name or p.netloc
+            # Deduplicate keys if needed
+            if key in key_to_url:
+                i = 2
+                while f"{key}.{i}" in key_to_url:
+                    i += 1
+                key = f"{key}.{i}"
+            key_to_url[key] = abs_u
+
+        self._ctx = _Ctx(base_url=base, urls=resolved, key_to_url=key_to_url)
+        return self._ctx
+
+    def resolve_root(self, root_spec: str) -> PurePosixPath:
+        # Treat the list as a virtual directory root
+        self._ensure_ctx()
+        return PurePosixPath()
+
+    def list_dir(self, dir_path: PurePosixPath) -> Iterable[Entry]:
+        ctx = self._ensure_ctx()
+        entries: list[Entry] = []
+        for key in ctx.key_to_url:
+            name = key
+            # Use key as the logical path; actual URL is kept in mapping
+            entries.append(Entry(path=PurePosixPath(key), name=name, kind=NodeKind.FILE))
+        # No subdirectories; emulate NotADirectoryError if dir_path points to a specific URL
+        if str(dir_path) and str(dir_path) not in (".", "/"):
+            raise NotADirectoryError(str(dir_path))
+        return entries
+
+    def read_file_bytes(self, file_path: PurePosixPath) -> bytes:
+        ctx = self._ensure_ctx()
+        key = str(file_path)
+        url = ctx.key_to_url.get(key)
+        if not url:
+            # Fallback: if key is a full URL by chance
+            url = key
+        r = self._session.get(url, timeout=30)
+        r.raise_for_status()
+        return r.content
+
+    def is_empty(self, file_path: PurePosixPath) -> bool:
+        # Defer emptiness determination to shared semantic check after read
+        return False
+

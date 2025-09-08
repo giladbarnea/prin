@@ -4,6 +4,7 @@ import sys
 
 from .adapters.filesystem import FileSystemSource
 from .adapters.github import GitHubRepoSource
+from .adapters.website import WebsiteSource
 from .cli_common import Context, derive_filters_and_print_flags, parse_common_args
 from .core import DepthFirstPrinter, FileBudget, StdoutWriter, Writer
 from .formatters import MarkdownFormatter, XmlFormatter
@@ -79,6 +80,25 @@ def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None
                 exclude=repo_exclusions,
             )
             gh_printer.run(roots, out_writer, budget=budget)
+
+    # Website URLs (each rendered independently) - non-GitHub HTTP(S) inputs
+    if not (budget and budget.spent()):
+        from .util import is_http_url
+
+        website_urls = [tok for tok in ctx.paths if is_http_url(tok) and not is_github_url(tok)]
+        for base in website_urls:
+            if budget and budget.spent():
+                break
+            ws_printer = DepthFirstPrinter(
+                WebsiteSource(base),
+                formatter,
+                include_empty=include_empty,
+                only_headers=only_headers,
+                extensions=extensions,
+                exclude=exclusions,
+            )
+            # Single virtual root
+            ws_printer.run([""], out_writer, budget=budget)
 
 
 if __name__ == "__main__":
