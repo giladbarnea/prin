@@ -11,4 +11,3 @@ def test_website_llms_txt_presence_and_one_file_md_output():
     out = buf.text()
     # We expect at least one markdown header for a file listed in llms.txt
     assert "# FILE: " in out or "<" in out
-

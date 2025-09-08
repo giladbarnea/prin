@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from prin.core import StringWriter
-from tests.utils import count_md_headers
 import pytest
+
+from prin.core import StringWriter
 from prin.prin import main as prin_main
+from tests.utils import count_md_headers
 
 
 def _run(argv: list[str]) -> str:
@@ -28,7 +29,10 @@ def test_repo_include_binary_includes_pngs():
     url = "https://github.com/TypingMind/awesome-typingmind"
     out = _run(["--include-binary", url])
     # Binary files are emitted as self-closing tags in XML format
-    assert "<logos/made_for_typingmind.png" in out or "<logos/made_for_typingmind_transparent.png" in out
+    assert (
+        "<logos/made_for_typingmind.png" in out
+        or "<logos/made_for_typingmind_transparent.png" in out
+    )
 
 
 def test_repo_no_docs_excludes_markdown_and_rst():
@@ -67,7 +71,10 @@ def test_repo_exclude_glob_and_literal():
 def test_repo_no_exclude_disables_all_default_exclusions():
     url = "https://github.com/TypingMind/awesome-typingmind"
     out = _run(["--no-exclude", url])
-    assert "<logos/made_for_typingmind.png" in out or "<logos/made_for_typingmind_transparent.png" in out
+    assert (
+        "<logos/made_for_typingmind.png" in out
+        or "<logos/made_for_typingmind_transparent.png" in out
+    )
 
 
 def test_repo_tag_md_outputs_markdown_format():
@@ -96,5 +103,3 @@ def test_repo_no_ignore():
     url = "https://github.com/TypingMind/awesome-typingmind"
     out = _run(["--no-ignore", url])
     assert isinstance(out, str)
-
-

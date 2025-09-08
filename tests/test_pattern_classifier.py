@@ -4,8 +4,8 @@ import pytest
 # Adjust import path to package module.
 from prin.path_classifier import classify_pattern
 
-
 # --- One focused test per detector pattern ---
+
 
 def test_anchor_start_caret():
     # ^ at the start
@@ -85,6 +85,7 @@ def test_regexy_parens_with_alternation():
 
 # --- Final sanity: common globs should NOT be misclassified ---
 
+
 @pytest.mark.parametrize(
     "pat",
     [
@@ -93,9 +94,9 @@ def test_regexy_parens_with_alternation():
         "[0-9].csv",
         "**/*.md",
         "foo.*",
-        "Report (final).pdf",      # literal parens are fine
-        "C++/a+b.txt",             # plus signs as literals
-        "file[[:digit:]].txt",     # POSIX class-like text shouldn't flip to regex (we ignore it)
+        "Report (final).pdf",  # literal parens are fine
+        "C++/a+b.txt",  # plus signs as literals
+        "file[[:digit:]].txt",  # POSIX class-like text shouldn't flip to regex (we ignore it)
         "**/foo*bar.txt",
     ],
 )

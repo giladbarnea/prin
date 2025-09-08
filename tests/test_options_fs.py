@@ -32,7 +32,7 @@ def test_no_options_specified_everything_is_printed(fs_root):
     for path in present:
         assert path in fs_root.paths  # Precondition
         content = fs_root.contents[path]
-        
+
         assert f"<{path}>" in out
         assert content in out
         assert f"</{path}>" in out
@@ -46,6 +46,7 @@ def test_no_options_specified_everything_is_printed(fs_root):
         # All non-empty absent contents must not appear in the output
         if content.strip():
             import re
+
             # Use fullmatch across a line-anchored search to avoid substring collisions
             assert not re.search(re.escape(content), out)
         assert f"</{path}>" not in out

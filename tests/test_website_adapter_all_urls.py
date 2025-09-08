@@ -3,8 +3,9 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 
-import requests
 import pytest
+import requests
+
 from prin.core import StringWriter
 from prin.prin import main as prin_main
 
@@ -77,10 +78,9 @@ def test_all_llms_txt_markdown_urls_are_loaded(monkeypatch: pytest.MonkeyPatch):
 
     monkeypatch.setattr(website, "_parse_llms_txt", lambda text: expected_urls)
 
-    real_get = requests.Session.get
-
     def fake_get(self, url, *args, **kwargs):  # type: ignore[override]
         if url.rstrip("/") == (base.rstrip("/") + "/llms.txt"):
+
             class R:
                 status_code = 200
                 encoding = "utf-8"
@@ -95,7 +95,9 @@ def test_all_llms_txt_markdown_urls_are_loaded(monkeypatch: pytest.MonkeyPatch):
 
                 def raise_for_status(self):
                     return None
+
             return R()  # type: ignore[return-value]
+
         # For any other URL, return a small deterministic body
         class R2:
             status_code = 200
@@ -107,6 +109,7 @@ def test_all_llms_txt_markdown_urls_are_loaded(monkeypatch: pytest.MonkeyPatch):
             @property
             def text(self):
                 from urllib.parse import urlparse
+
                 name = urlparse(self._u).path.rstrip("/").split("/")[-1]
                 return f"CONTENT:{name}"
 
@@ -116,6 +119,7 @@ def test_all_llms_txt_markdown_urls_are_loaded(monkeypatch: pytest.MonkeyPatch):
 
             def raise_for_status(self):
                 return None
+
         return R2(url)  # type: ignore[return-value]
 
     monkeypatch.setattr(requests.Session, "get", fake_get)
