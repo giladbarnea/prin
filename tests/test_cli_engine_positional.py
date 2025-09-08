@@ -13,8 +13,7 @@ def _run(
     source: SourceAdapter,
     roots: list[str],
     formatter: Formatter = None,
-    *,
-    ctx: Context,
+    ctx: Context = None,
 ) -> str:
     # The StringWriter and XmlFormatter defaults make sense here before they're required for testing purposes (yet they are still configurable if needed).
     buf = StringWriter()
