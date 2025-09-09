@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from contextlib import suppress
+import os
 import hashlib
 import json
 from pathlib import Path, PurePosixPath
@@ -35,13 +36,15 @@ def _get_cache_key(url: str, *, params: Any) -> tuple:
 
 
 def _get(session: requests.Session, url: str, *, params=None, timeout: int | float | None = None) -> requests.Response:
+    # Allow disabling cache via env (useful for tests that monkeypatch requests)
+    disable_cache = os.getenv("PRIN_DISABLE_WEB_CACHE", "").lower() in {"1", "true", "yes"}
     # Disk cache: serve from local cache when available
     Path(_GET_CACHE_DIR).mkdir(exist_ok=True, parents=True)
     key = repr(_get_cache_key(url, params=params)).encode("utf-8")
     cache_hash = hashlib.sha256(key).hexdigest()
     body_path = _GET_CACHE_DIR / f"{cache_hash}.body"
     meta_path = _GET_CACHE_DIR / f"{cache_hash}.meta.json"
-    if Path(body_path).exists():
+    if not disable_cache and Path(body_path).exists():
         try:
             with open(body_path, "rb") as f:
                 data = f.read()
@@ -67,12 +70,13 @@ def _get(session: requests.Session, url: str, *, params=None, timeout: int | flo
     resp = session.get(url, params=params, timeout=timeout)
     if 200 <= resp.status_code < 300:
         try:
-            data = resp.content
-            with open(body_path, "wb") as f:
-                f.write(data)
-            meta = {"status": int(resp.status_code), "encoding": resp.encoding or "utf-8"}
-            with open(meta_path, "w", encoding="utf-8") as mf:
-                json.dump(meta, mf, separators=(",", ":"))
+            if not disable_cache:
+                data = resp.content
+                with open(body_path, "wb") as f:
+                    f.write(data)
+                meta = {"status": int(resp.status_code), "encoding": resp.encoding or "utf-8"}
+                with open(meta_path, "w", encoding="utf-8") as mf:
+                    json.dump(meta, mf, separators=(",", ":"))
         except Exception:
             with suppress(Exception):
                 Path(body_path).unlink()
