@@ -132,7 +132,7 @@ def test_all_llms_txt_markdown_urls_are_loaded(monkeypatch: pytest.MonkeyPatch):
     for url in expected_urls:
         basename = url.rstrip("/").split("/")[-1]
         expected_name = _dedup_basename(basename, seen)
-        header = f"# FILE: {expected_name}"
+        header = f"## FILE: {expected_name}"
         assert header in out, f"Missing header for {url}"
         idx = out.find(header)
         assert idx >= 0

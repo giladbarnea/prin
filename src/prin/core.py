@@ -211,7 +211,9 @@ class DepthFirstPrinter:
                 except NotADirectoryError:
                     # Treat the current path as a file
                     file_entry = Entry(path=current, name=current.name, kind=NodeKind.FILE)
-                    self._handle_file(file_entry, writer, base=display_base, force=True, budget=budget)
+                    self._handle_file(
+                        file_entry, writer, base=display_base, force=True, budget=budget
+                    )
                     continue
                 except FileNotFoundError:
                     # Skip missing paths. Smell: will cover-up a bug in list_dir.

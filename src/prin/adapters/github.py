@@ -9,7 +9,7 @@ import time
 from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
-from typing import Any, Dict, Iterable, Optional
+from typing import Any, Dict, Iterable, Optional, TypedDict
 
 import requests
 
@@ -28,7 +28,16 @@ def _auth_headers() -> Dict[str, str]:
     return headers
 
 
-def _parse_owner_repo(url: str) -> tuple[str, str]:
+class GitHubURL(TypedDict):
+    owner: str
+    repo: str
+    subpath: str
+
+
+def parse_github_url(url: str) -> GitHubURL:
+    """
+    Raises ValueError if the URL is not a valid GitHub URL.
+    """
     owner_repo = (
         url.strip()
         .removeprefix("git+")
@@ -38,13 +47,20 @@ def _parse_owner_repo(url: str) -> tuple[str, str]:
         .removeprefix("api.")
         .removeprefix("github.com/")
         .removeprefix("repos/")
+        .removesuffix("/")
     )
+    owner_repo = owner_repo.replace("blob/", "")
+    # At this point, the URL can be either:
+    # 1. "owner/repo/(<branch>/dir/file)?"
+    # 2. "owner/repo/(dir/file)?"
+    # We purposefully don't support branch so we assume it's all a subpath.
     try:
-        owner, repo, *_ = owner_repo.split("/")
+        owner, repo, *subpath = owner_repo.split("/")
     except ValueError:
         msg = f"Unrecognized GitHub URL: {url}"
         raise ValueError(msg) from None
-    return owner, repo
+
+    return GitHubURL(owner=owner, repo=repo, subpath="/".join(subpath))
 
 
 def _parse_rate_limit_wait_seconds(resp: requests.Response) -> Optional[int]:
@@ -147,7 +163,8 @@ class GitHubRepoSource(SourceAdapter):
     def __init__(self, url: str, session: Optional[requests.Session] = None) -> None:
         self._session = session or requests.Session()
         self._session.headers.update(_auth_headers())
-        owner, repo = _parse_owner_repo(url)
+        parsed_github_url: GitHubURL = parse_github_url(url)
+        owner, repo = parsed_github_url["owner"], parsed_github_url["repo"]
         ref = self._fetch_default_branch(owner, repo)
         self._ctx = _Ctx(owner=owner, repo=repo, ref=ref)
 

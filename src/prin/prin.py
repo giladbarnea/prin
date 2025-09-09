@@ -3,12 +3,12 @@ from __future__ import annotations
 import sys
 
 from .adapters.filesystem import FileSystemSource
-from .adapters.github import GitHubRepoSource
+from .adapters.github import GitHubRepoSource, parse_github_url
 from .adapters.website import WebsiteSource
 from .cli_common import Context, parse_common_args
 from .core import DepthFirstPrinter, FileBudget, StdoutWriter, Writer
 from .formatters import MarkdownFormatter, XmlFormatter
-from .util import extract_in_repo_subpath, is_github_url
+from .util import is_github_url
 
 
 def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None:
@@ -50,7 +50,7 @@ def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None
             if budget and budget.spent():
                 break
             roots: list[str] = []
-            derived = extract_in_repo_subpath(url).strip("/")
+            derived = parse_github_url(url)["subpath"].strip("/")
             if derived:
                 roots.append(derived)
             if not roots:

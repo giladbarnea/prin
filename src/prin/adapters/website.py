@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-import re
-from dataclasses import dataclass
-from contextlib import suppress
-import os
 import hashlib
 import json
+import os
+import re
+from contextlib import suppress
+from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
-from typing import Iterable, List, Any
+from typing import Any, Iterable, List
 from urllib.parse import urljoin, urlparse
 
 import requests
@@ -20,6 +20,7 @@ def _ensure_trailing_slash(url: str) -> str:
 
 
 _GET_CACHE_DIR = Path("~/.cache").expanduser() / "prin" / "web_get"
+
 
 def _make_hashable(value: Any) -> Any:
     if isinstance(value, dict):
@@ -35,7 +36,9 @@ def _get_cache_key(url: str, *, params: Any) -> tuple:
     return (url, _make_hashable(params))
 
 
-def _get(session: requests.Session, url: str, *, params=None, timeout: int | float | None = None) -> requests.Response:
+def _get(
+    session: requests.Session, url: str, *, params=None, timeout: int | float | None = None
+) -> requests.Response:
     # Allow disabling cache via env (useful for tests that monkeypatch requests)
     disable_cache = os.getenv("PRIN_DISABLE_WEB_CACHE", "").lower() in {"1", "true", "yes"}
     # Disk cache: serve from local cache when available
