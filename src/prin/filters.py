@@ -67,14 +67,14 @@ def is_excluded(entry: Any, *, exclude: list[TExclusion]) -> bool:
             if fnmatch(name, _exclude) or fnmatch(str(path), _exclude) or fnmatch(stem, _exclude):
                 return True
             continue
-
-        # Note: I'm really not sure about this fallback from a product behavior standpoint.
-        # Is it limited per path part? Or the entire path? :asciishrug:
-        _exclude_glob = f"*{_exclude}" if is_extension(_exclude) else f"*{_exclude}*"
-        if (
-            fnmatch(name, _exclude_glob)
-            or fnmatch(str(path), _exclude_glob)
-            or fnmatch(stem, _exclude_glob)
-        ):
-            return True
+        # Tighten plain-text matching: match exact path segments only
+        # Avoid substring-based exclusions like excluding 'outside_source' because of 'out'.
+        # If the exclusion is a simple token (no glob, no path separator), exclude when any path part equals it.
+        try:
+            if _exclude and not any(ch in _exclude for ch in "*?[]") and ("/" not in _exclude and "\\" not in _exclude):
+                if _exclude in path.parts:
+                    return True
+        except TypeError:
+            # Non-string tokens are ignored here
+            pass
     return False
