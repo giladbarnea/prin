@@ -4,7 +4,7 @@ from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any
 
-from .path_classifier import is_extension, is_glob
+from .path_classifier import classify_pattern, is_extension, is_glob
 from .types import TExclusion
 
 
@@ -55,26 +55,37 @@ def is_excluded(entry: Any, *, exclude: list[TExclusion]) -> bool:
             if _exclude(name) or _exclude(stem) or _exclude(str(path)):
                 return True
             continue
-        if (
-            name == _exclude
-            or str(path) == _exclude
-            or stem == _exclude
-            or (is_extension(_exclude) and name.endswith(_exclude))
-        ):
+        # Handle extension excludes like ".py" (treated as text by classifier)
+        if is_extension(_exclude) and name.endswith(_exclude):
             return True
 
-        if is_glob(_exclude):
-            if fnmatch(name, _exclude) or fnmatch(str(path), _exclude) or fnmatch(stem, _exclude):
+        if not isinstance(_exclude, str):
+            continue
+
+        classification = classify_pattern(_exclude)
+
+        # Globs and regex are handled via fnmatch (regex support is out of scope)
+        if classification in ("glob", "regex"):
+            p = path.as_posix()
+            if fnmatch(name, _exclude) or fnmatch(stem, _exclude) or fnmatch(p, _exclude):
                 return True
             continue
-        # Tighten plain-text matching: match exact path segments only
-        # Avoid substring-based exclusions like excluding 'outside_source' because of 'out'.
-        # If the exclusion is a simple token (no glob, no path separator), exclude when any path part equals it.
-        try:
-            if _exclude and not any(ch in _exclude for ch in "*?[]") and ("/" not in _exclude and "\\" not in _exclude):
-                if _exclude in path.parts:
-                    return True
-        except TypeError:
-            # Non-string tokens are ignored here
-            pass
+
+        # Text patterns: match by exact segment sequence, not substrings
+        # Support multi-part tokens containing path separators (either '/' or '\\')
+        token = _exclude.strip()
+        if not token:
+            continue
+        # Normalize separators in the token to POSIX-style for comparison
+        import re
+
+        token_parts = [seg for seg in re.split(r"[\\/]+", token) if seg]
+        path_parts = list(path.as_posix().split("/"))
+        needed = len(token_parts)
+        if needed == 0:
+            continue
+        # Slide a window over path_parts and compare joined POSIX strings
+        for i in range(0, len(path_parts) - needed + 1):
+            if path_parts[i : i + needed] == token_parts:
+                return True
     return False
