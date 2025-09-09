@@ -1,10 +1,9 @@
-"""
-The fact that the list types here are sometimes TExclusion and sometimes str is arbitrary and should carry no weight.
-"""
-
 # sudo fd -H -I '.*' -t f / --format "{/}" | awk -F. '/\./ && index($0,".")!=1 {ext=tolower($NF); if (length(ext) <= 10 && ext ~ /[a-z]/ && ext ~ /^[a-z0-9]+$/) print ext}' > /tmp/exts.txt  # For all file names which have a name and an extension, write to file lowercased extensions which are alphanumeric, <= 10 characters long, and have at least one letter
 # rg --type-list | py.eval "[print(extension) for line in lines for ext in line.split(': ')[1].split(', ') if (extension:=ext.removeprefix('*.').removeprefix('.*').removeprefix('.').removeprefix('*').lower()).isalnum()]" --readlines >> /tmp/exts.txt
 # sort -u -o /tmp/exts.txt /tmp/exts.txt
+
+# OR:
+# prin https://github.com/torvalds/linux -l --include-empty | tee /tmp/linux-tree.txt | { typeset -A seen; while IFS= read -r p; do b=${p##*/}; [[ $b = ?*.* ]] || continue; e=${b##*.}; [[ -z $seen[$e] ]] && { print -- $p; seen[$e]=1 };done ; }
 
 # region ---[ Default Paths and Exclusions ]---
 
@@ -13,6 +12,7 @@ from typing import Literal, LiteralString
 from prin.types import TExclusion
 
 Hidden = lambda x: x.startswith(".")  # pyright: ignore[reportUnknownLambdaType]
+"""Covers .env, .idea, and all dot-dirs and dot-files."""
 HasCacheSubstr = lambda x: "cache" in str(x).lower()  # pyright: ignore[reportUnknownLambdaType]
 
 DEFAULT_EXCLUSIONS: list[TExclusion] = [
