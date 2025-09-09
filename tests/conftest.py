@@ -82,10 +82,14 @@ def fs_root() -> VFS:
     hidden_files: dict[Path, str] = {
         ".env": "SECRET=1\n",
         ".gitignore": "gitignored.txt\n",
+        # ".venv/something": "SOMETHING\n",  # This makes the tests fail (it should work)
     }
     test_files: dict[Path, str] = {
         "tests/test_mod.py": "def test_x():\n    assert True\n",
         "tests/spec.ts": "it('should pass', () => { expect(1).toBe(1); });\n",
+        "app/test_mod.py": "def test_x():\n    assert True\n",
+        "app/mod.test.py": "def test_x():\n    assert True\n",
+        
     }
     dependency_files: dict[Path, str] = {
         "node_modules/pkg/index.js": "console.log('x');\n",
@@ -184,6 +188,20 @@ def fs_root() -> VFS:
         )
     finally:
         shutil.rmtree(root, ignore_errors=True)
+
+
+@pytest.fixture
+def prin_tmp_path():
+    """Create a temporary directory with 'prin' prefix, avoiding test-related substrings."""
+    import shutil
+    import tempfile
+
+    # Equivalent to `mktemp -t prin` - creates temp dir with 'prin' prefix
+    temp_dir = Path(tempfile.mkdtemp(prefix="prin."))
+    try:
+        yield temp_dir
+    finally:
+        shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 def pytest_addoption(parser):

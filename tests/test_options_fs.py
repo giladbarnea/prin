@@ -89,8 +89,8 @@ def test_only_headers_prints_headers_only(fs_root: VFS):
     assert re.search("^foo.py$", out, re.MULTILINE)
     assert re.search("^src/app.py$", out, re.MULTILINE)
     assert re.search("^tests/test_mod.py$", out, re.MULTILINE)
-    # Ensure bodies are not present (no function source snippet)
-    random_content = random.choice(list(fs_root.contents.values()))
+    # Ensure bodies are not present (no function source snippet). Remove the gitignored.txt patch once we support gitignore parsing.
+    random_content = random.choice(list(filter(lambda x: bool(x.strip() and x != "gitignored.txt"), fs_root.contents.values())))
     assert random_content.strip() not in out
 
 

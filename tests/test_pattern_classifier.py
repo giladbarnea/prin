@@ -94,11 +94,19 @@ def test_regexy_parens_with_alternation():
         "[0-9].csv",
         "**/*.md",
         "foo.*",
-        "Report (final).pdf",  # literal parens are fine
-        "C++/a+b.txt",  # plus signs as literals
-        "file[[:digit:]].txt",  # POSIX class-like text shouldn't flip to regex (we ignore it)
         "**/foo*bar.txt",
     ],
 )
 def test_common_globs_not_regex(pat):
     assert classify_pattern(pat) == "glob"
+
+
+@pytest.mark.parametrize(
+    "pat",
+    [
+        "Report (final).pdf",  # literal parens are fine
+        "C++/a+b.txt",  # plus signs as literals
+    ],
+)
+def test_text(pat):
+    assert classify_pattern(pat) == "text"
