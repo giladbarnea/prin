@@ -31,11 +31,50 @@ jobs:
       - name: Run coverage
         run: ./cov.sh
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          files: ./coverage.xml
-          fail_ci_if_error: true
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - name: Extract coverage percentage
+        id: coverage
+        run: |
+          COVERAGE=$(uv run coverage report | grep TOTAL | awk '{print $6}' | sed 's/%//')
+          echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
+          echo "Coverage: $COVERAGE%"
+          
+          # Determine badge color based on coverage
+          if (( COVERAGE >= 90 )); then
+            COLOR="brightgreen"
+          elif (( COVERAGE >= 80 )); then
+            COLOR="green"  
+          elif (( COVERAGE >= 70 )); then
+            COLOR="yellow"
+          elif (( COVERAGE >= 60 )); then
+            COLOR="orange"
+          else
+            COLOR="red"
+          fi
+          echo "color=$COLOR" >> $GITHUB_OUTPUT
+
+      - name: Update coverage badge in README
+        if: github.ref == 'refs/heads/master'
+        run: |
+          COVERAGE="${{ steps.coverage.outputs.percentage }}"
+          COLOR="${{ steps.coverage.outputs.color }}"
+          BADGE_URL="https://img.shields.io/badge/coverage-${COVERAGE}%25-${COLOR}"
+          
+          # Replace the codecov badge with our coverage badge
+          sed -i "s|https://codecov.io/gh/giladbarnea/prin/branch/master/graph/badge.svg|${BADGE_URL}|g" README.md
+          sed -i "s|https://codecov.io/gh/giladbarnea/prin|#|g" README.md
+          
+          echo "Updated README.md with coverage: ${COVERAGE}% (${COLOR})"
+
+      - name: Commit updated README
+        if: github.ref == 'refs/heads/master'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README.md
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update coverage badge to ${{ steps.coverage.outputs.percentage }}%"
+            git push
+          fi
 
