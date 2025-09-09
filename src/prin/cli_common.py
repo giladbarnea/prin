@@ -183,7 +183,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         default=DEFAULT_INCLUDE_LOCK,
     )
     parser.add_argument(
-        "-a",
+        "-a",  # Deviates from 'fd' that has '-a' for '--absolute-path'. Compat with 'rg'.
         "--text",
         "--include-binary",
         "--binary",
@@ -209,8 +209,9 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
     parser.add_argument(
         "-l",
         "--only-headers",
+        "--list-details",  # 'fd' compat
         action="store_true",
-        help="Print only the file paths.",
+        help="Print only the file paths in a plaintext list, without their contents.",
         default=DEFAULT_ONLY_HEADERS,
     )
     parser.add_argument(
@@ -219,7 +220,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         type=_normalize_extension,
         default=DEFAULT_EXTENSIONS_FILTER,
         action="append",
-        help="Only include files with the given extension (repeatable). Overrides exclusions (untested).",
+        help="Only include files with the given extension (repeatable). Overrides exclusions.",
     )
 
     parser.add_argument(
@@ -227,7 +228,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         "--exclude",
         "--ignore",
         type=str,
-        help="Exclude files or directories by glob or regex (repeatable). By default, excludes "
+        help="Exclude files or directories by glob (repeatable). By default, excludes "
         + ", ".join(map(_describe_predicate, DEFAULT_EXCLUSIONS))
         + ", and any files in .gitignore, .git/info/exclude, and ~/.config/git/ignore.",
         default=DEFAULT_EXCLUDE_FILTER,
@@ -256,11 +257,13 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         "--no-gitignore",
         "-u",
         "--unrestricted",
+        "--no-ignore-dot",  # 'rg' compat
         action="store_true",
         help="Disable gitignore file processing.",
         default=DEFAULT_NO_IGNORE,
     )
     parser.add_argument(
+        "-t",
         "--tag",
         type=str,
         choices=DEFAULT_TAG_CHOICES,

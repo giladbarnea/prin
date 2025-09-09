@@ -5,11 +5,11 @@
 [![coverage](https://github.com/giladbarnea/prin/actions/workflows/coverage.yml/badge.svg?branch=master)](https://github.com/giladbarnea/prin/actions/workflows/coverage.yml)
 [![codecov](https://codecov.io/gh/giladbarnea/prin/branch/master/graph/badge.svg)](https://codecov.io/gh/giladbarnea/prin)
 
-Print the contents of full directories, remote GitHub repositories and websites in an LLM-friendly format.
+Print the contents of full directories, remote GitHub repositories and websites in an LLM-friendly format for increased prompt performance.
 
 ## Basic Usage
 
-`prin` accepts one or more paths to directories, files, remote repositories or websites exposing llms.txt, and prints their contents.
+`prin` accepts one or more paths to directories, files, remote repositories or websites, and prints the paths and contents of the files in them.
 
 ```sh
 # Print the contents of the codebase you're in
@@ -118,78 +118,66 @@ In both cases, the `prin` executable should be available in your shell.
 - Setup and test: `uv sync`; `./test.sh`. Network tests can be skipped with `./test.sh --no-network`.
 - Lint and format: `./lint.sh` and `./format.sh`
 
-## Options Roadmap
+## Roadmap
 
-- `-H`, `--hidden` — implemented ✅
-Include hidden files and directories in the search (dotfiles and dot-directories).
+#### CLI Options
 
-- `-I`, `--no-ignore` (aliases: `--no-gitignore`, `-u`, `--unrestricted`) — implemented ✅
-Disable gitignore/VCS ignore processing.
+- [x] `-H`, `--hidden`: Include hidden files and directories in the search (dotfiles and dot-directories).
 
-- `--ignore-file <path>` — planned ⏳
-Add an additional ignore-file in .gitignore format (lower precedence than command-line excludes).
+- [x] `-I`, `--no-ignore` (aliases: `--no-gitignore`, `--no-ignore-dot`, `-u`, `--unrestricted`): Disable gitignore/VCS ignore processing.
 
-- `-E`, `--exclude <glob or regex>` (repeatable; alias: `--ignore <glob>`) — implemented ✅
-Exclude files or directories by shell-style glob or regex (identified automatically). Repeat to add multiple patterns (e.g., --exclude '*.log').
+- [ ] `--ignore-file <path>`: Add an additional ignore-file in .gitignore format (lower precedence than command-line excludes).
 
-- `-g`, `--glob`, `--force-glob` — planned ⏳
-Force the interpretation of the search pattern as a glob (instead of a regular expression).
-Examples: prin -g '*.py', prin -g 'src/**/test_*.rs'.
+- [x] `-E`, `--exclude <glob or regex>` (repeatable; alias: `--ignore <glob>`): Exclude files or directories by shell-style glob or regex (identified automatically). Repeat to add multiple patterns (e.g., --exclude '*.log').
 
-- `-e`, `--extension <ext>` (repeatable) — implemented ✅
-Only include files with the given extension (e.g., -e rs -e toml).
+- [ ] `-g`, `--glob`, `--force-glob`: Force the interpretation of the search pattern as a glob (instead of a regular expression). Examples: prin -g '*.py', prin -g 'src/**/test_*.rs'.
 
-- `-T`, `--include-tests` — implemented ✅
-Include `test`/`tests` directories and spec.ts files.
+- [x] `-e`, `--extension <ext>` (repeatable): Only include files with the given extension (e.g., -e rs -e toml).
 
-- `-K`, `--include-lock` — implemented ✅
-Include lock files (e.g., package-lock.json, poetry.lock, Cargo.lock).
+- [x] `-T`, `--include-tests`: Include `test`/`tests` directories and spec.ts files.
 
-- `-M`, `--include-empty` — implemented ✅
-Include empty files and semantically-empty Python files.
+- [x] `-K`, `--include-lock`: Include lock files (e.g., package-lock.json, poetry.lock, Cargo.lock).
 
-- `-l`, `--only-headers` — implemented ✅
-Print only file paths (no bodies).
+- [x] `-d`, `--no-docs`: Exclude documentation files (e.g., *.md, *.rst, *.txt).
 
-- `--tag {xml|md}` — implemented ✅
-Choose output format.
+- [x] `-M`, `--include-empty`: Include empty files and semantically-empty Python files.
 
-- `--max-files <n>` — implemented ✅
-Maximum number of files to print across all inputs.
+- [x] `-l`, `--only-headers`, `--list-details`: Print only file paths (no bodies).
 
-- `-S`, `--size <constraint>` — planned ⏳
-Filter by file size. Format: <+|-><NUM><UNIT> (e.g., +10k, -2M, 500b). Units: b, k, m, g, t, ki, mi, gi, ti.
+- [x] `-t`, `--tag {xml|md}`: Choose output format.
 
-- `-s`, `--case-sensitive` — planned ⏳
-Force case-sensitive matching of the search pattern. By default, case sensitivity is "smart".
+- [x] `--max-files <n>`: Maximum number of files to print across all inputs.
 
-- `-i`, `--ignore-case` — planned ⏳
-Force case-insensitive matching of the search pattern. By default, case sensitivity is "smart".
+- [x] `-uu`: Unrestricted search: include hidden files and disable ignore rules (equivalent to `--hidden --no-ignore`).
 
-- `-u`, `--unrestricted` — implemented ✅
-Equivalent to --no-ignore.
+- [x] `-uuu`, `--no-exclude`, `--include-all`: Include everything. Equivalent to `--no-ignore --hidden --binary`.
 
-- `-uu` — implemented ✅
-Unrestricted search: include hidden files and disable ignore rules (equivalent to --hidden --no-ignore).
+- [x] `-a`, `--text`, `--include-binary`, `--binary`: Include binary files in the output (e.g., *.pyc, images, archives). Binary files are emitted as headers only in some formats.
 
-- `-uuu` — implemented ✅
-Include everything.
-Equivalent to --no-ignore --hidden --binary, or `--no-exclude`.
+- [ ] `-S`, `--size <constraint>`: Filter by file size. Format: <+|-><NUM><UNIT> (e.g., +10k, -2M, 500b). Units: b, k, m, g, t, ki, mi, gi, ti.
 
-- `-L`, `--follow` — planned ⏳
-Follow symbolic links.
+- [ ] `-s`, `--case-sensitive`: Force case-sensitive matching of the search pattern. By default, case sensitivity is "smart".
 
-- `-d`, `--max-depth <n>` — planned ⏳
-Limit directory traversal to at most <n> levels.
+- [ ] `-i`, `--ignore-case`: Force case-insensitive matching of the search pattern. By default, case sensitivity is "smart".
 
-- `-A`, `--absolute-paths` — planned ⏳
-Print absolute paths (instead of paths relative to the current working directory).
+- [ ] `-L`, `--follow`: Follow symbolic links.
 
-- `-a`, `--text` — implemented ✅
-Alias of --include-binary. Include binary files in output.
+- [ ] `-d`, `--max-depth <n>`: Limit directory traversal to at most <n> levels.
 
-- `--binary`, `--include-binary` — implemented ✅
-Include binary files in the output (e.g., *.pyc, images, archives). Binary files are emitted as headers only in some formats.
+- [ ] `-D`, `--exact-depth <n>`: Traverse directories exactly <n> levels deep.
 
-- `-n`, `--line-number` (alias: `--line-numbers`) — planned ⏳
-Show line numbers in printed file contents.
+- [ ] `-m`, `--min-depth <n>`: Traverse directories at least <n> levels deep.
+
+- [ ] `-A`, `--absolute-paths`: Print absolute paths (instead of paths relative to the specified root).
+
+- [ ] `-n`, `--line-number` (alias: `--line-numbers`): Show line numbers in printed file contents.
+
+- [ ] `-o`, `--output {json,yaml,csv}`: Format the entire output as a JSON, YAML or CSV string.
+  - [ ] `--json` alias for `-o json`.
+  - [ ] `--yaml` alias for `-o yaml`.
+  - [ ] `--csv` alias for `-o csv`.
+
+#### Capabilities
+
+- [ ] Support regex-based matching.
+- [ ] Smart-case matching.
