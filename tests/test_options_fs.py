@@ -102,6 +102,39 @@ def test_extension_filters_by_extension(fs_root: VFS):
     assert "data.json" not in out
 
 
+def test_module_named_locking_is_not_excluded(fs_root: VFS):
+    # Create a module under src/locking to ensure 'lock' substring does not cause exclusion
+    from tests.utils import write_file
+
+    mod_path = fs_root.root / "src" / "locking" / "main.py"
+    write_file(mod_path, "print('locking module ok')\n")
+
+    out = _run([str(fs_root.root)])
+    assert "<src/locking/main.py>" in out
+
+
+def test_literal_exclude_token_matches_segments_not_substrings(fs_root: VFS):
+    from tests.utils import write_file
+
+    # Create files that should be excluded by literal token 'pizza'
+    write_file(fs_root.root / "src" / "pizza" / "main.py", "print('pizza dir')\n")
+    write_file(fs_root.root / "src" / "pizza.py", "print('pizza file')\n")
+
+    # Create files that should NOT be excluded (substring only)
+    write_file(fs_root.root / "src" / "nicepizzas" / "main.py", "print('nicepizzas dir')\n")
+    write_file(fs_root.root / "src" / "nicepizzas.py", "print('nicepizzas file')\n")
+
+    out = _run(["--exclude", "pizza", str(fs_root.root)])
+
+    # Excluded
+    assert "<src/pizza/main.py>" not in out
+    assert "<src/pizza.py>" not in out
+
+    # Not excluded
+    assert "<src/nicepizzas/main.py>" in out
+    assert "<src/nicepizzas.py>" in out
+
+
 def test_exclude_glob_and_literal(fs_root: VFS):
     out = _run(["--include-tests", "--exclude", "src", "--exclude", "*.md", str(fs_root.root)])
     for test_file in fs_root.test_files:

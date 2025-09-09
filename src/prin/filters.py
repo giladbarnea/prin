@@ -4,7 +4,7 @@ from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any
 
-from .path_classifier import is_extension, is_glob
+from .path_classifier import classify_pattern, is_extension, is_glob
 from .types import TExclusion
 
 
@@ -55,26 +55,41 @@ def is_excluded(entry: Any, *, exclude: list[TExclusion]) -> bool:
             if _exclude(name) or _exclude(stem) or _exclude(str(path)):
                 return True
             continue
-        if (
-            name == _exclude
-            or str(path) == _exclude
-            or stem == _exclude
-            or (is_extension(_exclude) and name.endswith(_exclude))
-        ):
+        # Handle extension excludes like ".py" (treated as text by classifier)
+        if is_extension(_exclude) and name.endswith(_exclude):
             return True
 
-        if is_glob(_exclude):
-            if fnmatch(name, _exclude) or fnmatch(str(path), _exclude) or fnmatch(stem, _exclude):
+        if not isinstance(_exclude, str):
+            continue
+
+        classification = classify_pattern(_exclude)
+
+        # Globs and regex are handled via fnmatch (regex support is out of scope)
+        if classification in ("glob", "regex"):
+            p = path.as_posix()
+            if fnmatch(name, _exclude) or fnmatch(stem, _exclude) or fnmatch(p, _exclude):
                 return True
             continue
 
-        # Note: I'm really not sure about this fallback from a product behavior standpoint.
-        # Is it limited per path part? Or the entire path? :asciishrug:
-        _exclude_glob = f"*{_exclude}" if is_extension(_exclude) else f"*{_exclude}*"
-        if (
-            fnmatch(name, _exclude_glob)
-            or fnmatch(str(path), _exclude_glob)
-            or fnmatch(stem, _exclude_glob)
-        ):
-            return True
+        # Text patterns: match by exact segment sequence, not substrings
+        # Support multi-part tokens containing path separators (either '/' or '\\')
+        token = _exclude.strip()
+        if not token:
+            continue
+        # Normalize separators in the token to POSIX-style for comparison
+        import re
+
+        token_parts = [seg for seg in re.split(r"[\\/]+", token) if seg]
+        path_parts = list(path.as_posix().split("/"))
+        needed = len(token_parts)
+        if needed == 0:
+            continue
+        # Special-case simple tokens with no separators: also match file/directory name or stem equal to token
+        if needed == 1:
+            if name == token or stem == token:
+                return True
+        # Slide a window over path_parts and compare joined POSIX strings
+        for i in range(0, len(path_parts) - needed + 1):
+            if path_parts[i : i + needed] == token_parts:
+                return True
     return False
