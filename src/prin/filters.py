@@ -84,6 +84,10 @@ def is_excluded(entry: Any, *, exclude: list[TExclusion]) -> bool:
         needed = len(token_parts)
         if needed == 0:
             continue
+        # Special-case simple tokens with no separators: also match file/directory name or stem equal to token
+        if needed == 1:
+            if name == token or stem == token:
+                return True
         # Slide a window over path_parts and compare joined POSIX strings
         for i in range(0, len(path_parts) - needed + 1):
             if path_parts[i : i + needed] == token_parts:
