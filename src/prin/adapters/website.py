@@ -5,9 +5,8 @@ from dataclasses import dataclass
 from contextlib import suppress
 import hashlib
 import json
-import time
 from pathlib import Path, PurePosixPath
-from typing import Iterable, List, Any, Optional
+from typing import Iterable, List, Any
 from urllib.parse import urljoin, urlparse
 
 import requests
@@ -19,23 +18,7 @@ def _ensure_trailing_slash(url: str) -> str:
     return url if url.endswith("/") else url + "/"
 
 
-MAX_WAIT_SECONDS = 180
 _GET_CACHE_DIR = Path("~/.cache").expanduser() / "prin" / "web_get"
-
-
-def _parse_rate_limit_wait_seconds(resp: requests.Response) -> Optional[int]:
-    ra = resp.headers.get("Retry-After")
-    if ra:
-        with suppress(Exception):
-            return int(float(ra))
-    reset = resp.headers.get("X-RateLimit-Reset")
-    if reset:
-        with suppress(Exception):
-            reset_ts = int(float(reset))
-            now = int(time.time())
-            return max(0, reset_ts - now)
-    return None
-
 
 def _make_hashable(value: Any) -> Any:
     if isinstance(value, dict):
@@ -81,35 +64,22 @@ def _get(session: requests.Session, url: str, *, params=None, timeout: int | flo
             with suppress(Exception):
                 Path(meta_path).unlink()
 
-    # Network path with simple backoff for 429/403 using Retry-After headers
-    for attempt in range(2):
-        resp = session.get(url, params=params, timeout=timeout)
-        if resp.status_code in (403, 429):
-            wait = _parse_rate_limit_wait_seconds(resp)
-            if wait is not None:
-                if wait > MAX_WAIT_SECONDS:
-                    resp.close()
-                    msg = f"Rate limit wait {wait}s exceeds {MAX_WAIT_SECONDS}s"
-                    raise RuntimeError(msg)
-                if attempt == 0:
-                    time.sleep(wait)
-                    continue
-        if 200 <= resp.status_code < 300:
-            # Cache successful responses
-            try:
-                data = resp.content
-                with open(body_path, "wb") as f:
-                    f.write(data)
-                meta = {"status": int(resp.status_code), "encoding": resp.encoding or "utf-8"}
-                with open(meta_path, "w", encoding="utf-8") as mf:
-                    json.dump(meta, mf, separators=(",", ":"))
-            except Exception:
-                with suppress(Exception):
-                    Path(body_path).unlink()
-                with suppress(Exception):
-                    Path(meta_path).unlink()
-            return resp
-        resp.raise_for_status()
+    resp = session.get(url, params=params, timeout=timeout)
+    if 200 <= resp.status_code < 300:
+        try:
+            data = resp.content
+            with open(body_path, "wb") as f:
+                f.write(data)
+            meta = {"status": int(resp.status_code), "encoding": resp.encoding or "utf-8"}
+            with open(meta_path, "w", encoding="utf-8") as mf:
+                json.dump(meta, mf, separators=(",", ":"))
+        except Exception:
+            with suppress(Exception):
+                Path(body_path).unlink()
+            with suppress(Exception):
+                Path(meta_path).unlink()
+        return resp
+    resp.raise_for_status()
     return resp
 
 
