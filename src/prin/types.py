@@ -1,16 +1,12 @@
 import inspect
-import os
 from typing import Callable, NewType
 
 TPath = NewType("TPath", str)
 
 
-def _is_extension(name: str) -> bool:
-    return name.startswith(".") and os.path.sep not in name
-
-
 TGlob = NewType("TGlob", str)
 TExtension = NewType("TExtension", str)
+TRegex = NewType("TRegex", str)
 
 TExclusion = TPath | TGlob | Callable[[TPath | TGlob], bool]
 """

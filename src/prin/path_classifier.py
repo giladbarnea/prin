@@ -1,5 +1,8 @@
+import os
 import re
-from typing import Literal
+from typing import Literal, TypeIs
+
+from prin.types import TExtension, TGlob, TRegex
 
 # Each entry is a *single* regex that indicates "this looks like a regex, not a Python glob".
 # We join them with ' | ' and compile with re.VERBOSE for readability.
@@ -36,18 +39,35 @@ _REGEX_ONLY_PATTERNS = [
 _RE_SIGNS = re.compile(" | ".join(_REGEX_ONLY_PATTERNS), re.VERBOSE)
 
 
-def classify_pattern(p: str) -> Literal["regex", "glob"]:
-    """Return 'regex' if p looks like a regular expression, else 'glob'."""
+def classify_pattern(string: str) -> Literal["regex", "glob", "text"]:
     # Should model fd regarding patterns that are neither regexes nor globs.
     # ❯ fd '*.md' .
     # [fd error]: regex parse error:
     # *.md
     # ^
     # error: repetition operator missing expression
-    return "regex" if _RE_SIGNS.search(p) else "glob"
+    if is_regex(string):
+        return "regex"
+    if is_glob(string):
+        return "glob"
+    return "text"
 
 
-def _is_glob(path) -> bool:
-    if not isinstance(path, str):
+def is_regex(string) -> TypeIs[TRegex]:
+    if not isinstance(string, str):
         return False
-    return classify_pattern(path) == "glob"
+    return bool(_RE_SIGNS.search(string))
+
+
+def is_glob(string) -> TypeIs[TGlob]:
+    if not isinstance(string, str):
+        return False
+    if is_regex(string):
+        return False
+    return any(glob_sym in string for glob_sym in "*?[")
+
+
+def is_extension(string) -> TypeIs[TExtension]:
+    if not isinstance(string, str):
+        return False
+    return string.startswith(".") and os.path.sep not in string

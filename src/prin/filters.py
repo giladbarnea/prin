@@ -2,18 +2,10 @@ from __future__ import annotations
 
 from fnmatch import fnmatch
 from pathlib import Path
-from typing import Any, TypeIs
+from typing import Any
 
-from .path_classifier import _is_glob
-from .types import TExclusion, TExtension, TGlob, _is_extension
-
-
-def is_glob(path) -> TypeIs[TGlob]:
-    return _is_glob(path)
-
-
-def is_extension(name: str) -> TypeIs[TExtension]:
-    return _is_extension(name)
+from .path_classifier import is_extension, is_glob
+from .types import TExclusion
 
 
 def read_gitignore_file(gitignore_path: Path) -> list[TExclusion]:
@@ -55,8 +47,6 @@ def get_gitignore_exclusions(paths: list[str]) -> list[TExclusion]:
 
 
 def is_excluded(entry: Any, *, exclude: list[TExclusion]) -> bool:
-    """Shared predicate implementing the legacy matching semantics."""
-
     path = Path(getattr(entry, "path", entry))
     name = path.name
     stem = path.stem
