@@ -2,8 +2,12 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from contextlib import suppress
+import os
+import hashlib
+import json
 from pathlib import Path, PurePosixPath
-from typing import Iterable, List
+from typing import Iterable, List, Any
 from urllib.parse import urljoin, urlparse
 
 import requests
@@ -15,14 +19,72 @@ def _ensure_trailing_slash(url: str) -> str:
     return url if url.endswith("/") else url + "/"
 
 
-def _fetch_text(url: str, *, session: requests.Session) -> str:
-    r = session.get(url, timeout=20)
-    r.raise_for_status()
-    enc = r.encoding or "utf-8"
-    try:
-        return r.content.decode(enc, errors="replace")
-    except Exception:
-        return r.text
+_GET_CACHE_DIR = Path("~/.cache").expanduser() / "prin" / "web_get"
+
+def _make_hashable(value: Any) -> Any:
+    if isinstance(value, dict):
+        return tuple(sorted((k, _make_hashable(v)) for k, v in value.items()))
+    if isinstance(value, (list, tuple)):
+        return tuple(_make_hashable(v) for v in value)
+    if isinstance(value, set):
+        return tuple(sorted(_make_hashable(v) for v in value))
+    return value
+
+
+def _get_cache_key(url: str, *, params: Any) -> tuple:
+    return (url, _make_hashable(params))
+
+
+def _get(session: requests.Session, url: str, *, params=None, timeout: int | float | None = None) -> requests.Response:
+    # Allow disabling cache via env (useful for tests that monkeypatch requests)
+    disable_cache = os.getenv("PRIN_DISABLE_WEB_CACHE", "").lower() in {"1", "true", "yes"}
+    # Disk cache: serve from local cache when available
+    Path(_GET_CACHE_DIR).mkdir(exist_ok=True, parents=True)
+    key = repr(_get_cache_key(url, params=params)).encode("utf-8")
+    cache_hash = hashlib.sha256(key).hexdigest()
+    body_path = _GET_CACHE_DIR / f"{cache_hash}.body"
+    meta_path = _GET_CACHE_DIR / f"{cache_hash}.meta.json"
+    if not disable_cache and Path(body_path).exists():
+        try:
+            with open(body_path, "rb") as f:
+                data = f.read()
+            status = 200
+            enc = "utf-8"
+            if Path(meta_path).exists():
+                with open(meta_path, "r", encoding="utf-8") as mf:
+                    m = json.load(mf)
+                    status = int(m.get("status", 200))
+                    enc = m.get("encoding", "utf-8")
+            resp = requests.Response()
+            resp._content = data
+            resp.status_code = status
+            resp.url = url
+            resp.encoding = enc
+            return resp
+        except Exception:
+            with suppress(Exception):
+                Path(body_path).unlink()
+            with suppress(Exception):
+                Path(meta_path).unlink()
+
+    resp = session.get(url, params=params, timeout=timeout)
+    if 200 <= resp.status_code < 300:
+        try:
+            if not disable_cache:
+                data = resp.content
+                with open(body_path, "wb") as f:
+                    f.write(data)
+                meta = {"status": int(resp.status_code), "encoding": resp.encoding or "utf-8"}
+                with open(meta_path, "w", encoding="utf-8") as mf:
+                    json.dump(meta, mf, separators=(",", ":"))
+        except Exception:
+            with suppress(Exception):
+                Path(body_path).unlink()
+            with suppress(Exception):
+                Path(meta_path).unlink()
+        return resp
+    resp.raise_for_status()
+    return resp
 
 
 def _parse_llms_txt(text: str) -> List[str]:
@@ -83,7 +145,7 @@ class WebsiteSource(SourceAdapter):
         base = _ensure_trailing_slash(base)
         llms_url = base + "llms.txt"
         # If llms.txt is not found, raise FileNotFoundError as per spec (fails if doesn't exist)
-        r = self._session.get(llms_url, timeout=20)
+        r = _get(self._session, llms_url, timeout=20)
         if r.status_code == 404:
             raise FileNotFoundError(llms_url)
         if r.status_code >= 400:
@@ -135,7 +197,7 @@ class WebsiteSource(SourceAdapter):
         if not url:
             # Fallback: if key is a full URL by chance
             url = key
-        r = self._session.get(url, timeout=30)
+        r = _get(self._session, url, timeout=30)
         r.raise_for_status()
         return r.content
 
