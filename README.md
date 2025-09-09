@@ -3,7 +3,7 @@
 [![build](https://github.com/giladbarnea/prin/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/giladbarnea/prin/actions/workflows/build.yml)
 [![tests](https://github.com/giladbarnea/prin/actions/workflows/tests.yml/badge.svg?branch=master)](https://github.com/giladbarnea/prin/actions/workflows/tests.yml)
 [![coverage](https://github.com/giladbarnea/prin/actions/workflows/coverage.yml/badge.svg?branch=master)](https://github.com/giladbarnea/prin/actions/workflows/coverage.yml)
-[![codecov](https://codecov.io/gh/giladbarnea/prin/branch/master/graph/badge.svg)](https://codecov.io/gh/giladbarnea/prin)
+[![coverage](https://img.shields.io/badge/coverage-56%25-red)](#)
 
 Print the contents of full directories, remote GitHub repositories and websites in an LLM-friendly format for increased prompt performance.
 
