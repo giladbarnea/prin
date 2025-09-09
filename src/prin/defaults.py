@@ -81,6 +81,7 @@ DEFAULT_BINARY_EXCLUSIONS: list[TExclusion] = [
     "*.app",
     "*.deb",
     "*.rpm",
+    "*.dot",
     # Archives
     "*.zip",
     "*.tar",

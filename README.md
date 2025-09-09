@@ -9,7 +9,7 @@ Print the contents of full directories, remote GitHub repositories and websites 
 
 ## Basic Usage
 
-`prin` accepts one or more paths to directories, files, remote repositories or websites, and prints the paths and contents of the files in them.
+`prin` accepts one or more paths to directories, files, remote repositories or websites, and prints the paths and contents of the files in them, in a way that is easy for LLMs to understand.
 
 ```sh
 # Print the contents of the codebase you're in
@@ -28,12 +28,12 @@ prin AGENTS.md src/**/*.py
 
 #### Piping a local module and code examples from a remote repository to `claude`
 ```sh
-prin agents/graph github.com/pydantic/pydantic-ai/{docs,examples} | claude -p "The graphs are not connected properly. Fix them."
+prin agents/graph github.com/pydantic/pydantic-ai/{docs,examples} | claude -p "ConversationManager errors when invoking CoderAgent. Fix it."
 ```
 
 #### Attaching a library's documentation to your prompt
 ```sh
-prin . https://docs.framework.io | codex "Leverage framework's API better and minimize reinventing the wheel"
+prin . https://docs.framework.io | codex "Leverage framework's API better to remove custom implementations where possible"
 ```
 
 See `prin --help` for the full list of options.
@@ -130,8 +130,6 @@ In both cases, the `prin` executable should be available in your shell.
 
 - [x] `-E`, `--exclude <glob or regex>` (repeatable; alias: `--ignore <glob>`): Exclude files or directories by shell-style glob or regex (identified automatically). Repeat to add multiple patterns (e.g., --exclude '*.log').
 
-- [ ] `-g`, `--glob`, `--force-glob`: Force the interpretation of the search pattern as a glob (instead of a regular expression). Examples: prin -g '*.py', prin -g 'src/**/test_*.rs'.
-
 - [x] `-e`, `--extension <ext>` (repeatable): Only include files with the given extension (e.g., -e rs -e toml).
 
 - [x] `-T`, `--include-tests`: Include `test`/`tests` directories and spec.ts files.
@@ -153,6 +151,8 @@ In both cases, the `prin` executable should be available in your shell.
 - [x] `-uuu`, `--no-exclude`, `--include-all`: Include everything. Equivalent to `--no-ignore --hidden --binary`.
 
 - [x] `-a`, `--text`, `--include-binary`, `--binary`: Include binary files in the output (e.g., *.pyc, images, archives). Binary files are emitted as headers only in some formats.
+
+- [ ] `-g`, `--glob`, `--force-glob`: Force the interpretation of the search pattern as a glob (instead of a regular expression). Examples: prin -g '*.py', prin -g 'src/**/test_*.rs'.
 
 - [ ] `-S`, `--size <constraint>`: Filter by file size. Format: <+|-><NUM><UNIT> (e.g., +10k, -2M, 500b). Units: b, k, m, g, t, ki, mi, gi, ti.
 
@@ -176,6 +176,8 @@ In both cases, the `prin` executable should be available in your shell.
   - [ ] `--json` alias for `-o json`.
   - [ ] `--yaml` alias for `-o yaml`.
   - [ ] `--csv` alias for `-o csv`.
+
+- [ ] `--no-cache`: Do not cache results of GitHub API calls and HTTP requests.
 
 #### Capabilities
 
