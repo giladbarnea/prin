@@ -10,7 +10,7 @@ These are intentional parities, not code smells. The threshold for inclusion is 
 
 ### Guidance for maintainers and code agents
 
-- Prefer high-signal, indisputable parities. Do not add speculative links.
+- Parities are high-signal, indisputable links between different elements of the project. Do not add speculative links.
 - When adding a feature or option, update all members of every affected set in the same edit series.
 - If you cannot fix a parity immediately, add a TODO in the pull request description and open a follow-up issue.
 - Tests called out under each set are the guardrails; add or update them alongside code changes.
@@ -18,6 +18,8 @@ These are intentional parities, not code smells. The threshold for inclusion is 
 ### Conventions
 
 Each set lists an ID, Members (with precise locations/symbols), a Contract (what must stay in sync), Triggers (what changes require syncing), and Tests (coverage that asserts the contract).
+
+---
 
 ## Set 1 [CLI-CTX-DEFAULTs-README]: CLI options ↔ Context fields ↔ Defaults ↔ README
 
@@ -298,13 +300,14 @@ Each set lists an ID, Members (with precise locations/symbols), a Contract (what
 - Set 6 (protocol) and Set 13 (routing) ensure adapters are both selectable and interoperable once selected.
 - Set 9 (budget) must be honored by all traversal code paths, including explicit force-includes (Set 15) and website fetching (Set 12).
 
+--------------------------------------------------------
+
+
 # Maintaining `PARITIES.md`
 
-This canvas defines **how** to keep `PARITIES.md` accurate, terse, and durable as the project evolves. It is format-centric and future-proof.
+This section defines **how** to keep `PARITIES.md` accurate, terse, and durable as the project evolves. It is format-centric and future-proof.
 
----
-
-## Audience and prerequisites
+## Prerequisites
 
 A change that affects behavior or tests is **incomplete** unless `PARITIES.md` is updated in the same pull request.
 
