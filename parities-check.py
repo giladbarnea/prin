@@ -2,23 +2,26 @@
 """
 parities_check.py — Interactive/CI diagnostics for PARITIES.md
 
-Rules implemented (configurable severities):
-- Line-growth gate: error if growth > fail threshold (default 20 chars), warn if >= warn threshold (default 5).
+Rules implemented (configurable severities via constants):
+- Line-growth gate: ERROR if growth > FAIL_GROWTH (20 chars), WARN if growth ≥ WARN_GROWTH (5 chars).
 - ID uniqueness: error on duplicate Set IDs.
 - Cross-ref integrity: error if any referenced "Set <ID>" (outside headings) does not exist.
-- Dangling references: error if any **Members** file path does not exist.
+- Dangling references: error if any **Members** file path does not exist (relative to CWD).
 - Test presence (unified reference check): for each **Tests** entry like
   "path/to/test_file.py::test_name", error if the file is missing or if the
   test function is not present; if only a file is given, error if missing.
-- Merge opportunities (heuristic): warn when two sets share ≥2 member paths or
+- Merge opportunities (heuristic): WARN when two sets share ≥2 member paths or
   Jaccard similarity ≥ 0.5 (Members only). This is advisory.
 
 Usage examples:
-    python tools/parities_check.py --parities PARITIES.md --repo-root . \
-        --baseline-ref origin/master
+    # Default PARITIES and baseline = origin/<current-branch>:PARITIES.md
+    python tools/parities_check.py
 
-    python tools/parities_check.py --parities PARITIES.md --repo-root . \
-        --baseline-file /tmp/old_PARITIES.md
+    # Explicit PARITIES, baseline from a commit-ish (uses same relative path)
+    python tools/parities_check.py PARITIES.md abc1234
+
+    # Explicit PARITIES and a baseline file on disk
+    python tools/parities_check.py docs/PARITIES.md /tmp/old_PARITIES.md
 
 Exit code: non-zero if any ERROR was emitted.
 """
@@ -33,6 +36,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
 
+# ---------------------- Severity thresholds ----------------------------------
+WARN_GROWTH = 5
+FAIL_GROWTH = 20
 
 # ---------------------- Messaging -------------------------------------------
 
@@ -165,18 +171,18 @@ def parse_parities(text: str) -> ParsedParities:
 
 # ---------------------- Rules ------------------------------------------------
 
-def rule_line_growth(curr: str, baseline: Optional[str], warn: int, fail: int) -> List[Message]:
+def rule_line_growth(curr: str, baseline: Optional[str]) -> List[Message]:
     msgs: List[Message] = []
     if baseline is None:
         msgs.append(Message("INFO", "LineGrowth", "No baseline provided; skipping growth check."))
         return msgs
     d = len(curr) - len(baseline)
-    if d > fail:
-        msgs.append(Message("ERROR", "LineGrowth", f"+{d} chars exceeds fail threshold {fail}"))
-    elif d >= warn:
-        msgs.append(Message("WARN", "LineGrowth", f"+{d} chars ≥ warn threshold {warn}"))
+    if d > FAIL_GROWTH:
+        msgs.append(Message("ERROR", "LineGrowth", f"+{d} chars exceeds fail threshold {FAIL_GROWTH}"))
+    elif d >= WARN_GROWTH:
+        msgs.append(Message("WARN", "LineGrowth", f"+{d} chars ≥ warn threshold {WARN_GROWTH}"))
     else:
-        msgs.append(Message("INFO", "LineGrowth", f"+{d} chars within thresholds (warn={warn}, fail={fail})"))
+        msgs.append(Message("INFO", "LineGrowth", f"+{d} chars within thresholds (warn={WARN_GROWTH}, fail={FAIL_GROWTH})"))
     return msgs
 
 
@@ -205,29 +211,29 @@ def rule_cross_ref(pp: ParsedParities) -> List[Message]:
     return msgs
 
 
-def _exists(repo_root: Path, p: str) -> bool:
-    return (repo_root / p).exists()
+def _exists_cwd(p: str) -> bool:
+    return (Path.cwd() / p).exists()
 
 
-def rule_dangling_refs(pp: ParsedParities, repo_root: Path) -> List[Message]:
+def rule_dangling_refs(pp: ParsedParities) -> List[Message]:
     msgs: List[Message] = []
     missing: List[Tuple[int, str]] = []
     for sid, sb in pp.sets.items():
         for p in sb.member_paths():
-            if not _exists(repo_root, p):
+            if not _exists_cwd(p):
                 missing.append((sid, p))
     for sid, p in missing:
-        msgs.append(Message("ERROR", "DanglingMembers", f"Set {sid}: member path not found: {p}"))
+        msgs.append(Message("ERROR", "DanglingMembers", f"Set {sid}: member path not found (CWD): {p}"))
     if not msgs:
-        msgs.append(Message("INFO", "DanglingMembers", "All member file paths exist"))
+        msgs.append(Message("INFO", "DanglingMembers", "All member file paths exist (relative to CWD)"))
     return msgs
 
 
-def rule_tests(pp: ParsedParities, repo_root: Path) -> List[Message]:
+def rule_tests(pp: ParsedParities) -> List[Message]:
     msgs: List[Message] = []
     for sid, sb in pp.sets.items():
         for path, tname in sb.test_specs():
-            fp = repo_root / path
+            fp = Path.cwd() / path
             if not fp.exists():
                 msgs.append(Message("ERROR", "Tests", f"Set {sid}: test file missing: {path}"))
                 continue
@@ -278,9 +284,26 @@ def read_file_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def read_git_blob(ref: str, relpath: str) -> Optional[str]:
+def git_current_branch() -> Optional[str]:
     try:
-        out = subprocess.check_output(["git", "show", f"{ref}:{relpath}"], stderr=subprocess.STDOUT)
+        out = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"], stderr=subprocess.STDOUT)
+        return out.decode("utf-8", errors="ignore").strip() or None
+    except Exception:
+        return None
+
+
+def read_git_blob_spec(spec: str) -> Optional[str]:
+    """Read git blob using full "rev:path" spec."""
+    try:
+        out = subprocess.check_output(["git", "show", spec], stderr=subprocess.STDOUT)
+        return out.decode("utf-8", errors="ignore")
+    except Exception:
+        return None
+
+
+def read_git_blob_rev_path(rev: str, relpath: str) -> Optional[str]:
+    try:
+        out = subprocess.check_output(["git", "show", f"{rev}:{relpath}"], stderr=subprocess.STDOUT)
         return out.decode("utf-8", errors="ignore")
     except Exception:
         return None
@@ -290,45 +313,63 @@ def read_git_blob(ref: str, relpath: str) -> Optional[str]:
 
 def main(argv: Optional[Iterable[str]] = None) -> int:
     ap = argparse.ArgumentParser(description="Diagnostics for PARITIES.md")
-    ap.add_argument("--parities", default="PARITIES.md", help="Path to PARITIES.md")
-    ap.add_argument("--repo-root", default=".", help="Repository root for file existence checks")
-    g = ap.add_mutually_exclusive_group()
-    g.add_argument("--baseline-file", help="Path to baseline PARITIES.md for growth check")
-    g.add_argument("--baseline-ref", help="Git ref containing PARITIES.md for growth check (e.g., origin/master)")
-    ap.add_argument("--warn-growth", type=int, default=5, help="Warn if growth >= this many chars")
-    ap.add_argument("--fail-growth", type=int, default=20, help="Error if growth > this many chars")
+    # Positional optional: parities path (defaults to PARITIES.md)
+    ap.add_argument("parities", nargs="?", default="PARITIES.md", help="Path to PARITIES.md (default: PARITIES.md)")
+    # Second positional optional: baseline (commit-ish, rev:path, or file path)
+    ap.add_argument(
+        "baseline",
+        nargs="?",
+        help=(
+            "Baseline file or git ref. If a path exists on disk, it is read as file. "
+            "If it contains a colon, it is treated as 'rev:path'. Otherwise it is a commit-ish and "
+            "the same relative path as PARITIES is used. Default: origin/<current-branch>:PARITIES.md"
+        ),
+    )
+
     args = ap.parse_args(argv)
 
-    repo_root = Path(args.repo_root).resolve()
     parities_path = Path(args.parities).resolve()
-
     if not parities_path.exists():
         print(f"[ERROR] Input: file not found: {parities_path}")
         return 2
 
     curr_text = read_file_text(parities_path)
 
+    # Determine baseline text
     baseline_text: Optional[str] = None
-    if args.baseline_file:
-        p = Path(args.baseline_file)
-        if p.exists():
-            baseline_text = read_file_text(p)
+    if args.baseline:
+        # If baseline is an existing file -> read; elif contains ':' -> treat as rev:path; else treat as rev only
+        bp = Path(args.baseline)
+        if bp.exists():
+            try:
+                baseline_text = read_file_text(bp)
+            except Exception:
+                baseline_text = None
+        elif ":" in args.baseline:
+            baseline_text = read_git_blob_spec(args.baseline)
         else:
-            print(f"[WARN] Baseline: file not found: {p}; skipping growth check")
-    elif args.baseline_ref:
-        rel = os.path.relpath(parities_path, repo_root)
-        baseline_text = read_git_blob(args.baseline_ref, rel)
+            # treat as rev only
+            rel = os.path.relpath(parities_path, Path.cwd())
+            baseline_text = read_git_blob_rev_path(args.baseline, rel)
+            if baseline_text is None:
+                print(f"[WARN] Baseline: git show {args.baseline}:{rel} failed; skipping growth check")
+    else:
+        # Default: origin/<current-branch>:<relpath>
+        branch = git_current_branch() or "HEAD"
+        rel = os.path.relpath(parities_path, Path.cwd())
+        spec = f"origin/{branch}:{rel}"
+        baseline_text = read_git_blob_spec(spec)
         if baseline_text is None:
-            print(f"[WARN] Baseline: git show {args.baseline_ref}:{rel} failed; skipping growth check")
+            print(f"[WARN] Baseline: git show {spec} failed; skipping growth check")
 
     pp = parse_parities(curr_text)
 
     messages: List[Message] = []
-    messages += rule_line_growth(curr_text, baseline_text, args.warn_growth, args.fail_growth)
+    messages += rule_line_growth(curr_text, baseline_text)
     messages += rule_id_uniqueness(pp)
     messages += rule_cross_ref(pp)
-    messages += rule_dangling_refs(pp, repo_root)
-    messages += rule_tests(pp, repo_root)
+    messages += rule_dangling_refs(pp)
+    messages += rule_tests(pp)
     messages += rule_merge_opportunities(pp)
 
     # Print grouped output
