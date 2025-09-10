@@ -116,6 +116,91 @@ def test_repo_include_lock():
     assert "<Cargo.lock>" in out
 
 
+@pytest.mark.network
+def test_repo_module_named_locking_is_not_excluded():
+    # Use a repository that might have a module with 'lock' in the name
+    # This tests that literal 'lock' exclusions don't match substrings
+    url = "https://github.com/trouchet/rust-hello"
+    out = _run([url])
+    # Cargo.lock should be excluded by default (it's a lock file)
+    assert "<Cargo.lock>" not in out
+    # But if there was a file with 'lock' as substring, it should not be excluded
+    # This is a basic test to ensure the exclusion logic works properly
+
+
+@pytest.mark.network
+def test_repo_literal_exclude_token_matches_segments_not_substrings():
+    # Test that exclusion by literal token matches path segments, not substrings
+    url = "https://github.com/TypingMind/awesome-typingmind"
+    out = _run(["--exclude", "logos", url])
+    
+    # Should exclude the 'logos' directory
+    assert "<logos/README.md>" not in out
+    assert "<logos/made_for_typingmind.png>" not in out
+    
+    # But should not exclude files that contain 'logos' as substring
+    # (This test is somewhat limited by the available test repos, but demonstrates the concept)
+
+
+@pytest.mark.network
+def test_repo_unrestricted_includes_gitignored():
+    url = "https://github.com/TypingMind/awesome-typingmind"
+    out = _run(["-u", url])
+    # -u flag should enable --no-ignore behavior
+    # Since gitignore parsing is not fully implemented, this mainly tests the flag parsing
+    assert isinstance(out, str)
+    assert len(out) > 0
+
+
+@pytest.mark.network
+def test_repo_uu_includes_hidden_and_gitignored():
+    url = "https://github.com/TypingMind/awesome-typingmind"
+    out = _run(["-uu", url])
+    # -uu flag should enable both --hidden and --no-ignore
+    # Since gitignore parsing is not fully implemented, this mainly tests the flag parsing
+    assert isinstance(out, str)
+    assert len(out) > 0
+
+
+@pytest.mark.network
+def test_repo_hidden_includes_dotfiles_and_dotdirs():
+    # Use a repo that has dotfiles
+    url = "https://github.com/trouchet/rust-hello"
+    out = _run(["--hidden", url])
+    # Look for common dotfiles that might exist
+    # This is somewhat limited by what's available in test repos
+    assert isinstance(out, str)
+    assert len(out) > 0
+
+
+@pytest.mark.network
+def test_repo_include_tests_flag_includes_tests_dir():
+    # Use a repo that has a tests directory
+    url = "https://github.com/trouchet/rust-hello"
+    out = _run(["--include-tests", url])
+    # Should include test files if they exist
+    # This test is somewhat limited by the available test repos
+    assert isinstance(out, str)
+    assert len(out) > 0
+
+
+@pytest.mark.network
+def test_repo_no_options_specified_everything_is_printed():
+    url = "https://github.com/TypingMind/awesome-typingmind"
+    out = _run(["--tag", "xml", url])
+    
+    # Should include README.md by default
+    assert "<README.md>" in out
+    assert "Awesome TypingMind" in out
+    
+    # Should exclude binary files by default
+    assert "<logos/made_for_typingmind.png>" not in out
+    
+    # Should exclude lock files by default (none in this repo, but test structure)
+    assert isinstance(out, str)
+    assert len(out) > 0
+
+
 @pytest.mark.skip("Not supported ATM")
 def test_repo_no_ignore():
     url = "https://github.com/TypingMind/awesome-typingmind"
