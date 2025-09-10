@@ -1,16 +1,19 @@
 # PARITIES
-**Purpose.** Define deliberate couplings in the codebase—places that must remain equivalent in meaning and behavior. When any member of a set changes, review and update all other members to keep the set in lockstep.
+### Purpose
+Define deliberate couplings in the codebase—places that must remain equivalent in meaning and behavior. When any member of a set changes, review and update all other members to keep the set in lockstep.
 
-**Scope.** These are intentional parities, not code smells. The threshold for inclusion is high and obvious.
+### Scope
+These are intentional parities, not code smells. The threshold for inclusion is high and obvious.
 
-**Guidance for maintainers and code agents**
+### Guidance for maintainers and code agents
 - Prefer high-signal, indisputable parities. Do not add speculative links.
 - When adding a feature or option, update all members of every affected set in the same edit series.
 - If you cannot fix a parity immediately, add a TODO in the pull request description and open a follow-up issue.
 - Tests called out under each set are the guardrails; add or update them alongside code changes.
 
-**Conventions.** Each set lists an **ID**, **Members** (precise locations/symbols), a **Contract** (what must stay in sync), **Triggers** (what requires syncing), and **Tests** (coverage that asserts the contract).
-
+### Conventions
+1. Each set lists an **ID**, **Members** (precise locations/symbols), a **Contract** (what must stay in sync), **Triggers** (what requires syncing), and **Tests** (coverage that asserts the contract).
+2. Always use backticks when referring to a `file.ext`, `dir/`, `Symbol`, `function`, etc.
 ---
 
 ## Set 1 [CLI-CTX-DEFAULTs-README]: CLI options ↔ Context fields ↔ Defaults ↔ README
