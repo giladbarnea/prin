@@ -25,6 +25,7 @@ Usage examples:
 
 Exit code: non-zero if any ERROR was emitted.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -41,6 +42,7 @@ WARN_GROWTH = 5
 FAIL_GROWTH = 20
 
 # ---------------------- Messaging -------------------------------------------
+
 
 @dataclass
 class Message:
@@ -73,7 +75,9 @@ class SetBlock:
     sid: int
     heading_line: int
     title: str
-    sections: Dict[str, List[str]] = field(default_factory=lambda: {"Members": [], "Contract": [], "Triggers": [], "Tests": []})
+    sections: Dict[str, List[str]] = field(
+        default_factory=lambda: {"Members": [], "Contract": [], "Triggers": [], "Tests": []}
+    )
 
     @property
     def members_text(self) -> List[str]:
@@ -133,12 +137,17 @@ def parse_parities(text: str) -> ParsedParities:
     # Build blocks
     for idx, (sid, start_line, title) in enumerate(heading_indices):
         end_line = heading_indices[idx + 1][1] - 1 if idx + 1 < len(heading_indices) else len(lines)
-        block_lines = lines[start_line: end_line]
+        block_lines = lines[start_line:end_line]
         # parse sections
         section = None
-        sections: Dict[str, List[str]] = {"Members": [], "Contract": [], "Triggers": [], "Tests": []}
+        sections: Dict[str, List[str]] = {
+            "Members": [],
+            "Contract": [],
+            "Triggers": [],
+            "Tests": [],
+        }
         in_fence = False
-        for j, raw in enumerate(block_lines, start=start_line + 1):
+        for _j, raw in enumerate(block_lines, start=start_line + 1):
             if raw.strip().startswith("```"):
                 in_fence = not in_fence
                 continue
@@ -171,41 +180,62 @@ def parse_parities(text: str) -> ParsedParities:
 
 # ---------------------- Rules ------------------------------------------------
 
-def rule_line_growth(curr: str, baseline: Optional[str]) -> List[Message]:
+
+def rule_line_growth(current: str, baseline: Optional[str]) -> List[Message]:
     msgs: List[Message] = []
     if baseline is None:
         msgs.append(Message("INFO", "LineGrowth", "No baseline provided; skipping growth check."))
         return msgs
-    d = len(curr) - len(baseline)
-    if d > FAIL_GROWTH:
-        msgs.append(Message("ERROR", "LineGrowth", f"+{d} chars exceeds fail threshold {FAIL_GROWTH}"))
-    elif d >= WARN_GROWTH:
-        msgs.append(Message("WARN", "LineGrowth", f"+{d} chars ≥ warn threshold {WARN_GROWTH}"))
+    delta = len(current) - len(baseline)
+    if delta > FAIL_GROWTH:
+        msgs.append(
+            Message("ERROR", "LineGrowth", f"+{delta} chars exceeds fail threshold {FAIL_GROWTH}")
+        )
+    elif delta >= WARN_GROWTH:
+        msgs.append(Message("WARN", "LineGrowth", f"+{delta} chars ≥ warn threshold {WARN_GROWTH}"))
     else:
-        msgs.append(Message("INFO", "LineGrowth", f"+{d} chars within thresholds (warn={WARN_GROWTH}, fail={FAIL_GROWTH})"))
+        msgs.append(
+            Message(
+                "INFO",
+                "LineGrowth",
+                f"+{delta} chars within thresholds (warn={WARN_GROWTH}, fail={FAIL_GROWTH})",
+            )
+        )
     return msgs
 
 
-def rule_id_uniqueness(pp: ParsedParities) -> List[Message]:
+def rule_id_uniqueness(parsed_parities: ParsedParities) -> List[Message]:
     seen: Dict[int, int] = {}
     msgs: List[Message] = []
-    for sid, sb in pp.sets.items():
-        if sid in seen:
-            msgs.append(Message("ERROR", "IDUniqueness", f"Duplicate Set {sid} (lines {seen[sid]} and {sb.heading_line})"))
+    for set_id, set_block in parsed_parities.sets.items():
+        if set_id in seen:
+            msgs.append(
+                Message(
+                    "ERROR",
+                    "IDUniqueness",
+                    f"Duplicate Set {set_id} (lines {seen[set_id]} and {set_block.heading_line})",
+                )
+            )
         else:
-            seen[sid] = sb.heading_line
+            seen[set_id] = set_block.heading_line
     if not msgs:
         msgs.append(Message("INFO", "IDUniqueness", f"{len(seen)} unique Set IDs found"))
     return msgs
 
 
-def rule_cross_ref(pp: ParsedParities) -> List[Message]:
+def rule_cross_ref(parsed_parities: ParsedParities) -> List[Message]:
     msgs: List[Message] = []
-    valid = set(pp.sets.keys())
-    for rid, uses in pp.references.items():
-        if rid not in valid:
+    valid = set(parsed_parities.sets.keys())
+    for reference_id, uses in parsed_parities.references.items():
+        if reference_id not in valid:
             for line_no, line in uses:
-                msgs.append(Message("ERROR", "CrossRef", f"Reference to Set {rid} on line {line_no} is unresolved: {line}"))
+                msgs.append(
+                    Message(
+                        "ERROR",
+                        "CrossRef",
+                        f"Reference to Set {reference_id} on line {line_no} is unresolved: {line}",
+                    )
+                )
     if not msgs:
         msgs.append(Message("INFO", "CrossRef", "All referenced Set IDs resolve"))
     return msgs
@@ -215,62 +245,76 @@ def _exists_cwd(p: str) -> bool:
     return (Path.cwd() / p).exists()
 
 
-def rule_dangling_refs(pp: ParsedParities) -> List[Message]:
+def rule_dangling_refs(parsed_parities: ParsedParities) -> List[Message]:
     msgs: List[Message] = []
     missing: List[Tuple[int, str]] = []
-    for sid, sb in pp.sets.items():
-        for p in sb.member_paths():
-            if not _exists_cwd(p):
-                missing.append((sid, p))
-    for sid, p in missing:
-        msgs.append(Message("ERROR", "DanglingMembers", f"Set {sid}: member path not found (CWD): {p}"))
+    for set_id, set_block in parsed_parities.sets.items():
+        for path in set_block.member_paths():
+            if not _exists_cwd(path):
+                missing.append((set_id, path))
+    for set_id, path in missing:
+        msgs.append(
+            Message(
+                "ERROR", "DanglingMembers", f"Set {set_id}: member path not found (CWD): {path}"
+            )
+        )
     if not msgs:
-        msgs.append(Message("INFO", "DanglingMembers", "All member file paths exist (relative to CWD)"))
+        msgs.append(
+            Message("INFO", "DanglingMembers", "All member file paths exist (relative to CWD)")
+        )
     return msgs
 
 
-def rule_tests(pp: ParsedParities) -> List[Message]:
+def rule_tests(parsed_parities: ParsedParities) -> List[Message]:
     msgs: List[Message] = []
-    for sid, sb in pp.sets.items():
-        for path, tname in sb.test_specs():
-            fp = Path.cwd() / path
-            if not fp.exists():
-                msgs.append(Message("ERROR", "Tests", f"Set {sid}: test file missing: {path}"))
+    for set_id, set_block in parsed_parities.sets.items():
+        for path, test_name in set_block.test_specs():
+            file_path = Path.cwd() / path
+            if not file_path.exists():
+                msgs.append(Message("ERROR", "Tests", f"Set {set_id}: test file missing: {path}"))
                 continue
-            if tname:
+            if test_name:
                 try:
-                    text = fp.read_text(encoding="utf-8", errors="ignore")
+                    text = file_path.read_text(encoding="utf-8", errors="ignore")
                 except Exception as e:
-                    msgs.append(Message("ERROR", "Tests", f"Set {sid}: cannot read {path}: {e}"))
+                    msgs.append(Message("ERROR", "Tests", f"Set {set_id}: cannot read {path}: {e}"))
                     continue
-                if not re.search(rf"\bdef\s+{re.escape(tname)}\s*\(", text):
-                    msgs.append(Message("ERROR", "Tests", f"Set {sid}: test function not found: {path}::{tname}"))
+                if not re.search(rf"\bdef\s+{re.escape(test_name)}\s*\(", text):
+                    msgs.append(
+                        Message(
+                            "ERROR",
+                            "Tests",
+                            f"Set {set_id}: test function not found: {path}::{test_name}",
+                        )
+                    )
     if not [m for m in msgs if m.severity == "ERROR"]:
         msgs.append(Message("INFO", "Tests", "All referenced tests/files are present"))
     return msgs
 
 
-def rule_merge_opportunities(pp: ParsedParities) -> List[Message]:
+def rule_merge_opportunities(parsed_parities: ParsedParities) -> List[Message]:
     msgs: List[Message] = []
     # Build member sets per set ID
-    members: Dict[int, set] = {sid: set(sb.member_paths()) for sid, sb in pp.sets.items()}
-    sids = sorted(members.keys())
-    for i in range(len(sids)):
-        for j in range(i + 1, len(sids)):
-            a, b = sids[i], sids[j]
+    members: Dict[int, set] = {
+        set_id: set(set_block.member_paths()) for set_id, set_block in parsed_parities.sets.items()
+    }
+    set_ids = sorted(members.keys())
+    for i in range(len(set_ids)):
+        for j in range(i + 1, len(set_ids)):
+            a, b = set_ids[i], set_ids[j]
             A, B = members[a], members[b]
             if not A or not B:
                 continue
-            inter = A & B
-            if not inter:
+            intersection = A & B
+            if not intersection:
                 continue
-            jaccard = len(inter) / len(A | B)
-            if len(inter) >= 2 or jaccard >= 0.5:
+            jaccard = len(intersection) / len(A | B)
+            if len(intersection) >= 2 or jaccard >= 0.5:
                 msgs.append(
                     Message(
                         "WARN",
                         "MergeOpportunity",
-                        f"Sets {a} and {b} share {len(inter)} member paths (Jaccard={jaccard:.2f}): {sorted(list(inter))[:5]}...",
+                        f"Sets {a} and {b} share {len(intersection)} member paths (Jaccard={jaccard:.2f}): {sorted(list(intersection))[:5]}...",
                     )
                 )
     if not [m for m in msgs if m.severity == "WARN"]:
@@ -280,13 +324,16 @@ def rule_merge_opportunities(pp: ParsedParities) -> List[Message]:
 
 # ---------------------- Baseline helpers ------------------------------------
 
+
 def read_file_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
 def git_current_branch() -> Optional[str]:
     try:
-        out = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"], stderr=subprocess.STDOUT)
+        out = subprocess.check_output(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"], stderr=subprocess.STDOUT
+        )
         return out.decode("utf-8", errors="ignore").strip() or None
     except Exception:
         return None
@@ -311,12 +358,18 @@ def read_git_blob_rev_path(rev: str, relpath: str) -> Optional[str]:
 
 # ---------------------- Main -------------------------------------------------
 
+
 def main(argv: Optional[Iterable[str]] = None) -> int:
-    ap = argparse.ArgumentParser(description="Diagnostics for PARITIES.md")
+    argument_parser = argparse.ArgumentParser(description="Diagnostics for PARITIES.md")
     # Positional optional: parities path (defaults to PARITIES.md)
-    ap.add_argument("parities", nargs="?", default="PARITIES.md", help="Path to PARITIES.md (default: PARITIES.md)")
+    argument_parser.add_argument(
+        "parities",
+        nargs="?",
+        default="PARITIES.md",
+        help="Path to PARITIES.md (default: PARITIES.md)",
+    )
     # Second positional optional: baseline (commit-ish, rev:path, or file path)
-    ap.add_argument(
+    argument_parser.add_argument(
         "baseline",
         nargs="?",
         help=(
@@ -326,51 +379,53 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
         ),
     )
 
-    args = ap.parse_args(argv)
+    args = argument_parser.parse_args(argv)
 
     parities_path = Path(args.parities).resolve()
     if not parities_path.exists():
         print(f"[ERROR] Input: file not found: {parities_path}")
         return 2
 
-    curr_text = read_file_text(parities_path)
+    current_text = read_file_text(parities_path)
 
     # Determine baseline text
     baseline_text: Optional[str] = None
     if args.baseline:
         # If baseline is an existing file -> read; elif contains ':' -> treat as rev:path; else treat as rev only
-        bp = Path(args.baseline)
-        if bp.exists():
+        baseline_path = Path(args.baseline)
+        if baseline_path.exists():
             try:
-                baseline_text = read_file_text(bp)
+                baseline_text = read_file_text(baseline_path)
             except Exception:
                 baseline_text = None
         elif ":" in args.baseline:
             baseline_text = read_git_blob_spec(args.baseline)
         else:
             # treat as rev only
-            rel = os.path.relpath(parities_path, Path.cwd())
-            baseline_text = read_git_blob_rev_path(args.baseline, rel)
+            relative_path = os.path.relpath(parities_path, Path.cwd())
+            baseline_text = read_git_blob_rev_path(args.baseline, relative_path)
             if baseline_text is None:
-                print(f"[WARN] Baseline: git show {args.baseline}:{rel} failed; skipping growth check")
+                print(
+                    f"[WARN] Baseline: git show {args.baseline}:{relative_path} failed; skipping growth check"
+                )
     else:
         # Default: origin/<current-branch>:<relpath>
         branch = git_current_branch() or "HEAD"
-        rel = os.path.relpath(parities_path, Path.cwd())
-        spec = f"origin/{branch}:{rel}"
+        relative_path = os.path.relpath(parities_path, Path.cwd())
+        spec = f"origin/{branch}:{relative_path}"
         baseline_text = read_git_blob_spec(spec)
         if baseline_text is None:
             print(f"[WARN] Baseline: git show {spec} failed; skipping growth check")
 
-    pp = parse_parities(curr_text)
+    parsed_parities = parse_parities(current_text)
 
     messages: List[Message] = []
-    messages += rule_line_growth(curr_text, baseline_text)
-    messages += rule_id_uniqueness(pp)
-    messages += rule_cross_ref(pp)
-    messages += rule_dangling_refs(pp)
-    messages += rule_tests(pp)
-    messages += rule_merge_opportunities(pp)
+    messages += rule_line_growth(current_text, baseline_text)
+    messages += rule_id_uniqueness(parsed_parities)
+    messages += rule_cross_ref(parsed_parities)
+    messages += rule_dangling_refs(parsed_parities)
+    messages += rule_tests(parsed_parities)
+    messages += rule_merge_opportunities(parsed_parities)
 
     # Print grouped output
     severity_order = {"ERROR": 0, "WARN": 1, "INFO": 2}
