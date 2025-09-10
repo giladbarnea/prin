@@ -323,3 +323,149 @@ Notes on interplay
 	•	Set 1 and Set 10 together ensure CLI shape (flags, defaults, aliases) stays truthful, with Set 14 keeping README aligned.
 	•	Set 6 (protocol) and Set 13 (routing) ensure adapters are both selectable and interoperable once selected.
 	•	Set 9 (budget) must be honored by all traversal code paths, including explicit force-includes (Set 15) and website fetching (Set 12).
+	
+	
+--------
+
+# Maintaining `PARITIES.md`
+
+This canvas defines **how** to keep `PARITIES.md` accurate, terse, and durable as the project evolves. It is format-centric and future-proof.
+
+---
+
+## Audience and prerequisites
+
+A change that affects behavior or tests is **incomplete** unless `PARITIES.md` is updated in the same pull request.
+
+## Maintaining PARITIES.md: Contract
+
+* `PARITIES.md` is a **snapshot**, not a history or design doc.
+* Each set uses the **same minimal structure** (see “Set block template”).
+* Prefer **cross-references** by Set ID over repetition.
+* Keep **signal over noise**: short, testable, and unambiguous.
+
+## Set block template
+
+Use this exact shape for every set; keep headings and their order.
+
+```
+## Set <ID>: <Short name, 3–6 words>
+
+**Members**
+- <repo-path>:<symbol-or-scope>
+- <repo-path>:<symbol-or-scope>
+
+**Contract**
+- <single-sentence rule>
+- <single-sentence rule>
+
+**Triggers**
+- <event that requires syncing>
+- <event that requires syncing>
+
+**Tests**
+- <suite-or-path>::<test_name>
+- <suite-or-path>::<test_name>
+```
+
+**Style rules**
+
+* **Members:** exact paths and symbols only; one item per line; no ranges.
+* **Contract/Triggers:** short, actionable sentences; avoid explanatory prose.
+* **Tests:** name the smallest checks that prove the contract.
+* **Cross-reference:** if another set owns a rule, write “See: Set `<ID>`”.
+
+---
+
+## Size discipline (line-delta rules)
+
+These three rules keep growth proportional to real scope changes:
+
+1. **Removal → shrink**
+   When behavior/files are removed, delete all corresponding lines here.
+   *Expected net effect: total lines **decrease**.*
+
+2. **Modification → steady**
+   When scope is unchanged, update in place without adding bullets or sentences.
+   *Expected net effect: total lines **unchanged**.*
+
+3. **Addition → minimal growth**
+   When scope expands, add only what is strictly necessary:
+
+   * **+1** line per new **Member** item
+   * **≤1** new sentence in **Contract** and/or **Triggers** *if* semantics changed
+   * A brand-new set should rarely exceed **\~10 lines** total
+     If you exceed these budgets, add a one-line PR note:
+     `PARITIES: +<N> lines because <concise reason>`.
+
+---
+
+## Edit recipes (apply one; prefer replacement over addition)
+
+* **Remove a member or set**
+  Delete the **Members** line; prune any now-irrelevant **Contract/Triggers/Tests** bullets.
+  If a set loses all members, delete the set.
+
+* **Modify without expanding scope**
+  Update paths/symbols and adjust wording **without** adding bullets.
+  Replace sentences; do not append new ones.
+
+* **Add a capability or new member**
+  Append **one** precise **Members** line.
+  Add **at most one** new sentence under **Contract/Triggers** if semantics truly changed.
+  Reference tests succinctly; prefer naming existing checks.
+
+* **Merge or split sets**
+  Only when it **reduces duplication** or clarifies ownership.
+  Preserve Set IDs or record the mapping in the PR description.
+
+---
+
+## Automation hooks (recommended, tool-agnostic)
+
+Codify the canvas with lightweight checks. Names below are illustrative; implement with your CI/pre-commit of choice.
+
+* **Line-growth gate**
+  Fail if `PARITIES.md` grows by more than **10 lines** overall, or any single set grows by more than **6 lines**, unless the PR contains `PARITIES: override`.
+
+* **Schema check**
+  Ensure each set has exactly these headings, in order: `Members`, `Contract`, `Triggers`, `Tests`.
+
+* **ID uniqueness**
+  All Set IDs are unique; no duplicates or missing IDs.
+
+* **Dangling references**
+  Every `<repo-path>` listed under **Members** exists in the tree at review time.
+
+* **Cross-ref integrity**
+  Any “See: Set `<ID>`” points to a present ID.
+
+* **Test presence**
+  Named tests under **Tests** are discoverable by the test runner.
+
+---
+
+## Review checklist (for authors and reviewers)
+
+* [ ] I read `README.md`, `AGENTS.md`, and `PARITIES.md` before making changes.
+* [ ] For each changed behavior, the matching set(s) are updated in this PR.
+* [ ] I followed the **Set block template** and **Style rules** exactly.
+* [ ] My changes obey the **line-delta rules**; if not, I included `PARITIES: override` with a one-line reason.
+* [ ] I removed all stale references and avoided duplicating content across sets.
+* [ ] Tests named under **Tests** actually exercise the contract.
+
+---
+
+## Anti-patterns (avoid)
+
+* Narrative explanations, examples that restate code, or historical context.
+* Catch-all sets that mix unrelated concerns.
+* “Future work” notes; put those in issues, not here.
+* Duplicating rules across sets instead of cross-referencing.
+* Vague members (for example, whole directories without symbol scoping).
+
+---
+
+## Operating principle
+
+Treat `PARITIES.md` as a **switchboard**: it names the circuits (Members), the rule that keeps them synchronized (Contract), when to check them (Triggers), and the fuses that trip if something breaks (Tests). Keep labels exact, sentences short, and growth justified.
