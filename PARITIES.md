@@ -17,12 +17,12 @@ These are intentional parities, not code smells. The threshold for inclusion is 
 
 ### Conventions
 
-Each set lists an ID, **Members** (with precise locations or symbols), a **Contract** (what must stay in sync), **Triggers** (what changes require syncing), and **Tests** (coverage that asserts the contract).
+Each set lists an ID, Members (with precise locations/symbols), a Contract (what must stay in sync), Triggers (what changes require syncing), and Tests (coverage that asserts the contract).
 
 ## Set 1 [CLI-CTX-DEFAULTs-README]: CLI options ↔ Context fields ↔ Defaults ↔ README
 
 #### Members
-- `README.md`: Options documented under "Options"/usage.
+- `README.md`: Options documented under “Options”/usage.
 - `src/prin/cli_common.py`: `parse_common_args(...)` flags and help; `Context` dataclass fields; `_expand_cli_aliases`.
 - `src/prin/defaults.py`: `DEFAULT_*` used by CLI defaults and choices.
 - `src/prin/core.py`: `DepthFirstPrinter._set_from_context` consumption/behavior tied to flags.
@@ -30,7 +30,7 @@ Each set lists an ID, **Members** (with precise locations or symbols), a **Contr
 #### Contract
 - One-to-one mapping between CLI flags and `Context` fields, including default values from `defaults.py` and documented behavior in `README.md`.
 - If a flag affects traversal, filtering, or output, `DepthFirstPrinter` must consume the corresponding `Context` field explicitly.
-- `README.md` must document only implemented flags with correct semantics (no "planned" flags presented as implemented).
+- `README.md` must document only implemented flags with correct semantics (no “planned” flags presented as implemented).
 
 #### Triggers
 - Adding/removing/renaming a flag; changing a default; changing flag semantics.
@@ -42,17 +42,17 @@ Each set lists an ID, **Members** (with precise locations or symbols), a **Contr
 ## Set 2 [FORMATTER-SELECTION]: Tag choices ↔ Formatter classes ↔ Defaults ↔ README examples
 
 #### Members
-- `src/prin/prin.py`: tag → formatter dispatch (for example, `"xml"` → `XmlFormatter`, `"md"` → `MarkdownFormatter`).
+- `src/prin/prin.py`: tag→formatter dispatch (for example, "xml" → `XmlFormatter`, "md" → `MarkdownFormatter`).
 - `src/prin/formatters.py`: `XmlFormatter`, `MarkdownFormatter`, `HeaderFormatter`.
 - `src/prin/defaults.py`: `DEFAULT_TAG_CHOICES`.
 - `README.md`: output examples for available tags.
 
 #### Contract
 - Values in `DEFAULT_TAG_CHOICES` must exactly match the dispatch table in `prin.py`, and a concrete formatter class must exist for each value.
-- `README.md` examples must reflect the actual output shape for each tag.
+- README examples must reflect the actual output shape for each tag.
 
 #### Triggers
-- Adding a tag; changing a formatter's behavior/format.
+- Adding a tag; changing a formatter’s behavior/format.
 
 #### Tests
 - `tests/test_options_fs.py::test_tag_md_outputs_markdown_format`
@@ -79,7 +79,7 @@ Each set lists an ID, **Members** (with precise locations or symbols), a **Contr
 
 #### Members
 - `src/prin/defaults.py`: `DEFAULT_EXCLUSIONS`, `DEFAULT_TEST_EXCLUSIONS`, `DEFAULT_LOCK_EXCLUSIONS`, `DEFAULT_BINARY_EXCLUSIONS`, `DEFAULT_DOC_EXTENSIONS`, `Hidden`.
-- `README.md`: "Sane Defaults for LLM Input" (categories listed).
+- `README.md`: “Sane Defaults for LLM Input” (categories listed).
 - FS test fixture: `tests/conftest.py::fs_root` (examples for each category).
 
 #### Contract
@@ -106,8 +106,8 @@ Each set lists an ID, **Members** (with precise locations or symbols), a **Contr
 - Changing matching rules, glob semantics, or extension handling.
 
 #### Tests
-- FS: `tests/test_options_fs.py::test_exclude_glob_and_literal`, `::test_extension_filters_by_extension`
-- Repo: `tests/test_options_repo.py::test_repo_exclude_glob_and_literal`, `::test_repo_extension_filters`
+- FS: `tests/test_options_fs.py::test_exclude_glob_and_literal`, `::test_extension_filters_by_extension`.
+- Repo: `tests/test_options_repo.py::test_repo_exclude_glob_and_literal`, `::test_repo_extension_filters`.
 
 ## Set 6 [SOURCE-ADAPTER-INTERFACE]: Protocol and uniform adapter semantics
 
@@ -117,35 +117,35 @@ Each set lists an ID, **Members** (with precise locations or symbols), a **Contr
 
 #### Contract
 - All adapters implement the four methods with identical semantics expected by the engine:
-  - `resolve_root` returns a stable POSIX-like root for display anchoring.
-  - `list_dir` raises `NotADirectoryError` when the input is a file (so explicit roots are force-included).
-  - `read_file_bytes` returns raw bytes.
-  - `is_empty` uses shared semantic emptiness (see Set 7); Website may defer emptiness until after fetch but must honor the shared definition.
+- `resolve_root` returns a stable POSIX-like root for display anchoring.
+- `list_dir` raises `NotADirectoryError` when the input is a file (so explicit roots are force-included).
+- `read_file_bytes` returns raw bytes.
+- `is_empty` uses shared semantic emptiness (see Set 7); Website may defer emptiness until after fetch but must honor the shared definition.
 
 #### Triggers
 - Changing the protocol, method contracts, or `Entry`/`NodeKind` shapes; adding a new adapter.
 
 #### Tests
-- FS traversal/roots: `tests/test_cli_engine_tmp_path.py`, `tests/test_cli_engine_positional.py`
-- Repo positional semantics: `tests/test_print_repo_positional.py`
-- Mixed invocation: `tests/test_print_mixed_fs_repo.py`
-- Adapter specifics: `tests/test_filesystem_source.py`, `tests/test_github_adapter.py`, `tests/test_website_adapter.py`, `tests/test_website_adapter_all_urls.py`
+- FS traversal/roots: `tests/test_cli_engine_tmp_path.py`, `tests/test_cli_engine_positional.py`.
+- Repo positional semantics: `tests/test_print_repo_positional.py`.
+- Mixed invocation: `tests/test_print_mixed_fs_repo.py`.
+- Adapter specifics: `tests/test_filesystem_source.py`, `tests/test_github_adapter.py`, `tests/test_website_adapter.py`, `tests/test_website_adapter_all_urls.py`.
 
 ## Set 7 [SEMANTIC-EMPTINESS]: Shared definition across adapters
 
 #### Members
 - `src/prin/core.py`: `is_blob_semantically_empty`, `_is_text_semantically_empty`.
-- Adapter usage: filesystem and GitHub `is_empty` delegate to shared function; Website returns `False` at routing time and defers to shared logic post-fetch when applicable.
+- Adapter usage: filesystem and GitHub `is_empty` delegate to shared function; Website returns False at routing time and defers to shared logic post-fetch when applicable.
 
 #### Contract
-- A single definition of "semantically empty" (Python-aware today) governs all adapters. The `--include-empty` flag toggles printing of otherwise empty blobs.
+- A single definition of “semantically empty” (Python-aware today) governs all adapters. The `--include-empty` flag toggles printing of otherwise empty blobs.
 
 #### Triggers
 - Changing emptiness heuristics or language coverage.
 
 #### Tests
-- FS: `tests/test_filesystem_source.py` (empty/non-empty Python and text files)
-- Repo: `tests/test_options_repo.py::test_repo_include_empty`
+- FS: `tests/test_filesystem_source.py` (empty/non-empty Python and text files).
+- Repo: `tests/test_options_repo.py::test_repo_include_empty`.
 
 ## Set 8 [DISPLAY-PATH-NORMALIZATION]: Consistent display paths across sources
 
@@ -160,8 +160,8 @@ Each set lists an ID, **Members** (with precise locations or symbols), a **Contr
 - Changing anchor resolution rules or adapter roots.
 
 #### Tests
-- FS: `tests/test_cli_engine_positional.py`
-- Repo: `tests/test_print_repo_positional.py`
+- FS: `tests/test_cli_engine_positional.py`.
+- Repo: `tests/test_print_repo_positional.py`.
 
 ## Set 9 [BUDGET-GLOBALITY]: One global file budget across sources (`--max-files`)
 
@@ -176,14 +176,14 @@ Each set lists an ID, **Members** (with precise locations or symbols), a **Contr
 - Changing budget semantics or introducing per-source budgets.
 
 #### Tests
-- FS: `tests/test_max_files_fs.py`
-- Repo: `tests/test_max_files_repo.py`
-- Mixed: `tests/test_print_mixed_fs_repo.py`
+- FS: `tests/test_max_files_fs.py`.
+- Repo: `tests/test_max_files_repo.py`.
+- Mixed: `tests/test_print_mixed_fs_repo.py`.
 
 ## Set 10 [CLI-ALIAS-BEHAVIOR]: Alias expansion ↔ canonical flags
 
 #### Members
-- `src/prin/cli_common.py`: `CLI_OPTIONS_ALIASES` (for example, `-uu` → `--hidden --no-ignore`) and parser declarations (for example, `-u`/`--unrestricted`, `-uuu`/`--no-exclude`).
+- `src/prin/cli_common.py`: `CLI_OPTIONS_ALIASES` (for example, `-uu` → `--hidden` `--no-ignore`) and parser declarations (for example, `-u`/`--unrestricted`, `-uuu`/`--no-exclude`).
 - `README.md`: alias documentation.
 
 #### Contract
@@ -193,7 +193,7 @@ Each set lists an ID, **Members** (with precise locations or symbols), a **Contr
 - Adding/removing an alias; changing the flags an alias expands to.
 
 #### Tests
-- FS: `tests/test_options_fs.py::test_uu_includes_hidden_and_gitignored`, `::test_unrestricted_includes_gitignored` (note: `.gitignore` behavior is currently stubbed; see Set 16)
+- FS: `tests/test_options_fs.py::test_uu_includes_hidden_and_gitignored`, `::test_unrestricted_includes_gitignored` (note: `.gitignore` behavior is currently stubbed; see Set 16).
 
 ## Set 11 [TEST-COVERAGE-PARITY]: Feature coverage mirrored per source
 
@@ -222,7 +222,7 @@ Each set lists an ID, **Members** (with precise locations or symbols), a **Contr
 - Changing `llms.txt` interpretation, URL normalization, or keying rules.
 
 #### Tests
-- `tests/test_website_adapter.py`, `tests/test_website_adapter_all_urls.py`
+- `tests/test_website_adapter.py`, `tests/test_website_adapter_all_urls.py`.
 
 ## Set 13 [CLI-URL-ROUTING]: Token routing to adapters
 
@@ -233,15 +233,15 @@ Each set lists an ID, **Members** (with precise locations or symbols), a **Contr
 
 #### Contract
 - Routing logic and helper predicates must align:
-  - Tokens classified as GitHub are handled by the GitHub adapter; HTTP non-GitHub goes to the Website adapter; everything else is treated as local filesystem.
-  - Repo subpaths are extracted consistently and reflected in traversal roots.
-  - Adapters provide a clear domain "matches" check that `prin.py` relies on.
+- Tokens classified as GitHub are handled by the GitHub adapter; HTTP non-GitHub goes to the Website adapter; everything else is treated as local filesystem.
+- Repo subpaths are extracted consistently and reflected in traversal roots.
+- Adapters provide a clear domain “matches” check that `prin.py` relies on.
 
 #### Triggers
 - Changing URL detection, subpath rules, or adding a new source kind.
 
 #### Tests
-- `tests/test_print_repo_positional.py`, `tests/test_print_mixed_fs_repo.py`, `tests/test_max_files_*`
+- `tests/test_print_repo_positional.py`, `tests/test_print_mixed_fs_repo.py`, `tests/test_max_files_*`.
 
 ## Set 14 [README-EXAMPLES-REALITY]: Documentation ↔ observed behavior
 
@@ -251,7 +251,7 @@ Each set lists an ID, **Members** (with precise locations or symbols), a **Contr
 - End-to-end tests that exercise the same stories.
 
 #### Contract
-- `README.md` claims must match implemented behavior and flags; examples should be runnable as shown.
+- README claims must match implemented behavior and flags; examples should be runnable as shown.
 
 #### Triggers
 - Any behavior or flag change; example edits.
@@ -273,8 +273,8 @@ Each set lists an ID, **Members** (with precise locations or symbols), a **Contr
 - Changing explicit-path routing or how adapters signal file vs directory.
 
 #### Tests
-- FS: `tests/test_cli_engine_positional.py::test_directory_and_explicit_ignored_file_inside`
-- Repo: `tests/test_print_repo_positional.py::test_repo_explicit_ignored_file_is_printed`
+- FS: `tests/test_cli_engine_positional.py::test_directory_and_explicit_ignored_file_inside`.
+- Repo: `tests/test_print_repo_positional.py::test_repo_explicit_ignored_file_is_printed`.
 
 ## Set 16 [GITIGNORE-BEHAVIOR]: Current `.gitignore` semantics
 
@@ -286,12 +286,12 @@ Each set lists an ID, **Members** (with precise locations or symbols), a **Contr
 - Until real `.gitignore` parsing is implemented, gitignored files are not excluded by default. Flags (`--no-ignore`, `-u`, `-uu`) must remain consistent with current stubbed behavior and README/alias documentation.
 
 #### Triggers
-- Implementing real `.gitignore` parsing; changing the meaning of `no_ignore`/`unrestricted`.
+- Implementing real `.gitignore` parsing; changing the meaning of `no_ignore`/unrestricted.
 
 #### Tests
-- FS: `tests/test_options_fs.py::test_unrestricted_includes_gitignored` (and any currently skipped tests around `no-ignore`)
+- FS: `tests/test_options_fs.py::test_unrestricted_includes_gitignored` (and any currently skipped tests around `no-ignore`).
 
-## Notes on interplay
+### Notes on interplay
 
 - Sets 4, 5, and 7 together govern filtering: category defaults, cross-source consistency, and semantic emptiness.
 - Set 1 and Set 10 together ensure CLI shape (flags, defaults, aliases) stays truthful, with Set 14 keeping README aligned.
