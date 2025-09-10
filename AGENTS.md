@@ -1,6 +1,10 @@
 # Agents.md
 
-Read and understand the Markdown files of the project before starting a task. 
+Carefully read and understand the 3 Markdown files of the project before starting a task:
+1. README.md
+2. AGENTS.md (this file)
+3. PARITIES.md
+
 Then read the entire codebase (besides uv.lock). It's small; this won't clutter your context window.
 Whatever you do, try to align with the existing design philosophy (What knowledge each component holds, what knowledge it intentionally does not hold, responsibility and separation, what should be reused, and so on.)
 
