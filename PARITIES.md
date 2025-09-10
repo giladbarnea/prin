@@ -1,5 +1,4 @@
-# PARITIES — Single Source of Truth (Updated)
-
+# PARITIES
 **Purpose.** Define deliberate couplings in the codebase—places that must remain equivalent in meaning and behavior. When any member of a set changes, review and update all other members to keep the set in lockstep.
 
 **Scope.** These are intentional parities, not code smells. The threshold for inclusion is high and obvious.
@@ -368,22 +367,6 @@ Use this exact shape for every set; keep headings and their order.
 - **Modify without expanding scope** — update paths/symbols and adjust wording **without** adding bullets; replace sentences instead of appending.
 - **Add a capability or member** — append one precise Members line; optionally add one short sentence under Contract/Triggers if semantics changed; reference tests succinctly.
 - **Merge or split sets** — only when it reduces duplication or clarifies ownership; preserve IDs or note the mapping in the PR description.
-
-## Automation hooks (recommended)
-- **Line-growth gate** — fail if total growth >10 lines or any single set grows >6 lines unless PR includes `PARITIES: override`.
-- **Schema check** — each set has exactly the required headings, in order.
-- **ID uniqueness** — all Set IDs are unique.
-- **Dangling references** — every `<repo-path>` in **Members** exists at review time.
-- **Cross-ref integrity** — any “See: Set `<ID>`” resolves.
-- **Test presence** — named tests under **Tests** are discoverable by the test runner.
-
-## Review checklist
-- I read `README.md`, `AGENTS.md`, and `PARITIES.md` before making changes.
-- For each changed behavior, the matching set(s) are updated in this PR.
-- I followed the template and style rules exactly.
-- My changes obey the line-delta rules; if not, I included `PARITIES: override` with a one-line reason.
-- I removed stale references and avoided duplication.
-- Tests named under **Tests** actually exercise the contract.
 
 ## Operating principle
 Treat `PARITIES.md` as a **switchboard**: it names the circuits (Members), the rule that keeps them synchronized (Contract), when to check them (Triggers), and the fuses that trip if something breaks (Tests). Keep labels exact, sentences short, and growth justified.
