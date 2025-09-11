@@ -45,6 +45,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 - Develop and test with: `uv sync`, `./test.sh [helpful flags to your liking]`.
 - **Important: eagerly run tests frequently, even if the user didn't ask for it.**
 - Tooling: `uv tool install . --reinstall` (and `uv tool install git+https://github.com/giladbarnea/prin.git --reinstall`). Reinstalling is required to apply code changes to the tool.
+ - To add or remove a dependency, use `uv add` or `uv remove`.
 
 ## Ongoing Documentation Maintenance
 If a piece of documentation, docstring, or comment becomes no longer true due to your recent work, modify it to represent the truth or remove it. Stay terse and succinct. Avoid detailing too much.
