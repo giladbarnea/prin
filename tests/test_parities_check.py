@@ -3,6 +3,7 @@ from internal.parities_check import (
     extract_constant_tokens_from_members,
     parse_parities,
 )
+import pytest
 import os
 import shutil
 import subprocess
@@ -314,3 +315,29 @@ def test_members_categorization_cli_flags_and_pytest_specs():
     specs = sb.pytest_specs_all_sections()
     assert ("tests/test_options_fs.py", "test_only_headers_prints_headers_only") in specs
     assert ("tests/test_options_repo.py", "test_repo_only_headers_prints_headers_only") in specs
+
+
+@pytest.mark.parametrize(
+    "id_a,id_b,should_warn",
+    [
+        ("[Alpha-Beta-Gamma]", "[alpha-Delta-Epsilon]", False),  # 1 shared part (alpha) only
+        ("[CLI-CTX-DEFAULTs-README]", "[readme-defaults-core]", True),  # 2 shared parts, mixed case/order
+        ("[FORMATTER-SELECTION-README]", "[readme-selection-formatter]", True),  # 3 shared parts, different order/case
+    ],
+)
+def test_merge_opportunity_id_parts_only(id_a, id_b, should_warn, capsys):
+    block = f"""
+    ## Set 10 {id_a}: A
+    **Members**
+    - `README.md`
+
+    ## Set 11 {id_b}: B
+    **Members**
+    - `README.md`
+    """
+    parsed = parse_parities(block)
+    from internal.parities_check import rule_merge_opportunities
+
+    msgs = rule_merge_opportunities(parsed)
+    warn = any(m.severity == "WARN" and m.rule == "MergeOpportunity" for m in msgs)
+    assert warn is should_warn

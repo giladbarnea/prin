@@ -546,7 +546,7 @@ def rule_merge_opportunities(parsed_parities: ParsedParities) -> List[Message]:
         m = re.search(r"\[(?P<id>[^\]]+)\]", block.title)
         if not m:
             continue
-        parts = [p for p in re.split(r"-+", m.group("id")) if p]
+        parts = [p.casefold() for p in re.split(r"-+", m.group("id")) if p]
         id_parts[sid] = set(parts)
 
     set_ids = sorted(id_parts.keys())
