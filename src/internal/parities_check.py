@@ -98,7 +98,14 @@ def extract_ast_tokens_from_members(member_lines: List[str]) -> List[str]:
     for line in member_lines:
         raw_tokens = BACKTICK_TOKEN_RE.findall(line)
         for raw in raw_tokens:
-            tokens.append(normalize_symbol_token(raw))
+            token = normalize_symbol_token(raw)
+            # Skip file-like tokens
+            if LIKELY_FILE_RE.search(token) or token in {"README.md", "LICENSE"}:
+                continue
+            # Skip wildcard patterns like DEFAULT_*
+            if "*" in token:
+                continue
+            tokens.append(token)
     return tokens
 
 

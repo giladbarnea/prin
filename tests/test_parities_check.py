@@ -22,15 +22,11 @@ def test_block_members_tokens():
 
     tokens = extract_ast_tokens_from_members(set_block.members_text)
 
+    # Should include only AST-resolvable symbol tokens, not files or wildcards
     assert tokens == [
-        "README.md",
-        "src/prin/cli_common.py",
         "parse_common_args",
         "Context",
         "_expand_cli_aliases",
-        "src/prin/defaults.py",
-        "DEFAULT_*",
-        "src/prin/core.py",
         "DepthFirstPrinter._set_from_context",
     ]
 
