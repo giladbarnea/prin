@@ -43,6 +43,18 @@ wheels = [
 ]
 
 [[package]]
+name = "click"
+version = "8.2.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/60/6c/8ca2efa64cf75a977a0d7fac081354553ebe483345c734fb6b6515d96bbc/click-8.2.1.tar.gz", hash = "sha256:27c491cc05d968d271d5a1db13e3b5a184636d9d930f148c50b038f0d0646202", size = 286342, upload-time = "2025-05-20T23:19:49.832Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/85/32/10bb5764d90a8eee674e9dc6f4db6a0ab47c8c4d0d83c27f7c39ac415a4d/click-8.2.1-py3-none-any.whl", hash = "sha256:61a3265b914e850b85317d0b3109c7f8cd35a670f963866005d6ef1d5175a12b", size = 102215, upload-time = "2025-05-20T23:19:47.796Z" },
+]
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 source = { registry = "https://pypi.org/simple" }
@@ -175,6 +187,7 @@ dev = [
     { name = "pudb" },
     { name = "pytest" },
     { name = "ruff" },
+    { name = "symbex" },
 ]
 
 [package.metadata]
@@ -186,6 +199,7 @@ dev = [
     { name = "pudb", specifier = ">=2025.1" },
     { name = "pytest", specifier = ">=8.4.1" },
     { name = "ruff", specifier = ">=0.12.11" },
+    { name = "symbex", specifier = ">=2.0" },
 ]
 
 [[package]]
@@ -268,6 +282,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/22/16/2fbfc61047dbfd009c58a28369a693a1484ad15441723be1cd7fe69bb679/ruff-0.12.11-py3-none-win32.whl", hash = "sha256:c792e8f597c9c756e9bcd4d87cf407a00b60af77078c96f7b6366ea2ce9ba9d3", size = 11944270, upload-time = "2025-08-28T13:59:02.347Z" },
     { url = "https://files.pythonhosted.org/packages/08/a5/34276984705bfe069cd383101c45077ee029c3fe3b28225bf67aa35f0647/ruff-0.12.11-py3-none-win_amd64.whl", hash = "sha256:a3283325960307915b6deb3576b96919ee89432ebd9c48771ca12ee8afe4a0fd", size = 13046600, upload-time = "2025-08-28T13:59:04.751Z" },
     { url = "https://files.pythonhosted.org/packages/84/a8/001d4a7c2b37623a3fd7463208267fb906df40ff31db496157549cfd6e72/ruff-0.12.11-py3-none-win_arm64.whl", hash = "sha256:bae4d6e6a2676f8fb0f98b74594a048bae1b944aab17e9f5d504062303c6dbea", size = 12135290, upload-time = "2025-08-28T13:59:06.933Z" },
+]
+
+[[package]]
+name = "symbex"
+version = "2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "click" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/75/1d/0795ed1970db8bf0aba3eb5f6ae7d6f454ea93785bfab01046fd7bbf5a60/symbex-2.0.tar.gz", hash = "sha256:dfa2054893b07a7c99072798137be16477cf5071828b0b380373c0cf8d726b87", size = 31015, upload-time = "2025-04-23T05:33:05.437Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/48/f9/03742d19afb9f525f711e1f02ed7fe721ae88abf0fb40d8fe55d8bbc56db/symbex-2.0-py3-none-any.whl", hash = "sha256:4a59c472a94117182aefecd19f6fe1932b20f4c22ff59ebce582e3342e5255cd", size = 20730, upload-time = "2025-04-23T05:33:04.107Z" },
 ]
 
 [[package]]

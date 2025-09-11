@@ -57,7 +57,9 @@ class Message:
 # ---------------------- Parsing ---------------------------------------------
 
 SET_HEADING_RE = re.compile(r"^\s*#{2,}\s*Set\s+(\d+)\s*(?:\[[^\]]*\])?:.*$")
-SECTION_RE = re.compile(r"^\s*\*\*(Members|Contract|Triggers|Tests)\*\*\s*$")
+SECTION_RE = re.compile(
+    r"^\s*(?:\*\*(Members|Contract|Triggers|Tests)\*\*|#{3,6}\s*(Members|Contract|Triggers|Tests))\s*$"
+)
 BULLET_RE = re.compile(r"^\s*-\s+(.*)$")
 BACKTICK_TOKEN_RE = re.compile(r"`([^`]+)`")
 SET_REF_RE = re.compile(r"\bSet\s+(\d+)\b")
@@ -68,6 +70,72 @@ LIKELY_FILE_RE = re.compile(
     r"/|\\|\.(py|md|rst|txt|json|jsonl|toml|yaml|yml|ini|cfg|lock|rs|ts|tsx|js|jsx|sh|bat|cfg|conf|lock|mdx)$",
     re.IGNORECASE,
 )
+
+CLI_FLAG_RE = re.compile(r"^-{1,3}[A-Za-z][A-Za-z-]*$|^-u{2,3}$")
+CLI_FLAG_FINDER_RE = re.compile(r"(?<!\S)(-{1,3}[A-Za-z][A-Za-z-]*|-u{2,3})(?!\S)")
+
+
+def normalize_symbol_token(token: str) -> str:
+    """Normalize a backticked token for AST resolution.
+
+    Rules:
+    - Strip trailing parentheses with optional ellipsis: "foo(...)" → "foo", "bar()" → "bar".
+    - Trim whitespace around the token.
+    - Preserve glob-like tokens such as "DEFAULT_*" as-is.
+    - Leave file paths unchanged (they won't match the parens pattern).
+    """
+    t = token.strip()
+    # Remove trailing () or (...)
+    t = re.sub(r"\s*\((?:\s*\.\.\.\s*)?\)\s*$", "", t)
+    return t
+
+
+def extract_ast_tokens_from_members(member_lines: List[str]) -> List[str]:
+    """Extract and normalize tokens from **Members** lines suitable for AST lookup.
+
+    This collects all backticked tokens from the lines and applies normalization
+    so that function/symbol names are resolvable by AST tools (e.g., symbex).
+    """
+    tokens: List[str] = []
+    for line in member_lines:
+        raw_tokens = BACKTICK_TOKEN_RE.findall(line)
+        for raw in raw_tokens:
+            token = normalize_symbol_token(raw)
+            # Skip file-like tokens
+            if LIKELY_FILE_RE.search(token) or token in {"README.md", "LICENSE"}:
+                continue
+            # Skip wildcard patterns like DEFAULT_*
+            if "*" in token:
+                continue
+            # Skip ALL_CAPS constants which symbex cannot resolve
+            if re.fullmatch(r"[A-Z0-9_]+", token):
+                continue
+            tokens.append(token)
+    return tokens
+
+
+def extract_constant_tokens_from_members(member_lines: List[str]) -> List[str]:
+    """Extract constant-like tokens (e.g., DEFAULT_*, DEFAULT_TAG_CHOICES) from Members lines.
+
+    - Includes ALL_CAPS tokens and wildcard constant patterns like DEFAULT_*.
+    - Excludes file-like tokens.
+    """
+    constants: List[str] = []
+    for line in member_lines:
+        for raw in BACKTICK_TOKEN_RE.findall(line):
+            token = raw.strip()
+            if LIKELY_FILE_RE.search(token) or token in {"README.md", "LICENSE"}:
+                continue
+            if "*" in token or re.fullmatch(r"[A-Z0-9_]+", token):
+                constants.append(token)
+    # preserve order, de-duplicate
+    seen: set = set()
+    unique_constants: List[str] = []
+    for c in constants:
+        if c not in seen:
+            seen.add(c)
+            unique_constants.append(c)
+    return unique_constants
 
 
 @dataclass
@@ -107,11 +175,49 @@ class SetBlock:
             toks = BACKTICK_TOKEN_RE.findall(line) or [line]
             for tok in toks:
                 tok = tok.strip()
+                # Only accept likely file paths (to avoid treating prose tokens as tests)
+                if CLI_FLAG_RE.match(tok):
+                    continue
+                if not ("/" in tok or tok.endswith(".py")):
+                    continue
                 m = TEST_SPEC_RE.match(tok)
                 if not m:
                     continue
                 specs.append((m.group("path").strip(), (m.group("test") or None)))
         return specs
+
+    def backtick_tokens_in_sections(self, section_names: Optional[List[str]] = None) -> List[str]:
+        """Return all backticked tokens from specified sections (defaults to all)."""
+        tokens: List[str] = []
+        sections = section_names or list(self.sections.keys())
+        for name in sections:
+            for line in self.sections.get(name, []):
+                tokens.extend([tok.strip() for tok in BACKTICK_TOKEN_RE.findall(line)])
+        return tokens
+
+    def cli_flags_in_tests(self) -> List[str]:
+        """Extract CLI flags (e.g., --hidden, -uu) mentioned in **Tests** lines.
+
+        Matches flags that are backticked or raw text.
+        """
+        flags: List[str] = []
+        for line in self.tests_text:
+            # First, capture backticked tokens that are flags
+            for tok in BACKTICK_TOKEN_RE.findall(line):
+                tok = tok.strip()
+                if CLI_FLAG_RE.match(tok):
+                    flags.append(tok)
+            # Then, capture any raw flags not in backticks
+            for m in CLI_FLAG_FINDER_RE.finditer(line):
+                flags.append(m.group(1))
+        # preserve order; de-duplicate
+        seen: set = set()
+        unique_flags: List[str] = []
+        for f in flags:
+            if f not in seen:
+                seen.add(f)
+                unique_flags.append(f)
+        return unique_flags
 
 
 @dataclass
@@ -155,7 +261,7 @@ def parse_parities(text: str) -> ParsedParities:
                 continue
             sm = SECTION_RE.match(raw)
             if sm:
-                section = sm.group(1)
+                section = sm.group(1) or sm.group(2)
                 continue
             if section and (bm := BULLET_RE.match(raw)):
                 sections.setdefault(section, []).append(bm.group(1).strip())
