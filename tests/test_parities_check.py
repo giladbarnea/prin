@@ -59,6 +59,11 @@ def test_first_set_contract_triggers_tests_tokens():
     assert "README" in contract_tokens  # README with no extension
     assert "fs_root" in contract_tokens
 
+    # Assert subsections exist and contain bullets
+    for section_name in ["Members", "Contract", "Triggers", "Tests"]:
+        assert section_name in set_block.sections
+        assert len(set_block.sections[section_name]) >= 1
+
     # Triggers have no backticked tokens
     triggers_tokens = set_block.backtick_tokens_in_sections(["Triggers"])
     assert triggers_tokens == []
