@@ -34,6 +34,16 @@ def test_block_members_tokens():
         "DepthFirstPrinter._set_from_context",
     ]
 
+    # File tokens should be captured separately and resolvable
+    file_tokens = set_block.member_paths()
+    for path in [
+        "README.md",
+        "src/prin/cli_common.py",
+        "src/prin/defaults.py",
+        "src/prin/core.py",
+    ]:
+        assert path in file_tokens
+
 
 def test_first_set_contract_triggers_tests_tokens():
     block = """
@@ -180,8 +190,15 @@ def test_set2_sections_and_tokens_h3_h4_headings():
     # Constant-like tokens are verified separately
     const_tokens = extract_constant_tokens_from_members(set_block.members_text)
     assert "DEFAULT_TAG_CHOICES" in const_tokens
-    # README is a file token; should not appear in either symbols or constants
-    assert "README.md" not in ast_tokens
+    # File tokens should be captured separately and resolvable
+    file_tokens = set_block.member_paths()
+    for path in [
+        "src/prin/prin.py",
+        "src/prin/formatters.py",
+        "src/prin/defaults.py",
+        "README.md",
+    ]:
+        assert path in file_tokens
 
     # Tests: verify test specs extraction
     test_specs = set_block.test_specs()
