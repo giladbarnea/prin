@@ -140,6 +140,32 @@ def extract_constant_tokens_from_members(member_lines: List[str]) -> List[str]:
     return unique_constants
 
 
+def _is_file_like_token(token: str) -> bool:
+    """Heuristic for file-like tokens.
+
+    Rules:
+    - Exact names like README.md and LICENSE are accepted.
+    - Bare filenames with known extensions must have no whitespace.
+    - Slash-based paths must have no whitespace and not look like CLI flag pairs.
+    - Excludes pytest specs containing '::'.
+    """
+    t = token.strip()
+    if "::" in t:
+        return False
+    if t in {"README.md", "LICENSE"}:
+        return True
+    # Bare filename with extension
+    if re.fullmatch(r"\S+\.(py|md|rst|txt|json|jsonl|toml|yaml|yml|ini|cfg|lock|rs|ts|tsx|js|jsx|sh|bat|conf|mdx)", t, flags=re.IGNORECASE):
+        return True
+    # Slash-based path with no whitespace
+    if "/" in t and not re.search(r"\s", t):
+        # Guard against combined CLI flags like -f/--foo
+        parts = re.split(r"/", t)
+        if parts and all(not CLI_FLAG_RE.match(p or "") for p in parts):
+            return True
+    return False
+
+
 @dataclass
 class SetBlock:
     sid: int
@@ -285,16 +311,7 @@ class SetBlock:
 
         def _maybe_add(token: str) -> None:
             t = token.strip()
-            if "::" in t:
-                return
-            if CLI_FLAG_RE.match(t):
-                return
-            # Skip combined flag pairs like -f/--foo
-            if ("/" in t or "," in t):
-                parts = re.split(r"\s*[/,]\s*", t)
-                if parts and all(CLI_FLAG_RE.match(p.strip() or "") for p in parts):
-                    return
-            if LIKELY_FILE_RE.search(t) or t in {"README.md", "LICENSE"}:
+            if _is_file_like_token(t):
                 paths.append(t)
 
         for line in lines:
@@ -455,6 +472,12 @@ def _exists_cwd_or_glob(p: str) -> bool:
         from glob import glob
 
         matches = glob(str(Path.cwd() / p))
+        return len(matches) > 0
+    # If it's a bare filename with extension, search recursively under CWD
+    if re.fullmatch(r"\S+\.(py|md|rst|txt|json|jsonl|toml|yaml|yml|ini|cfg|lock|rs|ts|tsx|js|jsx|sh|bat|conf|mdx)", p, flags=re.IGNORECASE):
+        from glob import glob
+
+        matches = glob(str(Path.cwd() / "**" / p), recursive=True)
         return len(matches) > 0
     return False
 
