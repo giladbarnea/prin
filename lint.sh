@@ -1,8 +1,14 @@
-#!/usr/bin/env bash
+set -uo pipefail
+source .common.sh
 
-set -e
-set -x
+function main(){
+	ensure_uv_installed
+	set -x
+	uv run ruff check . --unsafe-fixes --preview
+	uv run ruff format . --check --preview
+	set +x
+}
 
-# mypy app
-uv run ruff check . --unsafe-fixes --preview
-uv run ruff format . --check --preview
+
+main
+

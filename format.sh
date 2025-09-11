@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
-set -x
+set -uo pipefail
+source .common.sh
 
-uv run ruff check . --fix --preview --unsafe-fixes
-uv run ruff format . --preview
+function main(){
+	ensure_uv_installed
+	set -x
+	uv run ruff check . --fix --preview --unsafe-fixes
+	uv run ruff format . --preview
+	set +x
+}
+
+main
+
