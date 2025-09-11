@@ -204,3 +204,57 @@ def test_set2_sections_and_tokens_h3_h4_headings():
     test_specs = set_block.test_specs()
     assert ("tests/test_options_fs.py", "test_tag_md_outputs_markdown_format") in test_specs
     assert ("tests/test_options_repo.py", "test_repo_tag_md_outputs_markdown_format") in test_specs
+
+
+def test_set3_only_headers_enforcement_members_contract_tests():
+    block = """
+    ## Set 3 [ONLY-HEADERS-ENFORCEMENT]: `--only-headers` flag ↔ HeaderFormatter behavior
+    **Members**
+    - `src/prin/cli_common.py` (`Context.only_headers` / CLI: `-l/--only-headers`)
+    - `src/prin/core.py` (`DepthFirstPrinter` forcing `HeaderFormatter`)
+    - `src/prin/formatters.py` (`HeaderFormatter`)
+
+    **Contract**
+    - When `only_headers` is true, body content must not be printed, regardless of selected formatter.
+
+    **Triggers**
+    - Changing `only_headers` semantics or formatter enforcement.
+
+    **Tests**
+    - FS: `tests/test_options_fs.py::test_only_headers_prints_headers_only`
+    - Repo: `tests/test_options_repo.py::test_repo_only_headers_prints_headers_only`
+    """
+    parsed = parse_parities(block)
+    assert 3 in parsed.sets
+    set_block = parsed.sets[3]
+    assert set_block.sid == 3
+    assert set_block.title.startswith("## Set 3 [ONLY-HEADERS-ENFORCEMENT]")
+
+    # Subsections exist and contain bullets
+    for section_name in ["Members", "Contract", "Triggers", "Tests"]:
+        assert section_name in set_block.sections
+        assert len(set_block.sections[section_name]) >= 1
+
+    # Members: AST-resolvable tokens include class attribute and class names
+    ast_tokens = extract_ast_tokens_from_members(set_block.members_text)
+    assert "Context.only_headers" in ast_tokens
+    assert "DepthFirstPrinter" in ast_tokens
+    assert "HeaderFormatter" in ast_tokens
+
+    # Member file paths are captured
+    file_tokens = set_block.member_paths()
+    for path in [
+        "src/prin/cli_common.py",
+        "src/prin/core.py",
+        "src/prin/formatters.py",
+    ]:
+        assert path in file_tokens
+
+    # Contract tokens include the standalone reference (debated for verification)
+    contract_tokens = set_block.backtick_tokens_in_sections(["Contract"])
+    assert "only_headers" in contract_tokens
+
+    # Tests include both FS and Repo checks
+    test_specs = set_block.test_specs()
+    assert ("tests/test_options_fs.py", "test_only_headers_prints_headers_only") in test_specs
+    assert ("tests/test_options_repo.py", "test_repo_only_headers_prints_headers_only") in test_specs
