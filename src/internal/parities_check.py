@@ -70,6 +70,35 @@ LIKELY_FILE_RE = re.compile(
 )
 
 
+def normalize_symbol_token(token: str) -> str:
+    """Normalize a backticked token for AST resolution.
+
+    Rules:
+    - Strip trailing parentheses with optional ellipsis: "foo(...)" → "foo", "bar()" → "bar".
+    - Trim whitespace around the token.
+    - Preserve glob-like tokens such as "DEFAULT_*" as-is.
+    - Leave file paths unchanged (they won't match the parens pattern).
+    """
+    t = token.strip()
+    # Remove trailing () or (...)
+    t = re.sub(r"\s*\((?:\s*\.\.\.\s*)?\)\s*$", "", t)
+    return t
+
+
+def extract_ast_tokens_from_members(member_lines: List[str]) -> List[str]:
+    """Extract and normalize tokens from **Members** lines suitable for AST lookup.
+
+    This collects all backticked tokens from the lines and applies normalization
+    so that function/symbol names are resolvable by AST tools (e.g., symbex).
+    """
+    tokens: List[str] = []
+    for line in member_lines:
+        raw_tokens = BACKTICK_TOKEN_RE.findall(line)
+        for raw in raw_tokens:
+            tokens.append(normalize_symbol_token(raw))
+    return tokens
+
+
 @dataclass
 class SetBlock:
     sid: int
