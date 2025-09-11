@@ -1,4 +1,8 @@
-from internal.parities_check import extract_ast_tokens_from_members, parse_parities
+from internal.parities_check import (
+    extract_ast_tokens_from_members,
+    extract_constant_tokens_from_members,
+    parse_parities,
+)
 import os
 import shutil
 import subprocess
@@ -168,14 +172,15 @@ def test_set2_sections_and_tokens_h3_h4_headings():
         assert section_name in set_block.sections
         assert len(set_block.sections[section_name]) >= 1
 
-    # Members: AST-resolvable tokens should include formatter classes (class tokens) and exclude constants
+    # Members: AST-resolvable tokens should include formatter classes (class tokens)
     ast_tokens = extract_ast_tokens_from_members(set_block.members_text)
-    # Only symbols (no files) and no wildcard/const tokens
     # Expected: XmlFormatter, MarkdownFormatter, HeaderFormatter
     for sym in ["XmlFormatter", "MarkdownFormatter", "HeaderFormatter"]:
         assert sym in ast_tokens
-    # Exclude DEFAULT_TAG_CHOICES and files
-    assert "DEFAULT_TAG_CHOICES" not in ast_tokens
+    # Constant-like tokens are verified separately
+    const_tokens = extract_constant_tokens_from_members(set_block.members_text)
+    assert "DEFAULT_TAG_CHOICES" in const_tokens
+    # README is a file token; should not appear in either symbols or constants
     assert "README.md" not in ast_tokens
 
     # Tests: verify test specs extraction

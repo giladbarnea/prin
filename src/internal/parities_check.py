@@ -114,6 +114,30 @@ def extract_ast_tokens_from_members(member_lines: List[str]) -> List[str]:
     return tokens
 
 
+def extract_constant_tokens_from_members(member_lines: List[str]) -> List[str]:
+    """Extract constant-like tokens (e.g., DEFAULT_*, DEFAULT_TAG_CHOICES) from Members lines.
+
+    - Includes ALL_CAPS tokens and wildcard constant patterns like DEFAULT_*.
+    - Excludes file-like tokens.
+    """
+    constants: List[str] = []
+    for line in member_lines:
+        for raw in BACKTICK_TOKEN_RE.findall(line):
+            token = raw.strip()
+            if LIKELY_FILE_RE.search(token) or token in {"README.md", "LICENSE"}:
+                continue
+            if "*" in token or re.fullmatch(r"[A-Z0-9_]+", token):
+                constants.append(token)
+    # preserve order, de-duplicate
+    seen: set = set()
+    unique_constants: List[str] = []
+    for c in constants:
+        if c not in seen:
+            seen.add(c)
+            unique_constants.append(c)
+    return unique_constants
+
+
 @dataclass
 class SetBlock:
     sid: int
