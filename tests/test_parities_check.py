@@ -258,3 +258,59 @@ def test_set3_only_headers_enforcement_members_contract_tests():
     test_specs = set_block.test_specs()
     assert ("tests/test_options_fs.py", "test_only_headers_prints_headers_only") in test_specs
     assert ("tests/test_options_repo.py", "test_repo_only_headers_prints_headers_only") in test_specs
+
+
+def test_cli_flag_pair_extraction_all_forms():
+    # Construct a block with a Tests section containing all 16 variants
+    variants = [
+        "-f/--foo-bar",
+        "-f,--foo-bar",
+        "-f / --foo-bar",
+        "-f, --foo-bar",
+        "`-f`/`--foo-bar`",
+        "`-f` / `--foo-bar`",
+        "`-f`,`--foo-bar`",
+        "`-f`, `--foo-bar`",
+    ]
+    paren_variants = [f"({v})" for v in variants]
+    lines = "\n".join(f"- {v}" for v in (variants + paren_variants))
+    block = f"""
+    ## Set 99 [FLAGS-TEST]: CLI flag extraction forms
+    **Members**
+    - `README.md`
+
+    **Tests**
+{lines}
+    """
+    block = block.format(lines=lines)
+    parsed = parse_parities(block)
+    set_block = parsed.sets[99]
+    flags = set_block.cli_flags_in_tests()
+    # Both flags should be captured
+    assert flags.count("-f") >= 1
+    assert flags.count("--foo-bar") >= 1
+    assert "-f" in flags and "--foo-bar" in flags
+
+
+def test_members_categorization_cli_flags_and_pytest_specs():
+    block = """
+    ## Set 100 [CATEGORIZE]: Token categorization in Members
+    **Members**
+    - `src/prin/core.py` (`-l/--only-headers`, `tests/test_options_fs.py::test_only_headers_prints_headers_only`)
+    - `tests/test_options_repo.py::test_repo_only_headers_prints_headers_only`
+    - `-x`/`--example-flag`
+    """
+    parsed = parse_parities(block)
+    sb = parsed.sets[100]
+    # Paths should include real files, not flags or pytest specs
+    paths = sb.member_paths()
+    assert "src/prin/core.py" in paths
+    assert not any(p.startswith("-") for p in paths)
+    assert not any("::" in p for p in paths)
+    # Flags should be captured across all sections
+    flags = sb.cli_flags_all_sections()
+    assert "-l" in flags and "--only-headers" in flags and "-x" in flags and "--example-flag" in flags
+    # Pytest specs captured across all sections
+    specs = sb.pytest_specs_all_sections()
+    assert ("tests/test_options_fs.py", "test_only_headers_prints_headers_only") in specs
+    assert ("tests/test_options_repo.py", "test_repo_only_headers_prints_headers_only") in specs

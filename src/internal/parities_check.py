@@ -165,9 +165,9 @@ class SetBlock:
             candidates = toks if toks else [line]
             for tok in candidates:
                 tok = tok.strip()
-                # Strip ::symbol when authors annotate a symbol next to a path
+                # If this looks like a pytest spec (contains ::), don't treat as a file path here
                 if "::" in tok:
-                    tok = tok.split("::", 1)[0].strip()
+                    continue
                 # Skip CLI flags accidentally included in Members
                 if CLI_FLAG_RE.match(tok):
                     continue
@@ -208,29 +208,70 @@ class SetBlock:
                 tokens.extend([tok.strip() for tok in BACKTICK_TOKEN_RE.findall(line)])
         return tokens
 
-    def cli_flags_in_tests(self) -> List[str]:
-        """Extract CLI flags (e.g., --hidden, -uu) mentioned in **Tests** lines.
-
-        Matches flags that are backticked or raw text.
-        """
+    def _extract_cli_flags_from_lines(self, lines: List[str]) -> List[str]:
         flags: List[str] = []
-        for line in self.tests_text:
-            # First, capture backticked tokens that are flags
+        separators = re.compile(r"\s*[/,]\s*")
+
+        def _add_from_token(token: str) -> None:
+            t = token.strip()
+            if t.startswith("(") and t.endswith(")"):
+                t = t[1:-1].strip()
+            if t.startswith("`") and t.endswith("`") and len(t) >= 2:
+                t = t[1:-1].strip()
+            if CLI_FLAG_RE.match(t):
+                flags.append(t)
+                return
+            for part in separators.split(t):
+                part = part.strip()
+                if CLI_FLAG_RE.match(part):
+                    flags.append(part)
+
+        for line in lines:
+            # capture backticked flags (single or combined)
             for tok in BACKTICK_TOKEN_RE.findall(line):
-                tok = tok.strip()
-                if CLI_FLAG_RE.match(tok):
-                    flags.append(tok)
-            # Then, capture any raw flags not in backticks
+                _add_from_token(tok)
+            # capture raw flags
             for m in CLI_FLAG_FINDER_RE.finditer(line):
                 flags.append(m.group(1))
-        # preserve order; de-duplicate
+        # de-duplicate preserving order
         seen: set = set()
-        unique_flags: List[str] = []
+        uniq: List[str] = []
         for f in flags:
             if f not in seen:
                 seen.add(f)
-                unique_flags.append(f)
-        return unique_flags
+                uniq.append(f)
+        return uniq
+
+    def cli_flags_all_sections(self) -> List[str]:
+        # Flatten all section lines
+        lines: List[str] = []
+        for name in self.sections:
+            lines.extend(self.sections.get(name, []))
+        return self._extract_cli_flags_from_lines(lines)
+
+    def cli_flags_in_tests(self) -> List[str]:
+        return self._extract_cli_flags_from_lines(self.tests_text)
+
+    def pytest_specs_all_sections(self) -> List[Tuple[str, Optional[str]]]:
+        specs: List[Tuple[str, Optional[str]]] = []
+        lines: List[str] = []
+        for name in self.sections:
+            lines.extend(self.sections.get(name, []))
+        for line in lines:
+            toks = BACKTICK_TOKEN_RE.findall(line) or [line]
+            for tok in toks:
+                tok = tok.strip()
+                m = TEST_SPEC_RE.match(tok)
+                if m and m.group("test"):
+                    specs.append((m.group("path").strip(), m.group("test")))
+        # de-dup
+        seen: set = set()
+        uniq: List[Tuple[str, Optional[str]]] = []
+        for p in specs:
+            if p not in seen:
+                seen.add(p)
+                uniq.append(p)
+        return uniq
 
 
 @dataclass
