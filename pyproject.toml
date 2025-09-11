@@ -114,6 +114,8 @@ skip-magic-trailing-comma = false
 [tool.pytest.ini_options]
 markers = [
   "network: tests that require network access",
+  "website: tests that target website adapter",
+  "repo: tests that target repository adapter",
 ]
 
 [tool.coverage.run]
