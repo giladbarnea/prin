@@ -1,6 +1,6 @@
 import re
 
-from prin.parities_check import BACKTICK_TOKEN_RE, parse_parities
+from internal.parities_check import BACKTICK_TOKEN_RE, parse_parities
 
 BLOCK = """
 ## Set 1 [CLI-CTX-DEFAULTs-README]: CLI options ↔ Context fields ↔ Defaults ↔ README
