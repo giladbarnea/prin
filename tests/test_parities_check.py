@@ -1,4 +1,7 @@
 from internal.parities_check import extract_ast_tokens_from_members, parse_parities
+import os
+import shutil
+import subprocess
 
 
 def test_block_members_tokens():
@@ -82,3 +85,50 @@ def test_first_set_contract_triggers_tests_tokens():
         "--no-exclude",
         "--extension",
     ]
+
+
+def test_symbex_resolves_member_symbols():
+    block = """
+    ## Set 1 [CLI-CTX-DEFAULTs-README]: CLI options ↔ Context fields ↔ Defaults ↔ README
+    **Members**
+    - `README.md` (options and usage)
+    - `src/prin/cli_common.py` (`parse_common_args(...)`, `Context` fields, `_expand_cli_aliases`)
+    - `src/prin/defaults.py` (`DEFAULT_*` used by CLI defaults and choices)
+    - `src/prin/core.py` (`DepthFirstPrinter._set_from_context` consumption/behavior tied to flags)
+    """
+    parsed = parse_parities(block)
+    set_block = parsed.sets[1]
+    tokens = extract_ast_tokens_from_members(set_block.members_text)
+    # Keep only function/class symbols suitable for symbex; exclude paths and constants
+    sym_tokens = [
+        t for t in tokens if \
+        t not in {"README.md", "DEFAULT_*"} and \
+        "/" not in t
+    ]
+
+    # Determine how to invoke symbex
+    symbex_cmd = None
+    if shutil.which("symbex"):
+        symbex_cmd = ["symbex"]
+    elif shutil.which("uv"):
+        symbex_cmd = ["uv", "run", "symbex"]
+    else:
+        # symbex not available; skip
+        return
+
+    env = os.environ.copy()
+    # Prefer local .venv / uv toolchain if present
+    home = os.path.expanduser("~")
+    env["PATH"] = f"{home}/.local/bin:" + env.get("PATH", "")
+
+    for symbol in sym_tokens:
+        # Verify that symbex returns some output for each symbol
+        proc = subprocess.run(
+            [*symbex_cmd, "-d", "src", symbol, "-s"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=env,
+            text=True,
+        )
+        assert proc.returncode == 0
+        assert symbol.split(".")[-1] in proc.stdout or proc.stdout.strip() != ""
