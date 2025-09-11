@@ -1,5 +1,7 @@
 import pytest
 
+pytestmark = pytest.mark.repo
+
 
 @pytest.mark.network
 def test_mixed_fs_repo_interchangeably(fs_root):

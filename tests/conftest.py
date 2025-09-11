@@ -248,9 +248,17 @@ def pytest_collection_modifyitems(config, items):
 
     skip_filtered = pytest.mark.skip(reason="filtered by --website/--repo")
     for item in items:
-        nodeid = item.nodeid.lower()
-        is_website = "website" in nodeid
-        is_repo = ("repo" in nodeid) or ("github" in nodeid)
+        # Prefer explicit markers when present; fall back to filename heuristics if none
+        has_website_marker = "website" in item.keywords
+        has_repo_marker = "repo" in item.keywords or "github" in item.keywords
+
+        if has_website_marker or has_repo_marker:
+            is_website = has_website_marker
+            is_repo = has_repo_marker
+        else:
+            nodeid = item.nodeid.lower()
+            is_website = "website" in nodeid
+            is_repo = ("repo" in nodeid) or ("github" in nodeid)
         keep = (want_website and is_website) or (want_repo and is_repo)
         if not keep:
             item.add_marker(skip_filtered)

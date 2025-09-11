@@ -5,6 +5,8 @@ import pytest
 from prin.core import StringWriter
 from prin.prin import main as prin_main
 
+pytestmark = pytest.mark.repo
+
 
 @pytest.mark.network
 def test_repo_explicit_ignored_file_is_printed():
