@@ -1,4 +1,5 @@
 import os
+import warnings
 import shutil
 import tempfile
 from pathlib import Path
@@ -259,6 +260,11 @@ def pytest_collection_modifyitems(config, items):
             nodeid = item.nodeid.lower()
             is_website = "website" in nodeid
             is_repo = ("repo" in nodeid) or ("github" in nodeid)
+            if is_website or is_repo:
+                warnings.warn(
+                    f"Test selected by name-based fallback; please add an explicit marker: {item.nodeid}",
+                    UserWarning,
+                )
         keep = (want_website and is_website) or (want_repo and is_repo)
         if not keep:
             item.add_marker(skip_filtered)
