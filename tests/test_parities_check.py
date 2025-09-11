@@ -1,11 +1,13 @@
+import os
+import pathlib
+import shutil
+import subprocess
+
 from internal.parities_check import (
     extract_ast_tokens_from_members,
     extract_constant_tokens_from_members,
     parse_parities,
 )
-import os
-import shutil
-import subprocess
 
 
 def test_block_members_tokens():
@@ -133,14 +135,14 @@ def test_symbex_resolves_member_symbols():
 
     env = os.environ.copy()
     # Prefer local .venv / uv toolchain if present
-    home = os.path.expanduser("~")
+    home = pathlib.Path("~").expanduser()
     env["PATH"] = f"{home}/.local/bin:" + env.get("PATH", "")
 
     for symbol in sym_tokens:
         # Verify that symbex returns some output for each symbol
         proc = subprocess.run(
             [*symbex_cmd, "-d", "src", symbol, "-s"],
-            stdout=subprocess.PIPE,
+            check=False, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             env=env,
             text=True,

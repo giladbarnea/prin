@@ -76,7 +76,8 @@ CLI_FLAG_FINDER_RE = re.compile(r"(?<!\S)(-{1,3}[A-Za-z][A-Za-z-]*|-u{2,3})(?!\S
 
 
 def normalize_symbol_token(token: str) -> str:
-    """Normalize a backticked token for AST resolution.
+    """
+    Normalize a backticked token for AST resolution.
 
     Rules:
     - Strip trailing parentheses with optional ellipsis: "foo(...)" → "foo", "bar()" → "bar".
@@ -91,7 +92,8 @@ def normalize_symbol_token(token: str) -> str:
 
 
 def extract_ast_tokens_from_members(member_lines: List[str]) -> List[str]:
-    """Extract and normalize tokens from **Members** lines suitable for AST lookup.
+    """
+    Extract and normalize tokens from **Members** lines suitable for AST lookup.
 
     This collects all backticked tokens from the lines and applies normalization
     so that function/symbol names are resolvable by AST tools (e.g., symbex).
@@ -115,7 +117,8 @@ def extract_ast_tokens_from_members(member_lines: List[str]) -> List[str]:
 
 
 def extract_constant_tokens_from_members(member_lines: List[str]) -> List[str]:
-    """Extract constant-like tokens (e.g., DEFAULT_*, DEFAULT_TAG_CHOICES) from Members lines.
+    """
+    Extract constant-like tokens (e.g., DEFAULT_*, DEFAULT_TAG_CHOICES) from Members lines.
 
     - Includes ALL_CAPS tokens and wildcard constant patterns like DEFAULT_*.
     - Excludes file-like tokens.
@@ -196,7 +199,8 @@ class SetBlock:
         return tokens
 
     def cli_flags_in_tests(self) -> List[str]:
-        """Extract CLI flags (e.g., --hidden, -uu) mentioned in **Tests** lines.
+        """
+        Extract CLI flags (e.g., --hidden, -uu) mentioned in **Tests** lines.
 
         Matches flags that are backticked or raw text.
         """
