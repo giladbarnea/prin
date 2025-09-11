@@ -2,6 +2,7 @@ import pytest
 
 
 @pytest.mark.network
+@pytest.mark.repo
 def test_mixed_fs_repo_interchangeably(fs_root):
     """Ensure a GitHub URL and local fs root both print when passed together."""
     from prin.core import StringWriter

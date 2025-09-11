@@ -5,6 +5,8 @@ import pytest
 from prin.core import StringWriter
 from prin.prin import main as prin_main
 
+pytestmark = pytest.mark.website
+
 
 @pytest.mark.network
 def test_website_llms_txt_presence_and_one_file_md_output():

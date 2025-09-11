@@ -1,4 +1,5 @@
 import os
+import warnings
 import shutil
 import tempfile
 from pathlib import Path
@@ -211,17 +212,59 @@ def pytest_addoption(parser):
         default=False,
         help="Skip tests that require network access (marked with @pytest.mark.network)",
     )
+    parser.addoption(
+        "--website",
+        action="store_true",
+        default=False,
+        help="Run only tests targeting the website adapter",
+    )
+    parser.addoption(
+        "--repo",
+        action="store_true",
+        default=False,
+        help="Run only tests targeting repository (GitHub) adapter",
+    )
 
 
 def pytest_configure(config):
     # Redundant with pyproject markers, but safe if running in isolation
     config.addinivalue_line("markers", "network: tests that require network access")
+    config.addinivalue_line("markers", "website: tests that target website adapter")
+    config.addinivalue_line("markers", "repo: tests that target repository adapter")
 
 
 def pytest_collection_modifyitems(config, items):
-    if not config.getoption("--no-network"):
+    # Handle network skipping first
+    if config.getoption("--no-network"):
+        skip_network = pytest.mark.skip(reason="network disabled via --no-network")
+        for item in items:
+            if "network" in item.keywords:
+                item.add_marker(skip_network)
+
+    # Apply adapter-based filtering if requested
+    want_website = config.getoption("--website")
+    want_repo = config.getoption("--repo")
+    if not (want_website or want_repo):
         return
-    skip_network = pytest.mark.skip(reason="network disabled via --no-network")
+
+    skip_filtered = pytest.mark.skip(reason="filtered by --website/--repo")
     for item in items:
-        if "network" in item.keywords:
-            item.add_marker(skip_network)
+        # Prefer explicit markers when present; fall back to filename heuristics if none
+        has_website_marker = "website" in item.keywords
+        has_repo_marker = "repo" in item.keywords or "github" in item.keywords
+
+        if has_website_marker or has_repo_marker:
+            is_website = has_website_marker
+            is_repo = has_repo_marker
+        else:
+            nodeid = item.nodeid.lower()
+            is_website = "website" in nodeid
+            is_repo = ("repo" in nodeid) or ("github" in nodeid)
+            if is_website or is_repo:
+                warnings.warn(
+                    f"Test selected by name-based fallback; please add an explicit marker: {item.nodeid}",
+                    UserWarning,
+                )
+        keep = (want_website and is_website) or (want_repo and is_repo)
+        if not keep:
+            item.add_marker(skip_filtered)

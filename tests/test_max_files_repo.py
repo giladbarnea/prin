@@ -6,6 +6,8 @@ from prin.core import StringWriter
 from prin.prin import main as prin_main
 from tests.utils import count_md_headers
 
+pytestmark = pytest.mark.repo
+
 
 @pytest.mark.network
 def test_repo_max_files_one():
