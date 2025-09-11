@@ -69,9 +69,8 @@ LIKELY_FILE_RE = re.compile(
     re.IGNORECASE,
 )
 
-CLI_FLAG_RE = re.compile(r"^-{1,3}[A-Za-z][A-Za-z-]*$|
-                             ^-u{2,3}$",
-                         re.VERBOSE)
+CLI_FLAG_RE = re.compile(r"^-{1,3}[A-Za-z][A-Za-z-]*$|^-u{2,3}$")
+CLI_FLAG_FINDER_RE = re.compile(r"(?<!\S)(-{1,3}[A-Za-z][A-Za-z-]*|-u{2,3})(?!\S)")
 
 
 def normalize_symbol_token(token: str) -> str:
@@ -140,10 +139,9 @@ class SetBlock:
             toks = BACKTICK_TOKEN_RE.findall(line) or [line]
             for tok in toks:
                 tok = tok.strip()
-                # Skip CLI flags (e.g., --hidden, -uu) that may appear in examples
+                # Only accept likely file paths (to avoid treating prose tokens as tests)
                 if CLI_FLAG_RE.match(tok):
                     continue
-                # Only accept likely file paths (to avoid treating prose tokens as tests)
                 if not ("/" in tok or tok.endswith(".py")):
                     continue
                 m = TEST_SPEC_RE.match(tok)
@@ -160,6 +158,21 @@ class SetBlock:
             for line in self.sections.get(name, []):
                 tokens.extend([tok.strip() for tok in BACKTICK_TOKEN_RE.findall(line)])
         return tokens
+
+    def cli_flags_in_tests(self) -> List[str]:
+        """Extract CLI flags (e.g., --hidden, -uu) mentioned in **Tests** lines."""
+        flags: List[str] = []
+        for line in self.tests_text:
+            for m in CLI_FLAG_FINDER_RE.finditer(line):
+                flags.append(m.group(1))
+        # preserve order; de-duplicate
+        seen: set = set()
+        unique_flags: List[str] = []
+        for f in flags:
+            if f not in seen:
+                seen.add(f)
+                unique_flags.append(f)
+        return unique_flags
 
 
 @dataclass

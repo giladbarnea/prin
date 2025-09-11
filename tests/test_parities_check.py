@@ -64,7 +64,21 @@ def test_first_set_contract_triggers_tests_tokens():
     triggers_tokens = set_block.backtick_tokens_in_sections(["Triggers"])
     assert triggers_tokens == []
 
-    # Tests: capture test file paths, ignore CLI flags inside parentheses
+    # Tests: capture test file paths
     test_specs = set_block.test_specs()
     assert ("tests/test_options_fs.py", None) in test_specs
     assert ("tests/test_options_repo.py", None) in test_specs
+
+    # And capture CLI flags separately for future symbex verification
+    flags = set_block.cli_flags_in_tests()
+    assert flags == [
+        "--hidden",
+        "--include-tests",
+        "--include-lock",
+        "--include-binary",
+        "--no-docs",
+        "--include-empty",
+        "--exclude",
+        "--no-exclude",
+        "--extension",
+    ]
