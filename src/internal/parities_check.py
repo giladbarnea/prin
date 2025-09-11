@@ -160,9 +160,18 @@ class SetBlock:
         return tokens
 
     def cli_flags_in_tests(self) -> List[str]:
-        """Extract CLI flags (e.g., --hidden, -uu) mentioned in **Tests** lines."""
+        """Extract CLI flags (e.g., --hidden, -uu) mentioned in **Tests** lines.
+
+        Matches flags that are backticked or raw text.
+        """
         flags: List[str] = []
         for line in self.tests_text:
+            # First, capture backticked tokens that are flags
+            for tok in BACKTICK_TOKEN_RE.findall(line):
+                tok = tok.strip()
+                if CLI_FLAG_RE.match(tok):
+                    flags.append(tok)
+            # Then, capture any raw flags not in backticks
             for m in CLI_FLAG_FINDER_RE.finditer(line):
                 flags.append(m.group(1))
         # preserve order; de-duplicate
