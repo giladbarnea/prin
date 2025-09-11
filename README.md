@@ -120,6 +120,7 @@ In both cases, the `prin` executable should be available in your shell.
 - Install `uv` if needed: `curl -LsSf https://astral.sh/uv/install.sh | sh`
 - Setup and test: `uv sync`; `./test.sh`. Network tests can be skipped with `./test.sh --no-network`.
 - Lint and format: `./lint.sh` and `./format.sh`
+ - To add or remove a dependency, use `uv add` or `uv remove`.
 
 ## Roadmap
 
