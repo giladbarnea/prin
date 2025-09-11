@@ -133,3 +133,52 @@ def test_symbex_resolves_member_symbols():
         )
         assert proc.returncode == 0
         assert symbol.split(".")[-1] in proc.stdout or proc.stdout.strip() != ""
+
+
+def test_set2_sections_and_tokens_h3_h4_headings():
+    block = """
+    ## Set 2 [FORMATTER-SELECTION]: Tag choices ↔ Formatter classes ↔ Defaults ↔ README examples
+
+    ### Members
+
+    - `src/prin/prin.py` (tag→formatter dispatch)
+    - `src/prin/formatters.py` (`XmlFormatter`, `MarkdownFormatter`, `HeaderFormatter`)
+    - `src/prin/defaults.py` (`DEFAULT_TAG_CHOICES`)
+    - `README.md` (output examples)
+
+    #### Contract
+    - Values in `DEFAULT_TAG_CHOICES` exactly match the dispatch table in `prin.py`, with a concrete formatter class for each value.
+    - README examples reflect the actual output shape for each tag.
+
+    #### Triggers
+    - Adding a tag; changing a formatter’s behavior or format.
+
+    ### Tests
+    - `tests/test_options_fs.py::test_tag_md_outputs_markdown_format`
+    - `tests/test_options_repo.py::test_repo_tag_md_outputs_markdown_format`
+    """
+    parsed = parse_parities(block)
+    assert 2 in parsed.sets
+    set_block = parsed.sets[2]
+    assert set_block.sid == 2
+    assert set_block.title.startswith("## Set 2 [FORMATTER-SELECTION]")
+
+    # Subsection presence via h3/h4
+    for section_name in ["Members", "Contract", "Triggers", "Tests"]:
+        assert section_name in set_block.sections
+        assert len(set_block.sections[section_name]) >= 1
+
+    # Members: AST-resolvable tokens should include formatter classes (class tokens) and exclude constants
+    ast_tokens = extract_ast_tokens_from_members(set_block.members_text)
+    # Only symbols (no files) and no wildcard/const tokens
+    # Expected: XmlFormatter, MarkdownFormatter, HeaderFormatter
+    for sym in ["XmlFormatter", "MarkdownFormatter", "HeaderFormatter"]:
+        assert sym in ast_tokens
+    # Exclude DEFAULT_TAG_CHOICES and files
+    assert "DEFAULT_TAG_CHOICES" not in ast_tokens
+    assert "README.md" not in ast_tokens
+
+    # Tests: verify test specs extraction
+    test_specs = set_block.test_specs()
+    assert ("tests/test_options_fs.py", "test_tag_md_outputs_markdown_format") in test_specs
+    assert ("tests/test_options_repo.py", "test_repo_tag_md_outputs_markdown_format") in test_specs

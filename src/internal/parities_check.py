@@ -57,7 +57,9 @@ class Message:
 # ---------------------- Parsing ---------------------------------------------
 
 SET_HEADING_RE = re.compile(r"^\s*#{2,}\s*Set\s+(\d+)\s*(?:\[[^\]]*\])?:.*$")
-SECTION_RE = re.compile(r"^\s*\*\*(Members|Contract|Triggers|Tests)\*\*\s*$")
+SECTION_RE = re.compile(
+    r"^\s*(?:\*\*(Members|Contract|Triggers|Tests)\*\*|#{3,6}\s*(Members|Contract|Triggers|Tests))\s*$"
+)
 BULLET_RE = re.compile(r"^\s*-\s+(.*)$")
 BACKTICK_TOKEN_RE = re.compile(r"`([^`]+)`")
 SET_REF_RE = re.compile(r"\bSet\s+(\d+)\b")
@@ -104,6 +106,9 @@ def extract_ast_tokens_from_members(member_lines: List[str]) -> List[str]:
                 continue
             # Skip wildcard patterns like DEFAULT_*
             if "*" in token:
+                continue
+            # Skip ALL_CAPS constants which symbex cannot resolve
+            if re.fullmatch(r"[A-Z0-9_]+", token):
                 continue
             tokens.append(token)
     return tokens
@@ -232,7 +237,7 @@ def parse_parities(text: str) -> ParsedParities:
                 continue
             sm = SECTION_RE.match(raw)
             if sm:
-                section = sm.group(1)
+                section = sm.group(1) or sm.group(2)
                 continue
             if section and (bm := BULLET_RE.match(raw)):
                 sections.setdefault(section, []).append(bm.group(1).strip())
