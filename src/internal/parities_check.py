@@ -540,27 +540,29 @@ def rule_tests(parsed_parities: ParsedParities) -> List[Message]:
 
 def rule_merge_opportunities(parsed_parities: ParsedParities) -> List[Message]:
     msgs: List[Message] = []
-    # Build member sets per set ID
-    members: Dict[int, set] = {
-        set_id: set(set_block.member_paths()) for set_id, set_block in parsed_parities.sets.items()
-    }
-    set_ids = sorted(members.keys())
+    # Compare Set title IDs only: e.g., [CLI-CTX-DEFAULTs-README] → parts: {CLI, CTX, DEFAULTs, README}
+    id_parts: Dict[int, set] = {}
+    for sid, block in parsed_parities.sets.items():
+        m = re.search(r"\[(?P<id>[^\]]+)\]", block.title)
+        if not m:
+            continue
+        parts = [p for p in re.split(r"-+", m.group("id")) if p]
+        id_parts[sid] = set(parts)
+
+    set_ids = sorted(id_parts.keys())
     for i in range(len(set_ids)):
         for j in range(i + 1, len(set_ids)):
             a, b = set_ids[i], set_ids[j]
-            A, B = members[a], members[b]
+            A, B = id_parts[a], id_parts[b]
             if not A or not B:
                 continue
-            intersection = A & B
-            if not intersection:
-                continue
-            jaccard = len(intersection) / len(A | B)
-            if len(intersection) >= 2 or jaccard >= 0.5:
+            shared = A & B
+            if len(shared) >= 2:
                 msgs.append(
                     Message(
                         "WARN",
                         "MergeOpportunity",
-                        f"Sets {a} and {b} share {len(intersection)} member paths (Jaccard={jaccard:.2f}): {sorted(list(intersection))[:5]}...",
+                        f"Sets {a} and {b} share {len(shared)} ID parts: {sorted(shared)}",
                     )
                 )
     if not [m for m in msgs if m.severity == "WARN"]:
