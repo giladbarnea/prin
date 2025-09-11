@@ -74,6 +74,8 @@ LIKELY_FILE_RE = re.compile(
 CLI_FLAG_RE = re.compile(r"^-{1,3}[A-Za-z][A-Za-z-]*$|^-u{2,3}$")
 CLI_FLAG_FINDER_RE = re.compile(r"(?<!\S)(-{1,3}[A-Za-z][A-Za-z-]*|-u{2,3})(?!\S)")
 
+GLOB_CHARS_RE = re.compile(r"[\*\?\[]")
+
 
 def normalize_symbol_token(token: str) -> str:
     """Normalize a backticked token for AST resolution.
@@ -163,6 +165,17 @@ class SetBlock:
             candidates = toks if toks else [line]
             for tok in candidates:
                 tok = tok.strip()
+                # Strip ::symbol when authors annotate a symbol next to a path
+                if "::" in tok:
+                    tok = tok.split("::", 1)[0].strip()
+                # Skip CLI flags accidentally included in Members
+                if CLI_FLAG_RE.match(tok):
+                    continue
+                # Skip combined CLI flags like "-l/--only-headers" or with commas
+                if ("/" in tok or "," in tok):
+                    parts = re.split(r"\s*[/,]\s*", tok)
+                    if parts and all(CLI_FLAG_RE.match(p.strip() or "") for p in parts):
+                        continue
                 # filter obvious non-paths
                 if LIKELY_FILE_RE.search(tok) or tok in {"README.md", "LICENSE"}:
                     paths.append(tok)
@@ -351,12 +364,26 @@ def _exists_cwd(p: str) -> bool:
     return (Path.cwd() / p).exists()
 
 
+def _exists_cwd_or_glob(p: str) -> bool:
+    """Return True if the given path exists or if a glob pattern matches any files."""
+    # Fast path: exact exists
+    if _exists_cwd(p):
+        return True
+    # If looks like a glob, try globbing relative to CWD
+    if GLOB_CHARS_RE.search(p):
+        from glob import glob
+
+        matches = glob(str(Path.cwd() / p))
+        return len(matches) > 0
+    return False
+
+
 def rule_dangling_refs(parsed_parities: ParsedParities) -> List[Message]:
     msgs: List[Message] = []
     missing: List[Tuple[int, str]] = []
     for set_id, set_block in parsed_parities.sets.items():
         for path in set_block.member_paths():
-            if not _exists_cwd(path):
+            if not _exists_cwd_or_glob(path):
                 missing.append((set_id, path))
     for set_id, path in missing:
         msgs.append(
@@ -376,6 +403,14 @@ def rule_tests(parsed_parities: ParsedParities) -> List[Message]:
     for set_id, set_block in parsed_parities.sets.items():
         for path, test_name in set_block.test_specs():
             file_path = Path.cwd() / path
+            # Allow glob patterns for test files; if present, succeed on any match
+            if GLOB_CHARS_RE.search(path):
+                from glob import glob
+
+                matches = glob(str(file_path))
+                if not matches:
+                    msgs.append(Message("ERROR", "Tests", f"Set {set_id}: test file missing: {path}"))
+                continue
             if not file_path.exists():
                 msgs.append(Message("ERROR", "Tests", f"Set {set_id}: test file missing: {path}"))
                 continue
