@@ -69,6 +69,10 @@ LIKELY_FILE_RE = re.compile(
     re.IGNORECASE,
 )
 
+CLI_FLAG_RE = re.compile(r"^-{1,3}[A-Za-z][A-Za-z-]*$|
+                             ^-u{2,3}$",
+                         re.VERBOSE)
+
 
 def normalize_symbol_token(token: str) -> str:
     """Normalize a backticked token for AST resolution.
@@ -136,11 +140,26 @@ class SetBlock:
             toks = BACKTICK_TOKEN_RE.findall(line) or [line]
             for tok in toks:
                 tok = tok.strip()
+                # Skip CLI flags (e.g., --hidden, -uu) that may appear in examples
+                if CLI_FLAG_RE.match(tok):
+                    continue
+                # Only accept likely file paths (to avoid treating prose tokens as tests)
+                if not ("/" in tok or tok.endswith(".py")):
+                    continue
                 m = TEST_SPEC_RE.match(tok)
                 if not m:
                     continue
                 specs.append((m.group("path").strip(), (m.group("test") or None)))
         return specs
+
+    def backtick_tokens_in_sections(self, section_names: Optional[List[str]] = None) -> List[str]:
+        """Return all backticked tokens from specified sections (defaults to all)."""
+        tokens: List[str] = []
+        sections = section_names or list(self.sections.keys())
+        for name in sections:
+            for line in self.sections.get(name, []):
+                tokens.extend([tok.strip() for tok in BACKTICK_TOKEN_RE.findall(line)])
+        return tokens
 
 
 @dataclass
