@@ -273,6 +273,46 @@ class SetBlock:
                 uniq.append(p)
         return uniq
 
+    def file_paths_all_sections(self) -> List[str]:
+        """Collect file-like tokens from all sections (backticked or raw) excluding CLI flags and pytest specs.
+
+        Recognizes file tokens by extension or presence of path separators, plus special names like README.md.
+        """
+        paths: List[str] = []
+        lines: List[str] = []
+        for name in self.sections:
+            lines.extend(self.sections.get(name, []))
+
+        def _maybe_add(token: str) -> None:
+            t = token.strip()
+            if "::" in t:
+                return
+            if CLI_FLAG_RE.match(t):
+                return
+            # Skip combined flag pairs like -f/--foo
+            if ("/" in t or "," in t):
+                parts = re.split(r"\s*[/,]\s*", t)
+                if parts and all(CLI_FLAG_RE.match(p.strip() or "") for p in parts):
+                    return
+            if LIKELY_FILE_RE.search(t) or t in {"README.md", "LICENSE"}:
+                paths.append(t)
+
+        for line in lines:
+            toks = BACKTICK_TOKEN_RE.findall(line)
+            if toks:
+                for tok in toks:
+                    _maybe_add(tok)
+            else:
+                _maybe_add(line)
+        # de-dup preserving order
+        seen: set = set()
+        uniq: List[str] = []
+        for p in paths:
+            if p not in seen:
+                seen.add(p)
+                uniq.append(p)
+        return uniq
+
 
 @dataclass
 class ParsedParities:
@@ -423,7 +463,7 @@ def rule_dangling_refs(parsed_parities: ParsedParities) -> List[Message]:
     msgs: List[Message] = []
     missing: List[Tuple[int, str]] = []
     for set_id, set_block in parsed_parities.sets.items():
-        for path in set_block.member_paths():
+        for path in set_block.file_paths_all_sections():
             if not _exists_cwd_or_glob(path):
                 missing.append((set_id, path))
     for set_id, path in missing:
@@ -442,7 +482,8 @@ def rule_dangling_refs(parsed_parities: ParsedParities) -> List[Message]:
 def rule_tests(parsed_parities: ParsedParities) -> List[Message]:
     msgs: List[Message] = []
     for set_id, set_block in parsed_parities.sets.items():
-        for path, test_name in set_block.test_specs():
+        # Accept pytest specs from any section
+        for path, test_name in set_block.pytest_specs_all_sections():
             file_path = Path.cwd() / path
             # Allow glob patterns for test files; if present, succeed on any match
             if GLOB_CHARS_RE.search(path):
