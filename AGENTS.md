@@ -58,6 +58,12 @@ If a piece of documentation, docstring, or comment becomes no longer true due to
 1. Know your weaknesses: your eagerness to solve a problem can cause tunnel vision. You may fix the issue but unintentionally create code duplication, deviate from the existing design, or introduce a regression in other coupled parts of the project you didn’t consider. The solution is to literally look around beyond the immediate fix, be aware of (and account for) coupling around the codebase, integrate with the existing design, and periodically refactor.
 2. You do your best work when you can verify yourself. With self-verification, you can and should practice continuous trial and error instead of a single shot in the dark. See Development Cycle (Tight TDD Loop) below for how to work, verify, and report progress.
 
+#### Working Against and Updating PARITIES.md
+
+- Treat `PARITIES.md` as the authoritative snapshot of the project. Keep it accurate.
+- Before changing code: map your plan to the sets in `PARITIES.md`. Identify which sets/members your work will likely touch and what you expect to update after.
+- After the task is done and verified: surgically update only lines that are no longer true; add any new members/sets introduced. Follow the maintenance rules in `PARITIES.md`.
+
 ## Development Cycle (Tight TDD Loop)
 
 #### Prep (before any code)
