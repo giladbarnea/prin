@@ -1,6 +1,8 @@
 # PARITIES
 ### Purpose
-Define deliberate couplings in the codebase—places that must remain equivalent in meaning and behavior. When any member of a set changes, review and update all other members to keep the set in lockstep.
+Defines deliberate couplings in the codebase—places that must remain equivalent in meaning and behavior. 
+1. Read when starting a task to grok how things are connected in the project. Helps avoid breaking dependencies.
+2. Update this doc after finishing your task.
 
 ### Scope
 These are intentional parities, not code smells. The threshold for inclusion is high and obvious.
