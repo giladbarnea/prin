@@ -179,6 +179,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
   1) Compute `anchor_base = source.resolve_root('.')`.
   2) For each provided root `r`: if `r` is **under** `anchor_base`, display paths **relative to `anchor_base`**; otherwise, display paths **relative to `r` itself** (avoid `..` segments like `../../../foo`).
 - Multiple roots may therefore print with different bases in one invocation.
+  - Note: For GitHub repositories, dynamic display-base shifting across multiple positional roots is not supported; each repository URL is rendered independently with its own base.
 
 #### Triggers
 - Changing anchor resolution rules, base selection, or adapter root semantics.
