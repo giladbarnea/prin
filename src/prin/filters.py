@@ -4,7 +4,7 @@ from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any
 
-from .path_classifier import classify_pattern, is_extension, is_glob
+from .path_classifier import classify_pattern, is_extension
 from .types import TExclusion
 
 
