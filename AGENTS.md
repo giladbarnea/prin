@@ -1,6 +1,6 @@
 # Agents.md
 
-Carefully read and understand the 3 Markdown files of the project before starting a task:
+Carefully read and internalize the 3 Markdown files of the project before starting a task:
 1. README.md
 2. AGENTS.md (this file)
 3. PARITIES.md
