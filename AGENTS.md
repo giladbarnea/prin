@@ -78,7 +78,7 @@ Repeat the following until all new tests pass:
 1.	Full verification: Run the entire suite again with ./test.sh.
 2. Run ./format.sh to fix any fixable issues and print remaining, usually insignificant issues.
 3. Update PARITIES.md as instructed in `Working Against and Updating PARITIES.md` and in `Maintaining PARITIES.md`.
-4. Run `uv run src/internal/check_parities.py`.
+4. Run `uv run src/internal/parities_check.py`.
 5.	Final update to user: Summarize what passed, what changed, and what still remains to be done (if anything).
 
 #### Working Against and Updating PARITIES.md
