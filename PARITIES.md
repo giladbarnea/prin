@@ -92,8 +92,8 @@ Each set lists an ID, Members (with precise locations/symbols), a Contract (what
 
 ## Set 5 [FILTERS-CONSISTENCY-ACROSS-SOURCES]: Exclusion and extension semantics ↔ Pattern classifier
 #### Members
-- `src/prin/core.py`: `DepthFirstPrinter._excluded`, `_extension_match`.
-- `src/prin/filters.py`: `is_excluded`, `is_glob`, `is_extension`, `get_gitignore_exclusions`.
+- `src/prin/core.py`: `DepthFirstPrinter._excluded`, `_extension_match` (imports `is_glob` from classifier).
+- `src/prin/filters.py`: `is_excluded`, `get_gitignore_exclusions`.
 - `src/prin/path_classifier.py`: `classify_pattern`, `is_glob`, `is_extension`, `is_regex`.
 - Adapters used via `DepthFirstPrinter`: filesystem, GitHub, website.
 

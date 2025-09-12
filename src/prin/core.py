@@ -8,6 +8,7 @@ from pathlib import PurePosixPath
 from typing import TYPE_CHECKING, Iterable, Protocol
 
 from prin import filters
+from prin.path_classifier import is_glob
 from prin.formatters import Formatter, HeaderFormatter
 
 if TYPE_CHECKING:
@@ -239,7 +240,7 @@ class DepthFirstPrinter:
         if not self.extensions:
             return True
         for pattern in self.extensions:
-            if filters.is_glob(pattern):
+            if is_glob(pattern):
                 from fnmatch import fnmatch
 
                 if fnmatch(filename, pattern):
