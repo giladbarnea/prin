@@ -15,19 +15,19 @@ Define deliberate couplings in the codebase—places, or _members_, that must re
 - If one member in a parity set changes, the rest of the members need be changed accordingly.
 
 **Members.**
-Members are what a codebase consists of. They range from a single code symbol (a class/function name), to an entire file or module.
+- Members are what a codebase consists of. They range from a single code symbol (a class/function name), to an entire file or module.
+- Members can be coupled in a variety of ways.
+
+### Conventions
+
+1. Each parity set lists an ID, Members (with precise locations/symbols), a Contract (what must stay in sync), Triggers (what changes require syncing), and Tests (coverage that asserts the contract).
+2. Always use backticks when referring to a `file.ext`, `dir/`, `Symbol`, `function`, etc.
 
 ### Always finish off your task by updating PARITIES.md
 
 You are responsible for updating this document after you've completed your task, to make it reflect the new state of the project.
 
 See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed instructions on how to do this.
-
-
-### Conventions
-
-1. Each parity set lists an ID, Members (with precise locations/symbols), a Contract (what must stay in sync), Triggers (what changes require syncing), and Tests (coverage that asserts the contract).
-2. Always use backticks when referring to a `file.ext`, `dir/`, `Symbol`, `function`, etc.
 
 ---
 
@@ -51,7 +51,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - Adding/removing/renaming a flag; changing a default; changing flag semantics.
 
 #### Tests
-- Filesystem options: `tests/test_options_fs.py`
+- Filesystem options: `tessts/test_options_fs.py`
 - Repository options: `tests/test_options_repo.py`
 
 ## Set 2 [FORMATTER-SELECTION]: Tag choices ↔ Formatter classes ↔ Defaults ↔ README examples
@@ -218,6 +218,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - FS: `tests/test_options_fs.py::test_uu_includes_hidden_and_gitignored`, `::test_unrestricted_includes_gitignored` (note: `.gitignore` behavior is currently stubbed; see Set 16).
 
 ## Set 11 [TEST-COVERAGE-PARITY]: Feature coverage mirrored per source
+// todo: this set needs to add the adapters and their baseclass to Members
 
 #### Members
 - `tests/test_options_fs.py`, `tests/test_options_repo.py`: cover each CLI flag end-to-end per source.
@@ -309,23 +310,35 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Tests
 - FS: `tests/test_options_fs.py::test_unrestricted_includes_gitignored` (and any currently skipped tests around `.gitignore` or `no-ignore`).
 
+---
+
 ### Notes on interplay
 - Sets 4, 5, and 7 together govern filtering: category defaults, cross-source consistency, and semantic emptiness.
 - Set 1 and Set 10 together ensure CLI shape (flags, defaults, aliases) stays truthful, with Set 14 keeping README aligned.
 - Set 6 (protocol) and Set 13 (routing) ensure adapters are both selectable and interoperable once selected.
 - Set 9 (budget) must be honored by all traversal code paths, including explicit force-includes (Set 15) and website fetching (Set 12).
 
---------------------------------------------------------
+-----------------------------------------
 
 # Maintaining `PARITIES.md`
 
-This section defines how to keep `PARITIES.md` accurate, terse, and durable as the project evolves.
+This section defines how to keep `PARITIES.md` truthful, accurate, terse, and durable as the project evolves.
 
 ## Maintaining PARITIES.md: Contract
 - `PARITIES.md` is a **snapshot** of the codebase, not a history or design doc.
 - Each set uses the **same minimal structure** (see “Set block template”).
 - Prefer **cross-references** by Set ID over repetition.
 - Keep **signal over noise**: short, testable, and unambiguous.
+- You are responsible for updating it after making changes that have to do with any of the members it lists. 
+
+## Updating `PARITIES.md`: Definition of Done
+
+DoD: PARITIES.md is once again a snapshot of the codebase, pointing out intentionally coupled elements and paired aspects in the codebase.
+
+1. References to elements that have been moved or renamed are updated
+2. References to elements that have been deleted are deleted
+3. Newly created elements are integrated into the parity sets, added to the set (or multiple sets) of members they are coupled to, and referenced throughout the doc where appropriate.
+
 
 ## Set block template
 Use this exact shape for every set; keep headings and their order.
@@ -376,28 +389,31 @@ When scope expands, add only what is strictly necessary:
 
 ## Edit recipes (apply one; prefer replacement over addition)
 
-* **Remove a member or set**
-  Delete the **Members** line; prune any now-irrelevant **Contract/Triggers/Tests** bullets.
-  If a set loses all members, delete the set.
+#### Remove a member
+1. Delete the appropriate Members line; prune any now-irrelevant Contract/Triggers/Tests bullets.
+2. Remove references throughout the document.
+3. If a set loses all members, delete the set (rare).
 
-* **Modify without expanding scope**
-  Update paths/symbols and adjust wording **without** adding bullets.
-  Replace parts of sentences; do not append new ones.
+#### Modify without expanding scope
+1. Update references in the document and adjust wording **without** adding bullets.
+2. Replace parts of sentences; do not append new ones.
 
-* **Add a capability or new member**
-  Append **one** precise **Members** line.
-  Add **at most one** new sentence under **Contract/Triggers** if semantics truly changed.
-  Reference tests succinctly; prefer naming existing checks.
+#### Add an element or new member
+1. Append **one** precise **Members** line.
+2. Add **at most one** new sentence under **Contract/Triggers** if semantics truly changed.
+3. Reference tests succinctly; prefer naming existing checks.
+4. Add references in other sets who have members coupled to the new element/member.
 
-* **Merge or split sets**
-  Only when it **reduces duplication** or clarifies ownership.
-  Preserve Set IDs or record the mapping in the PR description.
+#### Merge or split sets
+Different sets can share members, although ideally this should be minimized. This is common with generic members used for a variety of different needs.  What draws a line between sets, even if they share a member or two,  is their domains. Each set deals with a different subject.
+
+
 ## Anti-patterns (avoid)
 
 * Narrative explanations, examples that restate code, or historical context.
 * Catch-all sets that mix unrelated concerns.
 * “Future work” notes; put those in issues, not here.
-* “Changelog” notes; don't emphasize something because it's new. Just integrate it naturally into the document. PARITIES.md a neutral snapshot, and doesn't have a concept of “before” and “after”.
+* “Changelog” notes; don't emphasize something because it's new. There's no notion of "before" and "now".
 * Duplicating rules across sets instead of cross-referencing.
 * Vague members (for example, whole directories without symbol scoping).
 
