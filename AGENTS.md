@@ -78,6 +78,15 @@ Repeat the following until all new tests pass:
 1.	Full verification: Run the entire suite again with ./test.sh.
 2.	Final update to user: Summarize what passed, what changed, and what still remains to be done (if anything).
 
+#### Working Against and Updating PARITIES.md
+
+`PARITIES.md` is the source of truth for what’s going on in the project. Keep it accurate.
+
+Initially, before making code changes: map your plan against `PARITIES.md`. Identify which elements will be affected by your changes and have a general idea of what you’ll need to update when you’re done. 
+An ‘element’ is a piece of information ranging from a reference to a single symbol to a Member line, or, rarely, an entire set.
+
+After everything is working: return to `PARITIES.md` and surgically update any parts that are no longer accurate due to your changes. Add any new items introduced by your task, and follow the instructions in `PARITIES.md` on how to maintain it.
+
 #### Refactor (optional, with approval)
 1.	Assess fit: Step back. Check how your changes interact with the architecture and invariants. Identify any mild refactor that would align the code with the project’s intent.
 2.	Ask first: Request approval for the refactor scope.
