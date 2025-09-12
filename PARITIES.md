@@ -93,7 +93,7 @@ Each set lists an ID, Members (with precise locations/symbols), a Contract (what
 ## Set 5 [FILTERS-CONSISTENCY-ACROSS-SOURCES]: Exclusion and extension semantics ↔ Pattern classifier
 #### Members
 - `src/prin/core.py`: `DepthFirstPrinter._excluded`, `_extension_match`.
-- `src/prin/filters.py`: `is_excluded`, `is_glob`, `is_extension`, `get_gitignore_exclusions`.
+- `src/prin/filters.py`: `is_excluded`, `is_extension`, `get_gitignore_exclusions`.
 - `src/prin/path_classifier.py`: `classify_pattern`, `is_glob`, `is_extension`, `is_regex`.
 - Adapters used via `DepthFirstPrinter`: filesystem, GitHub, website.
 
@@ -221,10 +221,10 @@ Each set lists an ID, Members (with precise locations/symbols), a Contract (what
 - `src/prin/prin.py`: website routing and `WebsiteSource` usage.
 
 #### Contract
-- All Markdown links and raw URLs in `llms.txt` are parsed and fetched; duplicates are deduplicated by key (with suffixing rules as needed); output rendered via the selected formatter.
+- All Markdown links and raw URLs listed by the website’s URL manifest are parsed and fetched; duplicates are deduplicated by key (with suffixing rules as needed); output rendered via the selected formatter.
 
 #### Triggers
-- Changing `llms.txt` interpretation, URL normalization, or keying rules.
+- Changing the website URL-manifest interpretation, URL normalization, or keying rules.
 
 #### Tests
 - `tests/test_website_adapter.py`, `tests/test_website_adapter_all_urls.py`.

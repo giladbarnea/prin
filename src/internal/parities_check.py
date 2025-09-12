@@ -74,6 +74,8 @@ LIKELY_FILE_RE = re.compile(
 CLI_FLAG_RE = re.compile(r"^-{1,3}[A-Za-z][A-Za-z-]*$|^-u{2,3}$")
 CLI_FLAG_FINDER_RE = re.compile(r"(?<!\S)(-{1,3}[A-Za-z][A-Za-z-]*|-u{2,3})(?!\S)")
 
+GLOB_CHARS_RE = re.compile(r"[\*\?\[]")
+
 
 def normalize_symbol_token(token: str) -> str:
     """
@@ -141,6 +143,33 @@ def extract_constant_tokens_from_members(member_lines: List[str]) -> List[str]:
     return unique_constants
 
 
+def _is_file_like_token(token: str) -> bool:
+    """
+    Heuristic for file-like tokens.
+
+    Rules:
+    - Exact names like README.md and LICENSE are accepted.
+    - Bare filenames with known extensions must have no whitespace.
+    - Slash-based paths must have no whitespace and not look like CLI flag pairs.
+    - Excludes pytest specs containing '::'.
+    """
+    t = token.strip()
+    if "::" in t:
+        return False
+    if t in {"README.md", "LICENSE"}:
+        return True
+    # Bare filename with extension
+    if re.fullmatch(r"\S+\.(py|md|rst|txt|json|jsonl|toml|yaml|yml|ini|cfg|lock|rs|ts|tsx|js|jsx|sh|bat|conf|mdx)", t, flags=re.IGNORECASE):
+        return True
+    # Slash-based path with no whitespace
+    if "/" in t and not re.search(r"\s", t):
+        # Guard against combined CLI flags like -f/--foo
+        parts = re.split(r"/", t)
+        if parts and all(not CLI_FLAG_RE.match(p or "") for p in parts):
+            return True
+    return False
+
+
 @dataclass
 class SetBlock:
     sid: int
@@ -166,6 +195,17 @@ class SetBlock:
             candidates = toks if toks else [line]
             for tok in candidates:
                 tok = tok.strip()
+                # If this looks like a pytest spec (contains ::), don't treat as a file path here
+                if "::" in tok:
+                    continue
+                # Skip CLI flags accidentally included in Members
+                if CLI_FLAG_RE.match(tok):
+                    continue
+                # Skip combined CLI flags like "-l/--only-headers" or with commas
+                if ("/" in tok or "," in tok):
+                    parts = re.split(r"\s*[/,]\s*", tok)
+                    if parts and all(CLI_FLAG_RE.match(p.strip() or "") for p in parts):
+                        continue
                 # filter obvious non-paths
                 if LIKELY_FILE_RE.search(tok) or tok in {"README.md", "LICENSE"}:
                     paths.append(tok)
@@ -198,30 +238,102 @@ class SetBlock:
                 tokens.extend([tok.strip() for tok in BACKTICK_TOKEN_RE.findall(line)])
         return tokens
 
-    def cli_flags_in_tests(self) -> List[str]:
-        """
-        Extract CLI flags (e.g., --hidden, -uu) mentioned in **Tests** lines.
-
-        Matches flags that are backticked or raw text.
-        """
+    def _extract_cli_flags_from_lines(self, lines: List[str]) -> List[str]:
         flags: List[str] = []
-        for line in self.tests_text:
-            # First, capture backticked tokens that are flags
+        separators = re.compile(r"\s*[/,]\s*")
+
+        def _add_from_token(token: str) -> None:
+            t = token.strip()
+            if t.startswith("(") and t.endswith(")"):
+                t = t[1:-1].strip()
+            if t.startswith("`") and t.endswith("`") and len(t) >= 2:
+                t = t[1:-1].strip()
+            if CLI_FLAG_RE.match(t):
+                flags.append(t)
+                return
+            for part in separators.split(t):
+                part = part.strip()
+                if CLI_FLAG_RE.match(part):
+                    flags.append(part)
+
+        for line in lines:
+            # capture backticked flags (single or combined)
             for tok in BACKTICK_TOKEN_RE.findall(line):
-                tok = tok.strip()
-                if CLI_FLAG_RE.match(tok):
-                    flags.append(tok)
-            # Then, capture any raw flags not in backticks
+                _add_from_token(tok)
+            # capture raw flags
             for m in CLI_FLAG_FINDER_RE.finditer(line):
                 flags.append(m.group(1))
-        # preserve order; de-duplicate
+        # de-duplicate preserving order
         seen: set = set()
-        unique_flags: List[str] = []
+        uniq: List[str] = []
         for f in flags:
             if f not in seen:
                 seen.add(f)
-                unique_flags.append(f)
-        return unique_flags
+                uniq.append(f)
+        return uniq
+
+    def cli_flags_all_sections(self) -> List[str]:
+        # Flatten all section lines
+        lines: List[str] = []
+        for name in self.sections:
+            lines.extend(self.sections.get(name, []))
+        return self._extract_cli_flags_from_lines(lines)
+
+    def cli_flags_in_tests(self) -> List[str]:
+        return self._extract_cli_flags_from_lines(self.tests_text)
+
+    def pytest_specs_all_sections(self) -> List[Tuple[str, Optional[str]]]:
+        specs: List[Tuple[str, Optional[str]]] = []
+        lines: List[str] = []
+        for name in self.sections:
+            lines.extend(self.sections.get(name, []))
+        for line in lines:
+            toks = BACKTICK_TOKEN_RE.findall(line) or [line]
+            for tok in toks:
+                tok = tok.strip()
+                m = TEST_SPEC_RE.match(tok)
+                if m and m.group("test"):
+                    specs.append((m.group("path").strip(), m.group("test")))
+        # de-dup
+        seen: set = set()
+        uniq: List[Tuple[str, Optional[str]]] = []
+        for p in specs:
+            if p not in seen:
+                seen.add(p)
+                uniq.append(p)
+        return uniq
+
+    def file_paths_all_sections(self) -> List[str]:
+        """
+        Collect file-like tokens from all sections (backticked or raw) excluding CLI flags and pytest specs.
+
+        Recognizes file tokens by extension or presence of path separators, plus special names like README.md.
+        """
+        paths: List[str] = []
+        lines: List[str] = []
+        for name in self.sections:
+            lines.extend(self.sections.get(name, []))
+
+        def _maybe_add(token: str) -> None:
+            t = token.strip()
+            if _is_file_like_token(t):
+                paths.append(t)
+
+        for line in lines:
+            toks = BACKTICK_TOKEN_RE.findall(line)
+            if toks:
+                for tok in toks:
+                    _maybe_add(tok)
+            else:
+                _maybe_add(line)
+        # de-dup preserving order
+        seen: set = set()
+        uniq: List[str] = []
+        for p in paths:
+            if p not in seen:
+                seen.add(p)
+                uniq.append(p)
+        return uniq
 
 
 @dataclass
@@ -355,12 +467,32 @@ def _exists_cwd(p: str) -> bool:
     return (Path.cwd() / p).exists()
 
 
+def _exists_cwd_or_glob(p: str) -> bool:
+    """Return True if the given path exists or if a glob pattern matches any files."""
+    # Fast path: exact exists
+    if _exists_cwd(p):
+        return True
+    # If looks like a glob, try globbing relative to CWD
+    if GLOB_CHARS_RE.search(p):
+        from glob import glob
+
+        matches = glob(str(Path.cwd() / p))
+        return len(matches) > 0
+    # If it's a bare filename with extension, search recursively under CWD
+    if re.fullmatch(r"\S+\.(py|md|rst|txt|json|jsonl|toml|yaml|yml|ini|cfg|lock|rs|ts|tsx|js|jsx|sh|bat|conf|mdx)", p, flags=re.IGNORECASE):
+        from glob import glob
+
+        matches = glob(str(Path.cwd() / "**" / p), recursive=True)
+        return len(matches) > 0
+    return False
+
+
 def rule_dangling_refs(parsed_parities: ParsedParities) -> List[Message]:
     msgs: List[Message] = []
     missing: List[Tuple[int, str]] = []
     for set_id, set_block in parsed_parities.sets.items():
-        for path in set_block.member_paths():
-            if not _exists_cwd(path):
+        for path in set_block.file_paths_all_sections():
+            if not _exists_cwd_or_glob(path):
                 missing.append((set_id, path))
     for set_id, path in missing:
         msgs.append(
@@ -378,8 +510,17 @@ def rule_dangling_refs(parsed_parities: ParsedParities) -> List[Message]:
 def rule_tests(parsed_parities: ParsedParities) -> List[Message]:
     msgs: List[Message] = []
     for set_id, set_block in parsed_parities.sets.items():
-        for path, test_name in set_block.test_specs():
+        # Accept pytest specs from any section
+        for path, test_name in set_block.pytest_specs_all_sections():
             file_path = Path.cwd() / path
+            # Allow glob patterns for test files; if present, succeed on any match
+            if GLOB_CHARS_RE.search(path):
+                from glob import glob
+
+                matches = glob(str(file_path))
+                if not matches:
+                    msgs.append(Message("ERROR", "Tests", f"Set {set_id}: test file missing: {path}"))
+                continue
             if not file_path.exists():
                 msgs.append(Message("ERROR", "Tests", f"Set {set_id}: test file missing: {path}"))
                 continue
@@ -404,27 +545,29 @@ def rule_tests(parsed_parities: ParsedParities) -> List[Message]:
 
 def rule_merge_opportunities(parsed_parities: ParsedParities) -> List[Message]:
     msgs: List[Message] = []
-    # Build member sets per set ID
-    members: Dict[int, set] = {
-        set_id: set(set_block.member_paths()) for set_id, set_block in parsed_parities.sets.items()
-    }
-    set_ids = sorted(members.keys())
+    # Compare Set title IDs only: e.g., [CLI-CTX-DEFAULTs-README] → parts: {CLI, CTX, DEFAULTs, README}
+    id_parts: Dict[int, set] = {}
+    for sid, block in parsed_parities.sets.items():
+        m = re.search(r"\[(?P<id>[^\]]+)\]", block.title)
+        if not m:
+            continue
+        parts = [p.casefold() for p in re.split(r"-+", m.group("id")) if p]
+        id_parts[sid] = set(parts)
+
+    set_ids = sorted(id_parts.keys())
     for i in range(len(set_ids)):
         for j in range(i + 1, len(set_ids)):
             a, b = set_ids[i], set_ids[j]
-            A, B = members[a], members[b]
+            A, B = id_parts[a], id_parts[b]
             if not A or not B:
                 continue
-            intersection = A & B
-            if not intersection:
-                continue
-            jaccard = len(intersection) / len(A | B)
-            if len(intersection) >= 2 or jaccard >= 0.5:
+            shared = A & B
+            if len(shared) >= 2:
                 msgs.append(
                     Message(
                         "WARN",
                         "MergeOpportunity",
-                        f"Sets {a} and {b} share {len(intersection)} member paths (Jaccard={jaccard:.2f}): {sorted(list(intersection))[:5]}...",
+                        f"Sets {a} and {b} share {len(shared)} ID parts: {sorted(shared)}",
                     )
                 )
     if not [m for m in msgs if m.severity == "WARN"]:
