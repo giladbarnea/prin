@@ -168,26 +168,6 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - FS: `tests/test_filesystem_source.py` (empty/non-empty Python and text files).
 - Repo: `tests/test_options_repo.py::test_repo_include_empty`.
 
-## Set 8 [DISPLAY-PATH-NORMALIZATION]: Consistent display paths across sources and anchor-base semantics
-
-#### Members
-- `src/prin/core.py`: `DepthFirstPrinter._display_path` and anchor-base logic in `run`.
-- Adapter `resolve_root` implementations.
-
-#### Contract
-- Printed paths use POSIX separators and are **relative to a display base** determined as follows:
-  1) Compute `anchor_base = source.resolve_root('.')`.
-  2) For each provided root `r`: if `r` is **under** `anchor_base`, display paths **relative to `anchor_base`**; otherwise, display paths **relative to `r` itself** (avoid `..` segments like `../../../foo`).
-- Multiple roots may therefore print with different bases in one invocation.
-  - Note: For GitHub repositories, dynamic display-base shifting across multiple positional roots is not supported; each repository URL is rendered independently with its own base.
-
-#### Triggers
-- Changing anchor resolution rules, base selection, or adapter root semantics.
-
-#### Tests
-- FS: `tests/test_cli_engine_positional.py`.
-- Repo: `tests/test_print_repo_positional.py`.
-
 ## Set 9 [BUDGET-GLOBALITY]: One global file budget across sources (`--max-files`)
 #### Members
 - `src/prin/core.py`: `FileBudget`.
