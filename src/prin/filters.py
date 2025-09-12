@@ -4,7 +4,7 @@ from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any
 
-from .path_classifier import classify_pattern, is_extension
+from .path_classifier import classify_pattern, is_extension as _is_extension
 from .types import TExclusion
 
 
@@ -56,7 +56,7 @@ def is_excluded(entry: Any, *, exclude: list[TExclusion]) -> bool:
                 return True
             continue
         # Handle extension excludes like ".py" (treated as text by classifier)
-        if is_extension(_exclude) and name.endswith(_exclude):
+        if _is_extension(_exclude) and name.endswith(_exclude):
             return True
 
         if not isinstance(_exclude, str):
