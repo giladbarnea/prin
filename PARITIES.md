@@ -373,19 +373,18 @@ Use this exact shape for every set; keep headings and their order.
 These three rules keep growth proportional to real scope changes:
 
 1. **Removal → shrink**
-   When behavior/files are removed, delete all corresponding lines here.
-   *Expected net effect: total lines **decrease**.*
+When behavior/files are removed, delete all corresponding lines here.
+*Expected net effect: total lines **decrease**.*
 2. **Modification → steady**
 When scope is unchanged, update in place without adding bullets or sentences.
 *Expected net effect: total lines **unchanged**.*
 3. **Addition → minimal growth**
 When scope expands, add only what is strictly necessary:
 
-* **+1** line per new **Member** item
-* **≤1** new sentence in **Contract** and/or **Triggers** *if* semantics changed
-* A brand-new set should rarely exceed **\~10 lines** total
-  If you exceed these budgets, add a one-line PR note:
-  `PARITIES: +<N> lines because <concise reason>`.
+- **+1** line per new **Member** item
+- **≤1** new sentence in **Contract** and/or **Triggers** *if* semantics changed
+- A brand-new set should rarely exceed **\~10 lines** total
+If you exceed these budgets, ask the user to review.
 
 ## Edit recipes (apply one; prefer replacement over addition)
 
@@ -413,7 +412,7 @@ Different sets can share members, although ideally this should be minimized. Thi
 * Narrative explanations, examples that restate code, or historical context.
 * Catch-all sets that mix unrelated concerns.
 * “Future work” notes; put those in issues, not here.
-* “Changelog” notes; don't emphasize something because it's new. There's no notion of "before" and "now".
+* “Changelog” notes; don't emphasize something because it's new. There's no notion of "before" and "after".
 * Duplicating rules across sets instead of cross-referencing.
 * Vague members (for example, whole directories without symbol scoping).
 
