@@ -142,7 +142,7 @@ In both cases, the `prin` executable should be available in your shell.
 
 See [Development Cycle (Tight TDD Loop)](AGENTS.md) for more details.
 
-## Roadmap
+## Planned (not implemented)
 
 #### CLI Options
 
