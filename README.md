@@ -140,13 +140,7 @@ In both cases, the `prin` executable should be available in your shell.
 - [ ] Run ./format.sh
 - [ ] Status update user.
 
-## Important: Working Against and Updating PARITIES.md
-
-`PARITIES.md` is the source of truth for what’s going on in the project. You are responsible for keep it accurate once you are done with your task.
-
-Initially, before making code changes: map your plan against `PARITIES.md`. Identify which elements will be affected by your changes and have a general idea of what you’ll need to update when you’re done. 
-
-After everything is working: return to `PARITIES.md` and surgically update any parts that are no longer accurate due to your changes. Add any new items introduced by your task, and follow the instructions in `PARITIES.md` on how to maintain it.
+See `Development Cycle (Tight TDD Loop)` section in AGENTS.md for more details.
 
 ## Roadmap
 
