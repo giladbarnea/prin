@@ -43,7 +43,6 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 
 #### Contract
 - One-to-one mapping between CLI flags and `Context` fields, including default values from `defaults.py` and documented behavior in `README.md`.
-- If a flag affects traversal, filtering, or output, `DepthFirstPrinter` consumes the corresponding `Context` field explicitly.
 - If a flag affects traversal, filtering, or output, `DepthFirstPrinter` must consume the corresponding `Context` field explicitly.
 - `README.md` must document only implemented flags with correct semantics (no “planned” flags presented as implemented).
 
@@ -51,7 +50,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - Adding/removing/renaming a flag; changing a default; changing flag semantics.
 
 #### Tests
-- Filesystem options: `tessts/test_options_fs.py`
+- Filesystem options: `tests/test_options_fs.py`
 - Repository options: `tests/test_options_repo.py`
 
 ## Set 2 [FORMATTER-SELECTION]: Tag choices ↔ Formatter classes ↔ Defaults ↔ README examples
@@ -116,7 +115,8 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Contract
 - Inclusion/exclusion and extension matching must behave identically regardless of source type. Any change to filters or engine matching must be validated for both filesystem and repository sources.
 - The classifier distinguishes three kinds of patterns: `regex`, `glob`, and `text`.
-  * `regex`/`glob`: matched via `fnmatch` (regex-like patterns are treated through glob-equivalent matching as implemented).
+  * `regex`: Not implemented.
+  * `glob`: matched via `fnmatch`.
   * `text`: matched by exact path-segment sequence, not substrings; supports multi-part tokens containing separators.
   * Explicit extensions (e.g., `.py`) match by suffix.
 - Changes to classifier rules must be reflected in `filters.is_excluded` behavior.
