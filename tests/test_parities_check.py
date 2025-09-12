@@ -1,12 +1,15 @@
+import os
+import pathlib
+import shutil
+import subprocess
+
+import pytest
+
 from internal.parities_check import (
     extract_ast_tokens_from_members,
     extract_constant_tokens_from_members,
     parse_parities,
 )
-import pytest
-import os
-import shutil
-import subprocess
 
 
 def test_block_members_tokens():
@@ -134,14 +137,14 @@ def test_symbex_resolves_member_symbols():
 
     env = os.environ.copy()
     # Prefer local .venv / uv toolchain if present
-    home = os.path.expanduser("~")
+    home = pathlib.Path("~").expanduser()
     env["PATH"] = f"{home}/.local/bin:" + env.get("PATH", "")
 
     for symbol in sym_tokens:
         # Verify that symbex returns some output for each symbol
         proc = subprocess.run(
             [*symbex_cmd, "-d", "src", symbol, "-s"],
-            stdout=subprocess.PIPE,
+            check=False, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             env=env,
             text=True,
@@ -290,7 +293,8 @@ def test_cli_flag_pair_extraction_all_forms():
     # Both flags should be captured
     assert flags.count("-f") >= 1
     assert flags.count("--foo-bar") >= 1
-    assert "-f" in flags and "--foo-bar" in flags
+    assert "-f" in flags
+    assert "--foo-bar" in flags
 
 
 def test_members_categorization_cli_flags_and_pytest_specs():
@@ -310,7 +314,10 @@ def test_members_categorization_cli_flags_and_pytest_specs():
     assert not any("::" in p for p in paths)
     # Flags should be captured across all sections
     flags = sb.cli_flags_all_sections()
-    assert "-l" in flags and "--only-headers" in flags and "-x" in flags and "--example-flag" in flags
+    assert "-l" in flags
+    assert "--only-headers" in flags
+    assert "-x" in flags
+    assert "--example-flag" in flags
     # Pytest specs captured across all sections
     specs = sb.pytest_specs_all_sections()
     assert ("tests/test_options_fs.py", "test_only_headers_prints_headers_only") in specs
@@ -318,7 +325,7 @@ def test_members_categorization_cli_flags_and_pytest_specs():
 
 
 @pytest.mark.parametrize(
-    "id_a,id_b,should_warn",
+    ("id_a", "id_b", "should_warn"),
     [
         ("[Alpha-Beta-Gamma]", "[alpha-Delta-Epsilon]", False),  # 1 shared part (alpha) only
         ("[CLI-CTX-DEFAULTs-README]", "[readme-defaults-core]", True),  # 2 shared parts, mixed case/order

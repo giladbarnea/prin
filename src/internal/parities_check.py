@@ -78,7 +78,8 @@ GLOB_CHARS_RE = re.compile(r"[\*\?\[]")
 
 
 def normalize_symbol_token(token: str) -> str:
-    """Normalize a backticked token for AST resolution.
+    """
+    Normalize a backticked token for AST resolution.
 
     Rules:
     - Strip trailing parentheses with optional ellipsis: "foo(...)" → "foo", "bar()" → "bar".
@@ -93,7 +94,8 @@ def normalize_symbol_token(token: str) -> str:
 
 
 def extract_ast_tokens_from_members(member_lines: List[str]) -> List[str]:
-    """Extract and normalize tokens from **Members** lines suitable for AST lookup.
+    """
+    Extract and normalize tokens from **Members** lines suitable for AST lookup.
 
     This collects all backticked tokens from the lines and applies normalization
     so that function/symbol names are resolvable by AST tools (e.g., symbex).
@@ -117,7 +119,8 @@ def extract_ast_tokens_from_members(member_lines: List[str]) -> List[str]:
 
 
 def extract_constant_tokens_from_members(member_lines: List[str]) -> List[str]:
-    """Extract constant-like tokens (e.g., DEFAULT_*, DEFAULT_TAG_CHOICES) from Members lines.
+    """
+    Extract constant-like tokens (e.g., DEFAULT_*, DEFAULT_TAG_CHOICES) from Members lines.
 
     - Includes ALL_CAPS tokens and wildcard constant patterns like DEFAULT_*.
     - Excludes file-like tokens.
@@ -141,7 +144,8 @@ def extract_constant_tokens_from_members(member_lines: List[str]) -> List[str]:
 
 
 def _is_file_like_token(token: str) -> bool:
-    """Heuristic for file-like tokens.
+    """
+    Heuristic for file-like tokens.
 
     Rules:
     - Exact names like README.md and LICENSE are accepted.
@@ -300,7 +304,8 @@ class SetBlock:
         return uniq
 
     def file_paths_all_sections(self) -> List[str]:
-        """Collect file-like tokens from all sections (backticked or raw) excluding CLI flags and pytest specs.
+        """
+        Collect file-like tokens from all sections (backticked or raw) excluding CLI flags and pytest specs.
 
         Recognizes file tokens by extension or presence of path separators, plus special names like README.md.
         """
