@@ -10,7 +10,7 @@ Whatever you do, try to align with the existing design philosophy (What knowledg
 
 ## Architecture
 
-Engine-driven depth-first traversal with source adapters; the engine is source-agnostic while implementations (filesystem, GitHub) provide listing/reading. Shared filters/formatters ensure identical behavior across sources.
+Engine-driven depth-first traversal with source adapters; the engine is source-agnostic while implementations (filesystem, GitHub, website) provide listing/reading. Shared filters/formatters ensure identical behavior across sources.
 
 ## Core invariants
 - Engine owns traversal/filters/printing; Source adapters only list/read/is_empty.
