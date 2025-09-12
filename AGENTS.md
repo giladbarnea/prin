@@ -31,24 +31,21 @@ Engine-driven depth-first traversal with source adapters; the engine is source-a
 ## Filtering semantics
 // missing; todo
 
+## Installation, execution, tests and linting
 
-## Testing and rate limits
-- Use tmp_path-based tests for FS; minimize GitHub API calls in repo tests; avoid reruns; prefer single small public repo (we use TypingMind/awesome-typingmind and trouchet/rust-hello). GitHub API GET requests are cached.
-
-## uv usage: execution, tooling and packaging
 Everything has be executed, installed, tested and packaged using `uv`.
 **If `uv` is not installed in your environment, install it by running:**
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 - Ensure your PATH includes `$HOME/.local/bin` so `uv` is available in your shell.
-- Develop and test with: `uv sync`, `./test.sh [helpful flags to your liking]`.
+- Test with: `./test.sh [helpful pytest flags to your liking]`.
 - **Important: eagerly run tests frequently, even if the user didn't ask for it.**
-- Tooling: `uv tool install . --reinstall` (and `uv tool install git+https://github.com/giladbarnea/prin.git --reinstall`). Reinstalling is required to apply code changes to the tool.
  - To add or remove a dependency, use `uv add` or `uv remove`. Don't modify pyproject.toml directly.
+- Lint and format with ./lint.sh and ./format.sh.
+- Run `prin` with ./run.sh [options].
+All .sh scripts automatically install uv if missing, take care of PATH and run with uv in the right venv automatically.
 
-## Ongoing Documentation Maintenance
-If a piece of documentation, docstring, or comment becomes no longer true due to your recent work, modify it to represent the truth or remove it. Stay terse and succinct. Avoid detailing too much.
 
 ## Gotchas
 - Make sure the environment in which the tests operate doesn't interfere with the test results. This can manifest as unplanned parsing of project's ignore files, inadvertedly honoring the tests directory of the project itself, and so on.
@@ -81,7 +78,7 @@ Repeat the following until all new tests pass:
 4. Run `uv run src/internal/parities_check.py`.
 5.	Final update to user: Summarize what passed, what changed, and what still remains to be done (if anything).
 
-#### Working Against and Updating PARITIES.md
+## Important: Working Against and Updating PARITIES.md
 
 `PARITIES.md` is the source of truth for what’s going on in the project. Keep it accurate.
 
@@ -89,12 +86,6 @@ Initially, before making code changes: map your plan against `PARITIES.md`. Iden
 An ‘element’ is a piece of information ranging from a reference to a single symbol to a Member line, or, rarely, an entire set.
 
 After everything is working: return to `PARITIES.md` and surgically update any parts that are no longer accurate due to your changes. Add any new items introduced by your task, and follow the instructions in `PARITIES.md` on how to maintain it.
-
-#### Refactor (optional, with approval)
-1.	Assess fit: Step back. Check how your changes interact with the architecture and invariants. Identify any mild refactor that would align the code with the project’s intent.
-2.	Ask first: Request approval for the refactor scope.
-3.	Execute safely: Refactor in small steps, running the full suite frequently.
-4.	Close out: Briefly state the refactor’s purpose and what changed.
 
 
 ## A Note About Tests
