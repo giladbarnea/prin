@@ -2,11 +2,7 @@ import os
 import pathlib
 import shutil
 import subprocess
-
-<<<<<<< HEAD
 import pytest
-=======
->>>>>>> origin/master
 from internal.parities_check import (
     extract_ast_tokens_from_members,
     extract_constant_tokens_from_members,
