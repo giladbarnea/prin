@@ -58,9 +58,10 @@ All .sh scripts automatically install uv if missing, take care of PATH and run w
 ## Development Cycle (Tight TDD Loop)
 
 #### Prep (before any code)
-1.	Read first: All root markdown docs, then all Python files. The codebase is small—load it fully.
-2.	Baseline: Run the full suite via ./test.sh to establish current behavior.
-3.	Targeted tests: Add minimal, surgical tests that express the desired behavior. Because this project centers on filtering/formatting, include negative tests (e.g., “filter includes all type-A and excludes all non-A”), which also clarifies the intended boundaries.
+1.	Read first: README.md and PARITIES.md.
+2. Recognize elements in PARITIES.md relevant to your plan. You'll then know what your changes will affect around the project.
+3. Baseline: Run the full suite via ./test.sh to establish current behavior.
+4. Targeted tests: Add minimal, surgical tests that express the desired behavior. Because this project centers on filtering/formatting, include negative tests (e.g., “filter includes all type-A and excludes all non-A”), which also clarifies the intended boundaries.
 
 #### The loop
 Repeat the following until all new tests pass:
@@ -73,14 +74,14 @@ Repeat the following until all new tests pass:
 
 #### After the loop
 1.	Full verification: Run the entire suite again with ./test.sh.
-2. Run ./format.sh to fix any fixable issues and print remaining, usually insignificant issues.
-3. Update PARITIES.md as instructed in `Working Against and Updating PARITIES.md` and in `Maintaining PARITIES.md`.
-4. Run `uv run src/internal/parities_check.py`.
+2. Update PARITIES.md as instructed in `[Important: Working Against and Updating PARITIES.md](AGENTS.md)` and in `[Maintaining PARITIES.md](PARITIES.md)`.
+3. Run `uv run src/internal/parities_check.py`.
+4. Run ./format.sh to fix any fixable issues and print remaining, usually insignificant issues.
 5.	Final update to user: Summarize what passed, what changed, and what still remains to be done (if anything).
 
 ## Important: Working Against and Updating PARITIES.md
 
-`PARITIES.md` is the source of truth for what’s going on in the project. Keep it accurate.
+`PARITIES.md` is the source of truth for what’s going on in the project. You are responsible for keeping it accurate after you have completed your task.
 
 Initially, before making code changes: map your plan against `PARITIES.md`. Identify which elements will be affected by your changes and have a general idea of what you’ll need to update when you’re done. 
 An ‘element’ is a piece of information ranging from a reference to a single symbol to a Member line, or, rarely, an entire set.
