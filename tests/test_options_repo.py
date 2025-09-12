@@ -8,6 +8,8 @@ from prin.core import StringWriter
 from prin.prin import main as prin_main
 from tests.utils import count_md_headers
 
+pytestmark = pytest.mark.repo
+
 
 def _run(argv: list[str]) -> str:
     buf = StringWriter()

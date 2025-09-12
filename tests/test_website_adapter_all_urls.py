@@ -9,6 +9,8 @@ import requests
 from prin.core import StringWriter
 from prin.prin import main as prin_main
 
+pytestmark = pytest.mark.website
+
 LLMS_TXT = """# FastHTML
 
 > FastHTML is a python library which brings together Starlette, Uvicorn, HTMX, and fastcore's `FT` "FastTags" into a library for creating server-rendered hypermedia applications. The `FastHTML` class itself inherits from `Starlette`, and adds decorator-based routing with many additions, Beforeware, automatic `FT` to HTML rendering, and much more.

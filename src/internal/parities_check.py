@@ -238,7 +238,16 @@ class SetBlock:
                 tokens.extend([tok.strip() for tok in BACKTICK_TOKEN_RE.findall(line)])
         return tokens
 
+<<<<<<< HEAD
     def _extract_cli_flags_from_lines(self, lines: List[str]) -> List[str]:
+=======
+    def cli_flags_in_tests(self) -> List[str]:
+        """
+        Extract CLI flags (e.g., --hidden, -uu) mentioned in **Tests** lines.
+
+        Matches flags that are backticked or raw text.
+        """
+>>>>>>> origin/master
         flags: List[str] = []
         separators = re.compile(r"\s*[/,]\s*")
 

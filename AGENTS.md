@@ -5,12 +5,12 @@ Carefully read and understand the 3 Markdown files of the project before startin
 2. AGENTS.md (this file)
 3. PARITIES.md
 
-Then read the entire codebase (besides uv.lock). It's small; this won't clutter your context window.
+Then read the entire src/prin directory. It's small; this won't clutter your context window.
 Whatever you do, try to align with the existing design philosophy (What knowledge each component holds, what knowledge it intentionally does not hold, responsibility and separation, what should be reused, and so on.)
 
 ## Architecture
 
-Engine-driven depth-first traversal with source adapters; the engine is source-agnostic while implementations (filesystem, GitHub) provide listing/reading. Shared filters/formatters ensure identical behavior across sources.
+Engine-driven depth-first traversal with source adapters; the engine is source-agnostic while implementations (filesystem, GitHub, website) provide listing/reading. Shared filters/formatters ensure identical behavior across sources.
 
 ## Core invariants
 - Engine owns traversal/filters/printing; Source adapters only list/read/is_empty.
@@ -45,7 +45,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 - Develop and test with: `uv sync`, `./test.sh [helpful flags to your liking]`.
 - **Important: eagerly run tests frequently, even if the user didn't ask for it.**
 - Tooling: `uv tool install . --reinstall` (and `uv tool install git+https://github.com/giladbarnea/prin.git --reinstall`). Reinstalling is required to apply code changes to the tool.
- - To add or remove a dependency, use `uv add` or `uv remove`.
+ - To add or remove a dependency, use `uv add` or `uv remove`. Don't modify pyproject.toml directly.
 
 ## Ongoing Documentation Maintenance
 If a piece of documentation, docstring, or comment becomes no longer true due to your recent work, modify it to represent the truth or remove it. Stay terse and succinct. Avoid detailing too much.
@@ -76,7 +76,19 @@ Repeat the following until all new tests pass:
 
 #### After the loop
 1.	Full verification: Run the entire suite again with ./test.sh.
-2.	Final update: Summarize what passed, what changed, and what remains (if anything).
+2. Run ./format.sh to fix any fixable issues and print remaining, usually insignificant issues.
+3. Update PARITIES.md as instructed in `Working Against and Updating PARITIES.md` and in `Maintaining PARITIES.md`.
+4. Run `uv run src/internal/parities_check.py`.
+5.	Final update to user: Summarize what passed, what changed, and what still remains to be done (if anything).
+
+#### Working Against and Updating PARITIES.md
+
+`PARITIES.md` is the source of truth for what’s going on in the project. Keep it accurate.
+
+Initially, before making code changes: map your plan against `PARITIES.md`. Identify which elements will be affected by your changes and have a general idea of what you’ll need to update when you’re done. 
+An ‘element’ is a piece of information ranging from a reference to a single symbol to a Member line, or, rarely, an entire set.
+
+After everything is working: return to `PARITIES.md` and surgically update any parts that are no longer accurate due to your changes. Add any new items introduced by your task, and follow the instructions in `PARITIES.md` on how to maintain it.
 
 #### Refactor (optional, with approval)
 1.	Assess fit: Step back. Check how your changes interact with the architecture and invariants. Identify any mild refactor that would align the code with the project’s intent.
@@ -86,4 +98,4 @@ Repeat the following until all new tests pass:
 
 
 ## A Note About Tests
-1. The test suite should not have any implementation footprint, nor acrobatics to make up for what the tool does or doesn't expose. If such a need arises, the tool's design is flawed and should be improved until the test suite "can just test the tool".
+1. The test suite should not have any implementation footprint, nor acrobatics to make up for what the tool does or doesn't expose. If such a need arises, the project's design is flawed and should be improved until the test suite can "just test the tool".
