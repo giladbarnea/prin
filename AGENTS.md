@@ -74,7 +74,7 @@ Repeat the following until all new tests pass:
 
 #### After the loop
 1.	Full verification: Run the entire suite again with ./test.sh.
-2. Update PARITIES.md as instructed in `[Important: Working Against and Updating PARITIES.md](AGENTS.md)` and in `[Maintaining PARITIES.md](PARITIES.md)`.
+2. Update PARITIES.md as instructed in [Important: Working Against and Updating PARITIES.md](AGENTS.md) and in [Maintaining PARITIES.md](PARITIES.md).
 3. Run `uv run src/internal/parities_check.py`.
 4. Run ./format.sh to fix any fixable issues and print remaining, usually insignificant issues.
 5.	Final update to user: Summarize what passed, what changed, and what still remains to be done (if anything).
@@ -86,7 +86,7 @@ Repeat the following until all new tests pass:
 Initially, before making code changes: map your plan against `PARITIES.md`. Identify which elements will be affected by your changes and have a general idea of what you’ll need to update when you’re done. 
 An ‘element’ is a piece of information ranging from a reference to a single symbol to a Member line, or, rarely, an entire set.
 
-After everything is working: return to `PARITIES.md` and surgically update any parts that are no longer accurate due to your changes. Add any new items introduced by your task, and follow the instructions in `PARITIES.md` on how to maintain it.
+After everything is working: return to `PARITIES.md` and surgically update any parts that are no longer accurate due to your changes. Add any new items introduced by your task, and follow the instructions in [Maintaining PARITIES.md](PARITIES.md) on how to maintain it.
 
 
 ## A Note About Tests
