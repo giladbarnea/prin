@@ -1,6 +1,6 @@
 # PARITIES
 ### Purpose
-Define deliberate couplings in the codebase—places that must remain equivalent in meaning and behavior. This doc is designed to be:
+Define deliberate couplings in the codebase—places, or _members_, that must remain equivalent in meaning and behavior. This doc is designed to be:
 1. Read when starting a task to grok how things are connected in the project. Helps avoid breaking dependencies.
 2. Updated after finishing your task.
 
@@ -11,8 +11,11 @@ Define deliberate couplings in the codebase—places that must remain equivalent
 - These are intentional parities, not code smells. The threshold for inclusion is high and obvious.
 
 **Sets.**
-- This document is a list of parity _sets _: chains of entangled elements that exist around the codebase.
-- If one element in a parity set changes, the rest of the elements need be changed accordingly.
+- This document is a list of parity _sets_: chains of entangled members that exist around the codebase.
+- If one member in a parity set changes, the rest of the members need be changed accordingly.
+
+**Members.**
+Members are what a codebase consists of. They range from a single code symbol (a class/function name), to an entire file or module.
 
 ### Always finish off your task by updating PARITIES.md
 
@@ -316,13 +319,10 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 
 # Maintaining `PARITIES.md`
 
-This section defines how to keep `PARITIES.md` accurate, terse, and durable as the project evolves. It is format-centric and future-proof: it does **not** instruct how to maintain any specific set, file, or symbol.
-
-## Prerequisites
-A change that affects behavior or tests is **incomplete** unless `PARITIES.md` is updated in the same pull request.
+This section defines how to keep `PARITIES.md` accurate, terse, and durable as the project evolves.
 
 ## Maintaining PARITIES.md: Contract
-- `PARITIES.md` is a **snapshot**, not a history or design doc.
+- `PARITIES.md` is a **snapshot** of the codebase, not a history or design doc.
 - Each set uses the **same minimal structure** (see “Set block template”).
 - Prefer **cross-references** by Set ID over repetition.
 - Keep **signal over noise**: short, testable, and unambiguous.
