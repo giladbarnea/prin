@@ -45,7 +45,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 - Develop and test with: `uv sync`, `./test.sh [helpful flags to your liking]`.
 - **Important: eagerly run tests frequently, even if the user didn't ask for it.**
 - Tooling: `uv tool install . --reinstall` (and `uv tool install git+https://github.com/giladbarnea/prin.git --reinstall`). Reinstalling is required to apply code changes to the tool.
- - To add or remove a dependency, use `uv add` or `uv remove`.
+ - To add or remove a dependency, use `uv add` or `uv remove`. Don't modify pyproject.toml directly.
 
 ## Ongoing Documentation Maintenance
 If a piece of documentation, docstring, or comment becomes no longer true due to your recent work, modify it to represent the truth or remove it. Stay terse and succinct. Avoid detailing too much.
@@ -76,7 +76,7 @@ Repeat the following until all new tests pass:
 
 #### After the loop
 1.	Full verification: Run the entire suite again with ./test.sh.
-2.	Final update: Summarize what passed, what changed, and what remains (if anything).
+2.	Final update to user: Summarize what passed, what changed, and what still remains to be done (if anything).
 
 #### Refactor (optional, with approval)
 1.	Assess fit: Step back. Check how your changes interact with the architecture and invariants. Identify any mild refactor that would align the code with the project’s intent.
@@ -86,4 +86,4 @@ Repeat the following until all new tests pass:
 
 
 ## A Note About Tests
-1. The test suite should not have any implementation footprint, nor acrobatics to make up for what the tool does or doesn't expose. If such a need arises, the tool's design is flawed and should be improved until the test suite "can just test the tool".
+1. The test suite should not have any implementation footprint, nor acrobatics to make up for what the tool does or doesn't expose. If such a need arises, the project's design is flawed and should be improved until the test suite can "just test the tool".
