@@ -30,7 +30,7 @@ prin AGENTS.md src/**/*.py
 3. Binary files
 4. Dot-files and dot-dirs (.env, .git, .cache, .vscode, etc.)
 5. Tests
-6. Git-ignored paths
+6. Git-ignored paths  // noqa: parities
 
 Each can be included in the output by specifying its corresponding `--include-...` CLI flag.
 
