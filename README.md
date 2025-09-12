@@ -135,12 +135,12 @@ In both cases, the `prin` executable should be available in your shell.
 
 3. **After the loop**
 - [ ] Run ./test.sh.
-- [ ] Update PARITIES.md as instructed in `Working Against and Updating PARITIES.md` and in PARITIES.md's `Maintaining PARITIES.md`.
+- [ ] Update PARITIES.md as instructed in [Important: Working Against and Updating PARITIES.md](AGENTS.md) and in [Maintaining PARITIES.md](PARITIES.md).
 - [ ] Run `uv run src/internal/parities_check.py`.
 - [ ] Run ./format.sh
 - [ ] Status update user.
 
-See `Development Cycle (Tight TDD Loop)` section in AGENTS.md for more details.
+See [Development Cycle (Tight TDD Loop)](AGENTS.md) for more details.
 
 ## Roadmap
 

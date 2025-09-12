@@ -53,7 +53,7 @@ All .sh scripts automatically install uv if missing, take care of PATH and run w
 ## Important: Being an Effective AI Agent
 
 1. Know your weaknesses: your eagerness to solve a problem can cause tunnel vision. You may fix the issue but unintentionally create code duplication, deviate from the existing design, or introduce a regression in other coupled parts of the project you didn’t consider. The solution is to literally look around beyond the immediate fix, be aware of (and account for) coupling around the codebase, integrate with the existing design, and periodically refactor.
-2. You do your best work when you can verify yourself. With self-verification, you can and should practice continuous trial and error instead of a single shot in the dark. See Development Cycle (Tight TDD Loop) below for how to work, verify, and report progress.
+2. You do your best work when you can verify yourself. With self-verification, you can and should practice continuous trial and error instead of a single shot in the dark. See [Development Cycle (Tight TDD Loop)](AGENTS.md) for how to work, verify, and report progress.
 
 ## Development Cycle (Tight TDD Loop)
 
@@ -74,7 +74,7 @@ Repeat the following until all new tests pass:
 
 #### After the loop
 1.	Full verification: Run the entire suite again with ./test.sh.
-2. Update PARITIES.md as instructed in `[Important: Working Against and Updating PARITIES.md](AGENTS.md)` and in `[Maintaining PARITIES.md](PARITIES.md)`.
+2. Update PARITIES.md as instructed in [Important: Working Against and Updating PARITIES.md](AGENTS.md) and in [Maintaining PARITIES.md](PARITIES.md).
 3. Run `uv run src/internal/parities_check.py`.
 4. Run ./format.sh to fix any fixable issues and print remaining, usually insignificant issues.
 5.	Final update to user: Summarize what passed, what changed, and what still remains to be done (if anything).
@@ -86,7 +86,7 @@ Repeat the following until all new tests pass:
 Initially, before making code changes: map your plan against `PARITIES.md`. Identify which elements will be affected by your changes and have a general idea of what you’ll need to update when you’re done. 
 An ‘element’ is a piece of information ranging from a reference to a single symbol to a Member line, or, rarely, an entire set.
 
-After everything is working: return to `PARITIES.md` and surgically update any parts that are no longer accurate due to your changes. Add any new items introduced by your task, and follow the instructions in `PARITIES.md` on how to maintain it.
+After everything is working: return to `PARITIES.md` and surgically update any parts that are no longer accurate due to your changes. Add any new items introduced by your task, and follow the instructions in [Maintaining PARITIES.md](PARITIES.md) on how to maintain it.
 
 
 ## A Note About Tests
