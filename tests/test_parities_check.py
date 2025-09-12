@@ -5,7 +5,6 @@ import subprocess
 
 <<<<<<< HEAD
 import pytest
-
 =======
 >>>>>>> origin/master
 from internal.parities_check import (
