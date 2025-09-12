@@ -1,23 +1,34 @@
 # PARITIES
 ### Purpose
-Define deliberate couplings in the codebase—places that must remain equivalent in meaning and behavior. Designed to be:
+Define deliberate couplings in the codebase—places that must remain equivalent in meaning and behavior. This doc is designed to be:
 1. Read when starting a task to grok how things are connected in the project. Helps avoid breaking dependencies.
 2. Updated after finishing your task.
 
 ### Scope
-These are intentional parities, not code smells. The threshold for inclusion is high and obvious.
 
-### Guidance for maintainers and code agents
-- Parities are high-signal, indisputable links between different elements of the project. Do not add speculative links.
-- When adding a feature or option, update all members of every affected set in the same edit series.
-- If you cannot fix a parity immediately, add a TODO in the pull request description and open a follow-up issue.
-- Tests called out under each set are the guardrails; add or update them alongside code changes.
+**Parities.**
+- Parities are high-signal, indisputable links between different elements of the project.
+- These are intentional parities, not code smells. The threshold for inclusion is high and obvious.
+
+**Sets.**
+- This document is a list of parity _sets _: chains of entangled elements that exist around the codebase.
+- If one element in a parity set changes, the rest of the elements need be changed accordingly.
+
+### Always finish off your task by updating PARITIES.md
+
+You are responsible for updating this document after you've completed your task, to make it reflect the new state of the project.
+
+See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed instructions on how to do this.
+
 
 ### Conventions
 
-Each set lists an ID, Members (with precise locations/symbols), a Contract (what must stay in sync), Triggers (what changes require syncing), and Tests (coverage that asserts the contract).
+1. Each parity set lists an ID, Members (with precise locations/symbols), a Contract (what must stay in sync), Triggers (what changes require syncing), and Tests (coverage that asserts the contract).
 2. Always use backticks when referring to a `file.ext`, `dir/`, `Symbol`, `function`, etc.
 
+---
+
+# Parity Sets
 
 ## Set 1 [CLI-CTX-DEFAULTs-README]: CLI options ↔ Context fields ↔ Defaults ↔ README
 
