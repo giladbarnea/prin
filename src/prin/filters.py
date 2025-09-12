@@ -4,7 +4,7 @@ from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any
 
-from .path_classifier import classify_pattern, is_extension, is_glob
+from .path_classifier import classify_pattern, is_extension as _is_extension, is_glob as _is_glob
 from .types import TExclusion
 
 
@@ -44,6 +44,24 @@ def get_gitignore_exclusions(paths: list[str]) -> list[TExclusion]:
             exclusions.extend(read_gitignore_file(git_exclude_path))
 
     return exclusions
+
+
+def is_glob(string: str) -> bool:
+    """Re-export: determine if the given string is a glob pattern.
+
+    Thin wrapper around `prin.path_classifier.is_glob` to keep the public API
+    stable: callers expect `prin.filters.is_glob` to exist (See PARITIES Set 5).
+    """
+    return _is_glob(string)
+
+
+def is_extension(string: str) -> bool:
+    """Re-export: determine if the given string is an explicit extension.
+
+    Thin wrapper around `prin.path_classifier.is_extension` to keep the public
+    API stable and centralized in `filters` (See PARITIES Set 5).
+    """
+    return _is_extension(string)
 
 
 def is_excluded(entry: Any, *, exclude: list[TExclusion]) -> bool:
