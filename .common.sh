@@ -20,10 +20,9 @@ function ensure_uv_installed(){
 	if [[ "$quiet" == "--quiet" || "$quiet" == "-q" ]]; then
 		quiet=true
 	fi
-	case ":$PATH:" in
-	*":"$HOME/.local/bin":*) ;;
-	*) export PATH="$HOME/.local/bin:$PATH" ;;
-	esac
+	if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+		export PATH="$HOME/.local/bin:$PATH"
+	fi
 	if ! command -v uv &> /dev/null; then
 		message "uv is not installed, installing it with 'curl -LsSf https://astral.sh/uv/install.sh | sh'"
 		curl -LsSf https://astral.sh/uv/install.sh | sh
