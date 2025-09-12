@@ -49,7 +49,7 @@ def parse_github_url(url: str) -> GitHubURL:
         .removeprefix("repos/")
         .removesuffix("/")
     )
-    owner_repo = owner_repo.replace("blob/", "")
+    owner_repo = owner_repo.replace("blob/", "").removeprefix("master/").removeprefix("main/")
     # At this point, the URL can be either:
     # 1. "owner/repo/(<branch>/dir/file)?"
     # 2. "owner/repo/(dir/file)?"

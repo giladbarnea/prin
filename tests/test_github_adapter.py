@@ -18,6 +18,9 @@ from prin.adapters.github import GitHubURL, parse_github_url
         "github.com/TypingMind/awesome-typingmind/blob/README.md",
         "github.com/TypingMind/awesome-typingmind/logos/logo.png",
         "github.com/TypingMind/awesome-typingmind/blob/logos/logo.png",
+        # Ensure optional branch prefixes after blob/ are stripped
+        "github.com/TypingMind/awesome-typingmind/blob/master/logos/logo.png",
+        "github.com/TypingMind/awesome-typingmind/blob/main/logos/logo.png",
         "https://api.github.com/repos/TypingMind/awesome-typingmind/git/trees/master",
         "git+https://github.com/TypingMind/awesome-typingmind",
     ],
