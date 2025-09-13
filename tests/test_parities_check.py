@@ -344,5 +344,5 @@ def test_merge_opportunity_id_parts_only(id_a, id_b, should_warn, capsys):
     from internal.parities_check import rule_merge_opportunities
 
     msgs = rule_merge_opportunities(parsed)
-    warn = any(m.severity == "WARN" and m.rule == "MergeOpportunity" for m in msgs)
-    assert warn is should_warn
+    suggest = any(m.severity == "SUGGESTION" and m.rule == "MergeOpportunity" for m in msgs)
+    assert suggest is should_warn
