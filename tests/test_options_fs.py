@@ -115,7 +115,7 @@ def test_module_named_locking_is_not_excluded(fs_root: VFS):
     assert "<src/locking/main.py>" in out
 
 
-def test_literal_exclude_token_matches_segments_not_substrings(fs_root: VFS):
+def test_literal_exclude_token_excludes_substrings_with_regex_default(fs_root: VFS):
     from tests.utils import write_file
 
     # Create files that should be excluded by literal token 'pizza'
@@ -132,9 +132,9 @@ def test_literal_exclude_token_matches_segments_not_substrings(fs_root: VFS):
     assert "<src/pizza/main.py>" not in out
     assert "<src/pizza.py>" not in out
 
-    # Not excluded
-    assert "<src/nicepizzas/main.py>" in out
-    assert "<src/nicepizzas.py>" in out
+    # With regex-by-default, substring matches are excluded as well
+    assert "<src/nicepizzas/main.py>" not in out
+    assert "<src/nicepizzas.py>" not in out
 
 
 def test_exclude_glob_and_literal(fs_root: VFS):

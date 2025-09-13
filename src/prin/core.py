@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import os
+import re
 import sys
 from dataclasses import dataclass
 from enum import Enum, auto
+from pathlib import Path as _FsPath
 from pathlib import PurePosixPath
 from typing import TYPE_CHECKING, Iterable, Protocol
-import re
-from pathlib import Path as _FsPath
 
 from prin import filters
 from prin.formatters import Formatter, HeaderFormatter
@@ -246,7 +246,8 @@ class DepthFirstPrinter:
                     self._handle_file(entry, writer, base=display_base, budget=budget)
 
     def _pattern_matches(self, entry: Entry, token: str, *, base: PurePosixPath) -> bool:
-        """Return True if entry's name matches token according to experimental rules.
+        """
+        Return True if entry's name matches token according to experimental rules.
 
         For this POC, when token is classified as regex or text, we use re.search
         against the entry's filename (not the full path) to mimic fd-like behavior
@@ -275,7 +276,8 @@ class DepthFirstPrinter:
         writer: Writer,
         budget: "FileBudget | None",
     ) -> None:
-        """Traverse from base and print files whose names match token.
+        """
+        Traverse from base and print files whose names match token.
 
         Respects existing exclusion, extension, and emptiness rules.
         """

@@ -35,21 +35,21 @@ from prin.formatters import HeaderFormatter
     ],
 )
 def test_text_query(prin_tmp_path: Path, in_out: dict[str, str]):
-	file = (prin_tmp_path / "foo" / "bar" / "baz.txt")
-	file.parent.mkdir(parents=True, exist_ok=True)
-	file.touch(exist_ok=True)
-	file.write_text("hi baz.txt")
-	src = FileSystemSource(root_cwd=prin_tmp_path)
-	printer = DepthFirstPrinter(
-					src,
-					HeaderFormatter(),
-					ctx=Context(paths=[str(prin_tmp_path)]),
-	)
-	buf = StringWriter()
-	query, expected_match = list(in_out.items())[0]
-	printer.run([query], buf)
-	out = buf.text()
-	if expected_match:
-		assert expected_match in out, f"Expected match for {query!r}, but got {out!r}"
-	else:
-		assert not out, f"Expected no match for {query!r}, but got {out!r}"
+    file = prin_tmp_path / "foo" / "bar" / "baz.txt"
+    file.parent.mkdir(parents=True, exist_ok=True)
+    file.touch(exist_ok=True)
+    file.write_text("hi baz.txt")
+    src = FileSystemSource(root_cwd=prin_tmp_path)
+    printer = DepthFirstPrinter(
+        src,
+        HeaderFormatter(),
+        ctx=Context(paths=[str(prin_tmp_path)]),
+    )
+    buf = StringWriter()
+    query, expected_match = list(in_out.items())[0]
+    printer.run([query], buf)
+    out = buf.text()
+    if expected_match:
+        assert expected_match in out, f"Expected match for {query!r}, but got {out!r}"
+    else:
+        assert not out, f"Expected no match for {query!r}, but got {out!r}"
