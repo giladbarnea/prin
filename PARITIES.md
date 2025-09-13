@@ -231,7 +231,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Members
 - `src/prin/prin.py`: routing of input tokens across filesystem, GitHub, and website; repo subpath extraction; global `FileBudget` use.
 - `src/prin/util.py`: `is_github_url`, `is_http_url`
-- `src/prin/adapters/github.py`: `parse_github_url` → `owner`, `repo`, `subpath`
+- `src/prin/adapters/github.py`: `parse_github_url` → `owner`, `repo`, `subpath`, `ref`
 
 #### Contract
 - Routing logic and helper predicates must align:

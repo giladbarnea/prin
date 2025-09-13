@@ -63,6 +63,52 @@ def test_repo_only_headers_prints_headers_only():
 
 
 @pytest.mark.network
+def test_repo_commit_only_headers_two_files():
+    # Specific commit should reflect point-in-time state
+    url = (
+        "https://github.com/TypingMind/awesome-typingmind/commit/"
+        "d4ce90b21bc6c04642ebcf448f96357a8b474624"
+    )
+    out = _run(["--only-headers", url])
+    # Expect exactly two files listed
+    lines = [ln.strip() for ln in out.splitlines() if ln.strip()]
+    assert set(lines) == {"LICENSE", "README.md"}
+
+
+@pytest.mark.network
+def test_repo_commit_readme_contents_matches():
+    # Specific commit and README.md contents should match expected text (ignoring whitespace diffs)
+    url = (
+        "https://github.com/TypingMind/awesome-typingmind/blob/"
+        "d4ce90b21bc6c04642ebcf448f96357a8b474624/README.md"
+    )
+
+    expected_readme_contents = """
+# awesome-typingmind
+Collection of useful resources
+for TypingMind
+"""
+
+    # Use XML to easily isolate the body between <README.md> tags
+    out = _run(["--tag", "xml", url])
+
+    start_tag = "<README.md>"
+    end_tag = "</README.md>"
+    start = out.find(start_tag)
+    assert start >= 0, "README.md header not found in output"
+    start_body = start + len(start_tag)
+    end = out.find(end_tag, start_body)
+    assert end > start_body, "README.md closing tag not found in output"
+    body = out[start_body:end]
+
+    def _normalize(s: str) -> str:
+        # Collapse all whitespace (spaces, tabs, newlines) to single spaces and trim
+        return " ".join(s.split()).strip()
+
+    assert _normalize(body) == _normalize(expected_readme_contents)
+
+
+@pytest.mark.network
 def test_repo_extension_filters():
     rust_repo = "https://github.com/trouchet/rust-hello"
     out_rs = _run(["-e", "rs", rust_repo])
