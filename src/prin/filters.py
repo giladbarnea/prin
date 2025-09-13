@@ -2,10 +2,13 @@ from __future__ import annotations
 
 from fnmatch import fnmatch
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING
 
-from .path_classifier import classify_pattern, is_extension
-from .types import TExclusion
+from .path_classifier import classify_pattern, is_extension, is_glob
+from .types import TExclusion, TGlob
+
+if TYPE_CHECKING:
+    from prin.core import Entry
 
 
 def read_gitignore_file(gitignore_path: Path) -> list[TExclusion]:
@@ -46,8 +49,8 @@ def get_gitignore_exclusions(paths: list[str]) -> list[TExclusion]:
     return exclusions
 
 
-def is_excluded(entry: Any, *, exclude: list[TExclusion]) -> bool:
-    path = Path(getattr(entry, "path", entry))
+def is_excluded(entry: "Entry", *, exclude: list[TExclusion]) -> bool:
+    path = entry.path
     name = path.name
     stem = path.stem
     for _exclude in exclude:
@@ -55,25 +58,22 @@ def is_excluded(entry: Any, *, exclude: list[TExclusion]) -> bool:
             if _exclude(name) or _exclude(stem) or _exclude(str(path)):
                 return True
             continue
+        token = _exclude.strip()
         # Handle extension excludes like ".py" (treated as text by classifier)
-        if is_extension(_exclude) and name.endswith(_exclude):
+        if is_extension(token) and extension_match(entry, extensions=[token]):
             return True
 
-        if not isinstance(_exclude, str):
-            continue
-
-        classification = classify_pattern(_exclude)
+        classification = classify_pattern(token)
 
         # Globs and regex are handled via fnmatch (regex support is out of scope)
         if classification in ("glob", "regex"):
             p = path.as_posix()
-            if fnmatch(name, _exclude) or fnmatch(stem, _exclude) or fnmatch(p, _exclude):
+            if fnmatch(name, token) or fnmatch(stem, token) or fnmatch(p, token):
                 return True
             continue
 
         # Text patterns: match by exact segment sequence, not substrings
         # Support multi-part tokens containing path separators (either '/' or '\\')
-        token = _exclude.strip()
         if not token:
             continue
         # Normalize separators in the token to POSIX-style for comparison
@@ -90,5 +90,19 @@ def is_excluded(entry: Any, *, exclude: list[TExclusion]) -> bool:
         # Slide a window over path_parts and compare joined POSIX strings
         for i in range(0, len(path_parts) - needed + 1):
             if path_parts[i : i + needed] == token_parts:
+                return True
+    return False
+
+def extension_match(entry: "Entry", *, extensions: list[TGlob]) -> bool:
+    if not extensions:
+        return True
+    filename = entry.name
+    for pattern in extensions:
+        if is_glob(pattern):
+            if fnmatch(filename, pattern):
+                return True
+        else:
+            # Guaranteed no glob in 'pattern', so check exact extension match.
+            if filename.endswith("." + pattern.removeprefix(".")):
                 return True
     return False

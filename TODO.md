@@ -4,6 +4,7 @@
 - [ ] README.md should have an example output early in the README, after the basic usage.
 - [ ] README.md should have a website example.
 - [ ] `-t`, `--tag` is a bad name. It should be `--format` or `--output-format`, or something with 'seperator'.
+- [ ] Network requests cache TTL
 
 ## PARITIES.md
 

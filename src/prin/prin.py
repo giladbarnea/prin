@@ -2,19 +2,21 @@ from __future__ import annotations
 
 import sys
 
+from .adapters import github
 from .adapters.filesystem import FileSystemSource
-from .adapters.github import GitHubRepoSource, parse_github_url
+from .adapters.github import GitHubRepoSource
 from .adapters.website import WebsiteSource
-from .cli_common import Context, parse_common_args
+from . import cli_common
+from .cli_common import Context
 from .core import DepthFirstPrinter, FileBudget, StdoutWriter, Writer
 from .formatters import MarkdownFormatter, XmlFormatter
-from .util import is_github_url
+from . import util
 
 
 def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None:
     if argv is None:
         argv = sys.argv[1:]
-    ctx: Context = parse_common_args(argv)
+    ctx: Context = cli_common.parse_common_args(argv)
 
     formatter = {"xml": XmlFormatter, "md": MarkdownFormatter}[ctx.tag]()
     out_writer = writer or StdoutWriter()
@@ -24,7 +26,7 @@ def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None
     local_paths: list[str] = []
     repo_urls: list[str] = []
     for tok in ctx.paths:
-        if is_github_url(tok):
+        if util.is_github_url(tok):
             repo_urls.append(tok)
         else:
             if tok != "":
@@ -50,7 +52,7 @@ def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None
             if budget and budget.spent():
                 break
             roots: list[str] = []
-            derived = parse_github_url(url)["subpath"].strip("/")
+            derived = github.parse_github_url(url)["subpath"].strip("/")
             if derived:
                 roots.append(derived)
             if not roots:
@@ -64,9 +66,8 @@ def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None
 
     # Website URLs (each rendered independently) - non-GitHub HTTP(S) inputs
     if not (budget and budget.spent()):
-        from .util import is_http_url
 
-        website_urls = [tok for tok in ctx.paths if is_http_url(tok) and not is_github_url(tok)]
+        website_urls = [tok for tok in ctx.paths if util.is_http_url(tok) and not util.is_github_url(tok)]
         for base in website_urls:
             if budget and budget.spent():
                 break

@@ -53,7 +53,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - Filesystem options: `tests/test_options_fs.py`
 - Repository options: `tests/test_options_repo.py`
 
-## Set 2 [FORMATTER-SELECTION]: Tag choices ↔ Formatter classes ↔ Defaults ↔ README examples
+## Set 2 [FORMATTERS-CLI-TAG-OPTION]: Tag choices ↔ Formatter classes ↔ Defaults ↔ README examples
 #### Members
 - `src/prin/prin.py`: tag→formatter dispatch
 - `src/prin/formatters.py`: `XmlFormatter`, `MarkdownFormatter`, `HeaderFormatter`.
@@ -71,7 +71,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - `tests/test_options_fs.py::test_tag_md_outputs_markdown_format`
 - `tests/test_options_repo.py::test_repo_tag_md_outputs_markdown_format`
 
-## Set 3 [ONLY-HEADERS-ENFORCEMENT]: `--only-headers` flag ↔ `HeaderFormatter` behavior
+## Set 3 [ONLY-HEADERS-ENFORCEMENT-WITH-HEADERFORMATTER]: `--only-headers` flag ↔ `HeaderFormatter` behavior
 #### Members
 - `src/prin/cli_common.py`: `Context.only_headers` / CLI: `-l/--only-headers`.
 - `src/prin/core.py`: `DepthFirstPrinter` forcing `HeaderFormatter` when `only_headers=True`.
@@ -87,42 +87,44 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - FS: `tests/test_options_fs.py::test_only_headers_prints_headers_only`
 - Repo: `tests/test_options_repo.py::test_repo_only_headers_prints_headers_only`
 
-## Set 4 [FILTER-CATEGORIES-FS-FIXTURE]: Default filter categories ↔ Defaults ↔ README ↔ FS fixture
+## Set 4 [FILTER-CATEGORIES-CLI-FLAGS-CONTEXT-FIELDS-TESTS-FS-FIXTURE-README]: Filter categories ↔ CLI flags ↔ Context fields ↔ FS Tests fixture ↔ README
 
 #### Members
+- `src/prin/cli_common.py`: CLI flags, `Context` fields.
 - `src/prin/defaults.py`: `DEFAULT_EXCLUSIONS`, `DEFAULT_TEST_EXCLUSIONS`, `DEFAULT_LOCK_EXCLUSIONS`, `DEFAULT_BINARY_EXCLUSIONS`, `DEFAULT_DOC_EXTENSIONS`, `Hidden`.
-- `README.md`: “Sane Defaults for LLM Input” (categories listed).
-- FS test fixture: `tests/conftest.py::fs_root` (examples for each category).
+- `README.md` sections: “Sane Defaults for LLM Input”, “Output Control”, CLI Options”.
+- FS test fixture: `tests/conftest.py::fs_root` (mock files/paths and `VFS` field for each category).
 
 #### Contract
-- Categories defined in `defaults.py` must be described in README, and `fs_root` must include representative files for coverage. Any category change requires updates to all three.
+- Filter flags exposed by the CLI must have corresponding DEFAULT_* consts in `defaults.py`, `Context` fields, representation in `README.md` in specified sections, mocks in `conftest.fs_root` and a field in `conftest.VFS`.
 
 #### Triggers
-- Adding/removing/renaming a category; changing category semantics.
+- Adding/removing/renaming a filter category; changing category semantics.
 
 #### Tests
 - FS flags toggling categories: `tests/test_options_fs.py` (for example, `--hidden`, `--include-tests`, `--include-lock`, `--include-binary`, `--no-docs`, `--include-empty`, `--exclude`, `--no-exclude`, `--extension`).
 - Repo analogs: `tests/test_options_repo.py`.
 
 
-## Set 5 [FILTERS-CONSISTENCY-ACROSS-SOURCES]: Exclusion and extension semantics ↔ Pattern classifier
+## Set 5 [FILTERS-CONSISTENCY-ACROSS-SOURCES]: Path exclusion and extension semantics ↔ Pattern classifier
 #### Members
 - `src/prin/core.py`: `DepthFirstPrinter._excluded`, `_extension_match`.
-- `src/prin/filters.py`: `is_excluded`, `is_extension`, `get_gitignore_exclusions`.
+- `src/prin/filters.py`: `is_excluded`, `extension_match`, `get_gitignore_exclusions`.
 - `src/prin/path_classifier.py`: `classify_pattern`, `is_glob`, `is_extension`, `is_regex`.
+- `src/prin/cli_common.py`: `_normalize_extension_to_glob`.
 - Adapters used via `DepthFirstPrinter`: filesystem, GitHub, website.
 
 #### Contract
 - Inclusion/exclusion and extension matching must behave identically regardless of source type. Any change to filters or engine matching must be validated for both filesystem and repository sources.
 - The classifier distinguishes three kinds of patterns: `regex`, `glob`, and `text`.
-  * `regex`: Not implemented.
+  * `regex`: Matching is not implemented.
   * `glob`: matched via `fnmatch`.
   * `text`: matched by exact path-segment sequence, not substrings; supports multi-part tokens containing separators.
-  * Explicit extensions (e.g., `.py`) match by suffix.
-- Changes to classifier rules must be reflected in `filters.is_excluded` behavior.
+- Explicit extensions are normalized by `_normalize_extension_to_glob`. Changes to normalization rules must be reflected in `filters.is_excluded` and `filters.extension_match` behavior.
+- Changes to classifier rules must be reflected in `filters.is_excluded` and `filters.extension_match` behavior.
 
 #### Triggers
-- Changing matching rules, glob/regex detection, or text-token semantics.
+- Changing matching rules, glob/regex detection, or text-token semantics. Changing extension normalization rules.
 
 #### Tests
 - FS: `tests/test_options_fs.py::test_exclude_glob_and_literal`, `::test_extension_filters_by_extension`, `::test_literal_exclude_token_matches_segments_not_substrings`
@@ -152,7 +154,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - Mixed invocation: `tests/test_print_mixed_fs_repo.py`.
 - Adapter specifics: `tests/test_filesystem_source.py`, `tests/test_github_adapter.py`, `tests/test_website_adapter.py`, `tests/test_website_adapter_all_urls.py`.
 
-## Set 7 [SEMANTIC-EMPTINESS]: Shared definition across adapters
+## Set 7 [SEMANTIC-EMPTINESS-ADAPTERS]: Shared definition across adapters
 
 #### Members
 - `src/prin/core.py`: `is_blob_semantically_empty`, `_is_text_semantically_empty`.
@@ -184,7 +186,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - Repo: `tests/test_max_files_repo.py`.
 - Mixed: `tests/test_print_mixed_fs_repo.py`.
 
-## Set 10 [CLI-ALIAS-BEHAVIOR]: Alias expansion ↔ canonical flags
+## Set 10 [CLI-ALIAS-BEHAVIOR-README]: Alias expansion ↔ canonical flags
 #### Members
 - `src/prin/cli_common.py`: `CLI_OPTIONS_ALIASES` (for example, `-uu` → `--hidden` `--no-ignore`) and parser declarations (for example, `-u`/`--unrestricted`, `-uuu`/`--no-exclude`).
 - `README.md`: alias documentation.
@@ -234,7 +236,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Tests
 - `tests/test_website_adapter.py`, `tests/test_website_adapter_all_urls.py`.
 
-## Set 13 [CLI-URL-ROUTING]: Token routing to adapters
+## Set 13 [CLI-URL-ROUTING-ADAPTERS]: Token routing to adapters
 #### Members
 - `src/prin/prin.py`: routing of input tokens across filesystem, GitHub, and website; repo subpath extraction; global `FileBudget` use.
 - `src/prin/util.py`: `is_github_url`, `is_http_url`
@@ -253,10 +255,11 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - `tests/test_print_repo_positional.py`, `tests/test_print_mixed_fs_repo.py`, `tests/test_max_files_*`, `tests/test_github_adapter.py`.
 - `tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations`
 
-## Set 14 [README-EXAMPLES-REALITY]: Documentation ↔ observed behavior
+## Set 14 [README-EXAMPLES-CLI-REALITY]: Documentation ↔ observed behavior
 #### Members
 - `README.md`: examples and described behavior/flags
 - `src/prin/prin.py` and adapters: actual behavior
+- `src/prin/cli_common.py`: exposed CLI flags and options.
 - End-to-end tests that exercise the same stories.
 
 #### Contract

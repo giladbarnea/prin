@@ -4,8 +4,7 @@ from typing import Callable, NewType
 TPath = NewType("TPath", str)
 
 
-TGlob = NewType("TGlob", str)
-TExtension = NewType("TExtension", str)
+TGlob = NewType("TGlob", str)  # Extensions are normalized to globs
 TRegex = NewType("TRegex", str)
 
 TExclusion = TPath | TGlob | Callable[[TPath | TGlob], bool]
