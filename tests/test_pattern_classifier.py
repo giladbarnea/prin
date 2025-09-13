@@ -108,5 +108,6 @@ def test_common_globs_not_regex(pat):
         "C++/a+b.txt",  # plus signs as literals
     ],
 )
-def test_text(pat):
-    assert classify_pattern(pat) == "text"
+def test_text_now_regex(pat):
+    # With text mode retired, these are treated as regex by default
+    assert classify_pattern(pat) == "regex"

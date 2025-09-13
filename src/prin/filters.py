@@ -52,6 +52,8 @@ def get_gitignore_exclusions(paths: list[str]) -> list[TExclusion]:
 
 def is_excluded(entry: "Entry", *, exclude: list[TExclusion]) -> bool:
     path = entry.path
+    name = path.name
+    stem = path.stem
     # Match against full POSIX path only (relative to traversal base)
     target = path.as_posix()
     for _exclude in exclude:
