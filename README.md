@@ -122,6 +122,27 @@ In both cases, the `prin` executable should be available in your shell.
 - Lint and format: `./lint.sh` and `./format.sh`.
  - To add or remove a dependency, use `uv add` or `uv remove`.
 
+##### Testing adapter-specific suites
+
+You can focus or skip tests for specific adapters via pytest flags:
+
+```sh
+# Run only website adapter tests
+./test.sh --website
+
+# Run only GitHub repo adapter tests
+./test.sh --repo
+
+# Skip website adapter tests
+./test.sh --no-website
+
+# Skip GitHub repo adapter tests
+./test.sh --no-repo
+
+# Combine with network control
+./test.sh --website --no-network
+```
+
 #### Task Completion Checklist (create internal todo list)
 
 1. **Prep** (before any code)
