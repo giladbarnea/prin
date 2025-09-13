@@ -206,12 +206,19 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - `tests/test_cli_engine_*.py`: traversal and path display behavior.
 - `tests/test_max_files_*.py`: `--max-files` semantics.
 - `tests/test_website_adapter_*.py`: website parsing and rendering.
+ - `tests/conftest.py`: adapter-specific pytest markers and selection flags (`--website`, `--repo`, `--no-website`, `--no-repo`).
+ - `pyproject.toml` `[tool.pytest.ini_options].markers`: `website`, `repo` declarations.
 
 #### Contract
 - For each implemented feature/flag, maintain parallel coverage for filesystem and GitHub (and website where applicable). Adding a feature implies adding/adapting tests in all relevant suites.
+ - Adapter markers/flags must map 1:1 to source adapters; include flags restrict to marked suites; exclude flags skip them.
 
 #### Triggers
 - Adding a new option/behavior; adding a new adapter.
+
+#### Tests
+- FS: `tests/test_options_fs.py` (for example flags); Repo: `tests/test_options_repo.py`; Website: `tests/test_website_adapter_*.py`.
+- Marker selection honored: `./test.sh --website` runs only website-marked tests; `./test.sh --no-repo` skips repo-marked tests.
 
 ## Set 12 [WEBSITE-LLMS-TXT-PARSING]: URL list parsing ↔ rendering
 #### Members
@@ -259,25 +266,6 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 
 #### Tests
 - Covered indirectly via options and mixed-source tests; add story-based tests if examples grow in complexity.
-
-## Set 17 [TEST-ADAPTER-MARKERS-FLAGS]: Pytest markers/flags ↔ source adapters
-
-#### Members
-- `tests/conftest.py`: `pytest_addoption` (`--website`, `--repo`, `--no-website`, `--no-repo`) and `pytest_collection_modifyitems` selection logic.
-- `pyproject.toml` `[tool.pytest.ini_options].markers`: `website`, `repo`.
-- Website tests: `tests/test_website_adapter.py`, `tests/test_website_adapter_all_urls.py` (use `pytest.mark.website`).
-- Repo tests: `tests/test_options_repo.py`, `tests/test_print_repo_positional.py`, `tests/test_max_files_repo.py`, `tests/test_github_adapter.py` (use `pytest.mark.repo`).
-- Source adapters: `src/prin/adapters/website.py`, `src/prin/adapters/github.py`, `src/prin/adapters/filesystem.py`.
-
-#### Contract
-- Pytest markers/flags must map 1:1 to source adapter kinds: `website` → Website adapter; `repo` → GitHub adapter; filesystem is unmarked default.
-- Include flags (`--website`/`--repo`) restrict to marked suites; exclude flags (`--no-website`/`--no-repo`) skip them; README documents these options.
-
-#### Triggers
-- Adding/renaming an adapter or a marker/flag; changing test selection semantics.
-
-#### Tests
-- Suite-level marks present and honored by `tests/conftest.py`; running `./test.sh --website` executes only website-marked tests; `./test.sh --no-repo` skips repo-marked tests.
 
 ## Set 15 [EXPLICIT-PATH-FORCE-INCLUDE]: Explicit files bypass exclusions
 #### Members
