@@ -244,6 +244,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 
 #### Tests
 - `tests/test_print_repo_positional.py`, `tests/test_print_mixed_fs_repo.py`, `tests/test_max_files_*`, `tests/test_github_adapter.py`.
+- `tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations`
 
 ## Set 14 [README-EXAMPLES-REALITY]: Documentation ↔ observed behavior
 #### Members
