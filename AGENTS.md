@@ -1,4 +1,6 @@
-# Agents.md
+# Agents
+
+This file contains instructions for AI agents to adhere to throughout an entire task lifespan.
 
 Carefully read and internalize the 3 Markdown files of the project before starting a task:
 1. README.md
