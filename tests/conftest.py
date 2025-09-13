@@ -90,7 +90,6 @@ def fs_root() -> VFS:
         "tests/spec.ts": "it('should pass', () => { expect(1).toBe(1); });\n",
         "app/test_mod.py": "def test_x():\n    assert True\n",
         "app/mod.test.py": "def test_x():\n    assert True\n",
-        
     }
     dependency_files: dict[Path, str] = {
         "node_modules/pkg/index.js": "console.log('x');\n",

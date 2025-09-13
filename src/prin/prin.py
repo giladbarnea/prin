@@ -2,15 +2,14 @@ from __future__ import annotations
 
 import sys
 
+from . import cli_common, util
 from .adapters import github
 from .adapters.filesystem import FileSystemSource
 from .adapters.github import GitHubRepoSource
 from .adapters.website import WebsiteSource
-from . import cli_common
 from .cli_common import Context
 from .core import DepthFirstPrinter, FileBudget, StdoutWriter, Writer
 from .formatters import MarkdownFormatter, XmlFormatter
-from . import util
 
 
 def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None:
@@ -66,8 +65,9 @@ def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None
 
     # Website URLs (each rendered independently) - non-GitHub HTTP(S) inputs
     if not (budget and budget.spent()):
-
-        website_urls = [tok for tok in ctx.paths if util.is_http_url(tok) and not util.is_github_url(tok)]
+        website_urls = [
+            tok for tok in ctx.paths if util.is_http_url(tok) and not util.is_github_url(tok)
+        ]
         for base in website_urls:
             if budget and budget.spent():
                 break

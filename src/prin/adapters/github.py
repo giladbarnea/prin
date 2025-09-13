@@ -61,9 +61,13 @@ def parse_github_url(url: str) -> GitHubURL:
     else:
         # Ensure urlparse sees a scheme when missing
         tmp = u
-        if not (u.startswith("http://") or u.startswith("https://")):
-            if u.startswith("www.") or u.startswith("github.com/") or u.startswith("api.github.com/") or u.startswith("raw.githubusercontent.com/"):
-                tmp = "https://" + u
+        if not (u.startswith("http://") or u.startswith("https://")) and (
+            u.startswith("www.")
+            or u.startswith("github.com/")
+            or u.startswith("api.github.com/")
+            or u.startswith("raw.githubusercontent.com/")
+        ):
+            tmp = "https://" + u
         parsed = urlparse(tmp)
         query_params = parse_qs(parsed.query)
         if parsed.netloc:
@@ -77,8 +81,7 @@ def parse_github_url(url: str) -> GitHubURL:
 
     raw_base = f"{host}{('/' + path.lstrip('/')) if not path.startswith('/') else path}"
     raw = (
-        raw_base
-        .removeprefix("www.")
+        raw_base.removeprefix("www.")
         .removeprefix("api.")
         .removeprefix("github.com/")
         .removeprefix("raw.githubusercontent.com/")

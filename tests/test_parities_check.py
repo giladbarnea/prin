@@ -2,7 +2,9 @@ import os
 import pathlib
 import shutil
 import subprocess
+
 import pytest
+
 from internal.parities_check import (
     extract_ast_tokens_from_members,
     extract_constant_tokens_from_members,
@@ -24,7 +26,10 @@ def test_block_members_tokens():
     set_block = parsed.sets[1]
     assert set_block.sid == 1
     # Verify Set title token matches fully without regex manipulation
-    assert set_block.title == "## Set 1 [CLI-CTX-DEFAULTs-README]: CLI options ↔ Context fields ↔ Defaults ↔ README"
+    assert (
+        set_block.title
+        == "## Set 1 [CLI-CTX-DEFAULTs-README]: CLI options ↔ Context fields ↔ Defaults ↔ README"
+    )
 
     tokens = extract_ast_tokens_from_members(set_block.members_text)
 
@@ -117,11 +122,7 @@ def test_symbex_resolves_member_symbols():
     set_block = parsed.sets[1]
     tokens = extract_ast_tokens_from_members(set_block.members_text)
     # Keep only function/class symbols suitable for symbex; exclude paths and constants
-    sym_tokens = [
-        t for t in tokens if \
-        t not in {"README.md", "DEFAULT_*"} and \
-        "/" not in t
-    ]
+    sym_tokens = [t for t in tokens if t not in {"README.md", "DEFAULT_*"} and "/" not in t]
 
     # Determine how to invoke symbex
     symbex_cmd = None
@@ -142,7 +143,8 @@ def test_symbex_resolves_member_symbols():
         # Verify that symbex returns some output for each symbol
         proc = subprocess.run(
             [*symbex_cmd, "-d", "src", symbol, "-s"],
-            check=False, stdout=subprocess.PIPE,
+            check=False,
+            stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             env=env,
             text=True,
@@ -259,7 +261,10 @@ def test_set3_only_headers_enforcement_members_contract_tests():
     # Tests include both FS and Repo checks
     test_specs = set_block.test_specs()
     assert ("tests/test_options_fs.py", "test_only_headers_prints_headers_only") in test_specs
-    assert ("tests/test_options_repo.py", "test_repo_only_headers_prints_headers_only") in test_specs
+    assert (
+        "tests/test_options_repo.py",
+        "test_repo_only_headers_prints_headers_only",
+    ) in test_specs
 
 
 def test_cli_flag_pair_extraction_all_forms():
@@ -326,8 +331,16 @@ def test_members_categorization_cli_flags_and_pytest_specs():
     ("id_a", "id_b", "should_warn"),
     [
         ("[Alpha-Beta-Gamma]", "[alpha-Delta-Epsilon]", False),  # 1 shared part (alpha) only
-        ("[CLI-CTX-DEFAULTs-README]", "[readme-defaults-core]", True),  # 2 shared parts, mixed case/order
-        ("[FORMATTER-SELECTION-README]", "[readme-selection-formatter]", True),  # 3 shared parts, different order/case
+        (
+            "[CLI-CTX-DEFAULTs-README]",
+            "[readme-defaults-core]",
+            True,
+        ),  # 2 shared parts, mixed case/order
+        (
+            "[FORMATTER-SELECTION-README]",
+            "[readme-selection-formatter]",
+            True,
+        ),  # 3 shared parts, different order/case
     ],
 )
 def test_merge_opportunity_id_parts_only(id_a, id_b, should_warn, capsys):

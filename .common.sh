@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Common functions for the scripts in this repository
-set -euo pipefail
+set -uo pipefail
 
 function message(){
 	local string=$1

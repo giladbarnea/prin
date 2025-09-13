@@ -34,7 +34,7 @@ def test_parse_owner_repo(url):
 
 
 @pytest.mark.parametrize(
-    "url, exp_ref, exp_subpath",
+    ("url", "exp_ref", "exp_subpath"),
     [
         # tree at ref (root and with subpath)
         (

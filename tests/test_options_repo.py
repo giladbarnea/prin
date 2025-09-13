@@ -181,11 +181,11 @@ def test_repo_literal_exclude_token_matches_segments_not_substrings():
     # Test that exclusion by literal token matches path segments, not substrings
     url = "https://github.com/TypingMind/awesome-typingmind"
     out = _run(["--exclude", "logos", url])
-    
+
     # Should exclude the 'logos' directory
     assert "<logos/README.md>" not in out
     assert "<logos/made_for_typingmind.png>" not in out
-    
+
     # But should not exclude files that contain 'logos' as substring
     # (This test is somewhat limited by the available test repos, but demonstrates the concept)
 
@@ -236,14 +236,14 @@ def test_repo_include_tests_flag_includes_tests_dir():
 def test_repo_no_options_specified_everything_is_printed():
     url = "https://github.com/TypingMind/awesome-typingmind"
     out = _run(["--tag", "xml", url])
-    
+
     # Should include README.md by default
     assert "<README.md>" in out
     assert "Awesome TypingMind" in out
-    
+
     # Should exclude binary files by default
     assert "<logos/made_for_typingmind.png>" not in out
-    
+
     # Should exclude lock files by default (none in this repo, but test structure)
     assert isinstance(out, str)
     assert len(out) > 0

@@ -1,9 +1,6 @@
 import contextlib
-from re import Pattern
-
-
-import os
 import re
+from re import Pattern
 from typing import Literal, TypeIs
 
 from prin.types import TGlob, TRegex
@@ -75,6 +72,7 @@ def is_extension(string) -> TypeIs[TGlob]:
     if not isinstance(string, str):
         return False
     from prin.cli_common import _normalize_extension_to_glob
+
     with contextlib.suppress(ValueError):
         return string == _normalize_extension_to_glob(string)
     return False

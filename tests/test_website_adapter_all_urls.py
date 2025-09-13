@@ -69,12 +69,15 @@ def _dedup_basename(basename: str, seen: dict[str, int]) -> str:
     cnt = seen[basename]
     return basename if cnt == 1 else f"{basename}.{cnt}"
 
+
 @pytest.mark.skip(reason="This test is flaky and needs to be rewritten")
 @pytest.mark.network
 def test_all_llms_txt_markdown_urls_are_loaded(monkeypatch: pytest.MonkeyPatch):
     base = "https://www.fastht.ml/docs"
     expected_urls = _extract_markdown_urls(LLMS_TXT)
-    import pudb; pudb.set_trace()
+    import pudb
+
+    pudb.set_trace()
 
     # Monkeypatch the llms.txt fetch to use the pasted content and parse URLs exactly as expected
     import prin.adapters.website as website

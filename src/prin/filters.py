@@ -93,6 +93,7 @@ def is_excluded(entry: "Entry", *, exclude: list[TExclusion]) -> bool:
                 return True
     return False
 
+
 def extension_match(entry: "Entry", *, extensions: list[TGlob]) -> bool:
     if not extensions:
         return True

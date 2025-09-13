@@ -49,7 +49,7 @@ DEFAULT_DOC_EXTENSIONS: list[str] = ["*.md", "*.rst", "*.mdx"]
 
 DEFAULT_TEST_EXCLUSIONS: list[TExclusion] = [
     "*.test",
-    "tests/*", # This should work but doesn't
+    "tests/*",  # This should work but doesn't
     "tests*",  # This is a workaround that should be removed once the above works
     "test/*",
     "*.spec.ts",

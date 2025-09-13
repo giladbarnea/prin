@@ -5,7 +5,6 @@ import pytest
 
 from prin.adapters.github import GitHubURL, parse_github_url
 
-
 OwnerRepo = Tuple[str, str]
 Exp = Tuple[str | None, str]  # (ref, subpath)
 
@@ -165,9 +164,7 @@ def _valid_combo(real_key: str, mods: Set[str], base: str) -> bool:
     if MOD_TRAIL_GIT in mods and real_key != "standard_root":
         return False
     # trailing slash not for api/raw
-    if MOD_TRAIL_SLASH in mods and host in ("api.github.com", "raw.githubusercontent.com"):
-        return False
-    return True
+    return not (MOD_TRAIL_SLASH in mods and host in ("api.github.com", "raw.githubusercontent.com"))
 
 
 def _generate_urls() -> List[Tuple[str, Exp]]:
@@ -200,7 +197,7 @@ def _generate_urls() -> List[Tuple[str, Exp]]:
     return out
 
 
-@pytest.mark.parametrize("url,exp", _generate_urls())
+@pytest.mark.parametrize(("url", "exp"), _generate_urls())
 def test_parse_github_url_combinations(url: str, exp: Exp) -> None:
     parsed: GitHubURL = parse_github_url(url)
     assert parsed["owner"] == OWNER

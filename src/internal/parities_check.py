@@ -159,7 +159,11 @@ def _is_file_like_token(token: str) -> bool:
     if t in {"README.md", "LICENSE"}:
         return True
     # Bare filename with extension
-    if re.fullmatch(r"\S+\.(py|md|rst|txt|json|jsonl|toml|yaml|yml|ini|cfg|lock|rs|ts|tsx|js|jsx|sh|bat|conf|mdx)", t, flags=re.IGNORECASE):
+    if re.fullmatch(
+        r"\S+\.(py|md|rst|txt|json|jsonl|toml|yaml|yml|ini|cfg|lock|rs|ts|tsx|js|jsx|sh|bat|conf|mdx)",
+        t,
+        flags=re.IGNORECASE,
+    ):
         return True
     # Slash-based path with no whitespace
     if "/" in t and not re.search(r"\s", t):
@@ -202,7 +206,7 @@ class SetBlock:
                 if CLI_FLAG_RE.match(tok):
                     continue
                 # Skip combined CLI flags like "-l/--only-headers" or with commas
-                if ("/" in tok or "," in tok):
+                if "/" in tok or "," in tok:
                     parts = re.split(r"\s*[/,]\s*", tok)
                     if parts and all(CLI_FLAG_RE.match(p.strip() or "") for p in parts):
                         continue
@@ -414,7 +418,9 @@ def rule_line_growth(current: str, baseline: Optional[str]) -> List[Message]:
             Message("WARN", "LineGrowth", f"+{delta} chars exceeds fail threshold {FAIL_GROWTH}")
         )
     elif delta >= WARN_GROWTH:
-        msgs.append(Message("SUGGESTION", "LineGrowth", f"+{delta} chars ≥ warn threshold {WARN_GROWTH}"))
+        msgs.append(
+            Message("SUGGESTION", "LineGrowth", f"+{delta} chars ≥ warn threshold {WARN_GROWTH}")
+        )
     else:
         msgs.append(
             Message(
@@ -479,7 +485,11 @@ def _exists_cwd_or_glob(p: str) -> bool:
         matches = glob(str(Path.cwd() / p))
         return len(matches) > 0
     # If it's a bare filename with extension, search recursively under CWD
-    if re.fullmatch(r"\S+\.(py|md|rst|txt|json|jsonl|toml|yaml|yml|ini|cfg|lock|rs|ts|tsx|js|jsx|sh|bat|conf|mdx)", p, flags=re.IGNORECASE):
+    if re.fullmatch(
+        r"\S+\.(py|md|rst|txt|json|jsonl|toml|yaml|yml|ini|cfg|lock|rs|ts|tsx|js|jsx|sh|bat|conf|mdx)",
+        p,
+        flags=re.IGNORECASE,
+    ):
         from glob import glob
 
         matches = glob(str(Path.cwd() / "**" / p), recursive=True)
@@ -496,9 +506,7 @@ def rule_dangling_refs(parsed_parities: ParsedParities) -> List[Message]:
                 missing.append((set_id, path))
     for set_id, path in missing:
         msgs.append(
-            Message(
-                "WARN", "DanglingMembers", f"Set {set_id}: member path not found (CWD): {path}"
-            )
+            Message("WARN", "DanglingMembers", f"Set {set_id}: member path not found (CWD): {path}")
         )
     if not msgs:
         msgs.append(
@@ -519,7 +527,9 @@ def rule_tests(parsed_parities: ParsedParities) -> List[Message]:
 
                 matches = glob(str(file_path))
                 if not matches:
-                    msgs.append(Message("WARN", "Tests", f"Set {set_id}: test file missing: {path}"))
+                    msgs.append(
+                        Message("WARN", "Tests", f"Set {set_id}: test file missing: {path}")
+                    )
                 continue
             if not file_path.exists():
                 msgs.append(Message("WARN", "Tests", f"Set {set_id}: test file missing: {path}"))
