@@ -79,9 +79,7 @@ Repeat the following until all new tests pass:
 
 ## Important: Work Against and Update PARITIES.md
 
-1. `PARITIES.md` is the source of truth for what’s going on in the project. You are responsible for keeping it accurate after you have completed your task.
-
-Initially, before making code changes: map your plan against `PARITIES.md`. Identify which elements will be affected by your changes and have a general idea of what you’ll need to update when you’re done. 
-An ‘element’ is a piece of information ranging from a reference to a single symbol to a Member line, or, rarely, an entire set.
-
-After everything is working: return to `PARITIES.md` and surgically update any parts that are no longer accurate due to your changes. Add any new items introduced by your task, and follow the instructions in [Maintaining PARITIES.md](PARITIES.md) on how to maintain it.
+1. **`PARITIES.md` is the source of truth** for what’s going on in the project. You are responsible for keeping it accurate after you have completed your task.
+2. Initially, before making code changes: **map your plan against `PARITIES.md`.** Identify which elements will be affected by your changes and have a general idea of what you’ll need to update when you’re done. 
+* An ‘element’ is a piece of information ranging from a reference to a single symbol to a Member line, or, rarely, an entire set.
+3. After everything is working: **return to `PARITIES.md` and surgically update** any parts that are no longer accurate due to your changes. **Add any new items introduced by your task**, and **follow the instructions in [Maintaining PARITIES.md](PARITIES.md)**.
