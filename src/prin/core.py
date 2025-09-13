@@ -6,9 +6,12 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import PurePosixPath
 from typing import TYPE_CHECKING, Iterable, Protocol
+import re
+from pathlib import Path as _FsPath
 
 from prin import filters
 from prin.formatters import Formatter, HeaderFormatter
+from prin.path_classifier import classify_pattern
 
 if TYPE_CHECKING:
     from .cli_common import Context
@@ -193,6 +196,17 @@ class DepthFirstPrinter:
             if budget is not None and budget.spent():
                 return
             root = self.source.resolve_root(root_spec)
+
+            # Experimental: if the resolved root does not exist on the filesystem,
+            # treat the token as a search pattern and match files by name using re.search
+            # when the token is classified as regex or text. This is used by tests/test_matching.py.
+            try:
+                if anchor_base is not None and not _FsPath(str(root)).exists():
+                    self._search_and_print(anchor_base, root_spec, writer, budget)
+                    continue
+            except Exception:
+                # If existence check is not applicable for this adapter, fall back to normal traversal
+                pass
             # Decide display base: if root is under anchor_base, use anchor; otherwise the root itself
             display_base = root
             if anchor_base is not None:
@@ -230,6 +244,80 @@ class DepthFirstPrinter:
 
                 for entry in files:
                     self._handle_file(entry, writer, base=display_base, budget=budget)
+
+    def _pattern_matches(self, entry: Entry, token: str, *, base: PurePosixPath) -> bool:
+        """Return True if entry's name matches token according to experimental rules.
+
+        For this POC, when token is classified as regex or text, we use re.search
+        against the entry's filename (not the full path) to mimic fd-like behavior
+        of matching within a single path segment.
+        """
+        # Do not support tokens containing path separators for this POC
+        if "/" in token or "\\" in token:
+            return False
+
+        cls = classify_pattern(token)
+        if cls in ("regex", "text"):
+            # Match against any individual path segment under the traversal base
+            try:
+                rel = self._display_path(entry.path, base)
+            except Exception:
+                rel = str(entry.path)
+            # Normalize to POSIX and split into segments
+            rel = rel.replace("\\", "/")
+            segments = [seg for seg in rel.split("/") if seg]
+            try:
+                return any(re.search(token, seg) is not None for seg in segments)
+            except re.error:
+                return False
+        return False
+
+    def _search_and_print(
+        self,
+        base: PurePosixPath,
+        token: str,
+        writer: Writer,
+        budget: "FileBudget | None",
+    ) -> None:
+        """Traverse from base and print files whose names match token.
+
+        Respects existing exclusion, extension, and emptiness rules.
+        """
+        stack: list[PurePosixPath] = [base]
+        while stack:
+            if budget is not None and budget.spent():
+                return
+            current = stack.pop()
+            try:
+                entries = list(self.source.list_dir(current))
+            except NotADirectoryError:
+                # Treat current as a file
+                file_entry = Entry(path=current, name=current.name, kind=NodeKind.FILE)
+                if not self._excluded(file_entry) and self._extension_match(file_entry):
+                    if self._pattern_matches(file_entry, token, base=base):
+                        self._handle_file(file_entry, writer, base=base, budget=budget)
+                continue
+            except FileNotFoundError:
+                continue
+
+            dirs = [e for e in entries if e.kind is NodeKind.DIRECTORY]
+            files = [e for e in entries if e.kind is NodeKind.FILE]
+            dirs.sort(key=lambda e: e.name.casefold())
+            files.sort(key=lambda e: e.name.casefold())
+
+            for entry in reversed(dirs):
+                if not self._excluded(entry):
+                    stack.append(entry.path)
+
+            for entry in files:
+                if self._excluded(entry):
+                    continue
+                if not self._extension_match(entry):
+                    continue
+                if not self.include_empty and self.source.is_empty(entry.path):
+                    continue
+                if self._pattern_matches(entry, token, base=base):
+                    self._handle_file(entry, writer, base=base, budget=budget)
 
     def _excluded(self, entry: Entry) -> bool:
         # The reference implementation accepts strings/paths/globs/callables
