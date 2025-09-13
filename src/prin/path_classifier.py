@@ -40,18 +40,11 @@ _REGEX_ONLY_PATTERNS = [
 _RE_SIGNS: Pattern[str] = re.compile(" | ".join(_REGEX_ONLY_PATTERNS), re.VERBOSE)
 
 
-def classify_pattern(string: str) -> Literal["regex", "glob", "text"]:
-    # Should model fd regarding patterns that are neither regexes nor globs.
-    # ❯ fd '*.md' .
-    # [fd error]: regex parse error:
-    # *.md
-    # ^
-    # error: repetition operator missing expression
-    if is_regex(string):
-        return "regex"
+def classify_pattern(string: str) -> Literal["regex", "glob"]:
+    """Return pattern kind: glob if it looks like a glob, else regex by default."""
     if is_glob(string):
         return "glob"
-    return "text"
+    return "regex"
 
 
 def is_regex(string) -> TypeIs[TRegex]:

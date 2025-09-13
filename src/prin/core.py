@@ -252,25 +252,21 @@ class DepthFirstPrinter:
         against the entry's filename (not the full path) to mimic fd-like behavior
         of matching within a single path segment.
         """
-        # Do not support tokens containing path separators for this POC
-        if "/" in token or "\\" in token:
-            return False
+        # Two modes only: glob or regex (regex by default). Match against full POSIX path (relative to base).
+        try:
+            rel = self._display_path(entry.path, base)
+        except Exception:
+            rel = str(entry.path)
+        rel = rel.replace("\\", "/")
+        kind = classify_pattern(token)
+        if kind == "glob":
+            from fnmatch import fnmatch
 
-        cls = classify_pattern(token)
-        if cls in ("regex", "text"):
-            # Match against any individual path segment under the traversal base
-            try:
-                rel = self._display_path(entry.path, base)
-            except Exception:
-                rel = str(entry.path)
-            # Normalize to POSIX and split into segments
-            rel = rel.replace("\\", "/")
-            segments = [seg for seg in rel.split("/") if seg]
-            try:
-                return any(re.search(token, seg) is not None for seg in segments)
-            except re.error:
-                return False
-        return False
+            return fnmatch(rel, token)
+        try:
+            return re.search(token, rel) is not None
+        except re.error:
+            return False
 
     def _search_and_print(
         self,

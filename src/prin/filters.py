@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from fnmatch import fnmatch
+import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -51,8 +52,8 @@ def get_gitignore_exclusions(paths: list[str]) -> list[TExclusion]:
 
 def is_excluded(entry: "Entry", *, exclude: list[TExclusion]) -> bool:
     path = entry.path
-    name = path.name
-    stem = path.stem
+    # Match against full POSIX path only (relative to traversal base)
+    target = path.as_posix()
     for _exclude in exclude:
         if callable(_exclude):
             if _exclude(name) or _exclude(stem) or _exclude(str(path)):
@@ -63,34 +64,18 @@ def is_excluded(entry: "Entry", *, exclude: list[TExclusion]) -> bool:
         if is_extension(token) and extension_match(entry, extensions=[token]):
             return True
 
-        classification = classify_pattern(token)
-
-        # Globs and regex are handled via fnmatch (regex support is out of scope)
-        if classification in ("glob", "regex"):
-            p = path.as_posix()
-            if fnmatch(name, token) or fnmatch(stem, token) or fnmatch(p, token):
+        kind = classify_pattern(token)
+        if kind == "glob":
+            if fnmatch(target, token):
                 return True
             continue
-
-        # Text patterns: match by exact segment sequence, not substrings
-        # Support multi-part tokens containing path separators (either '/' or '\\')
-        if not token:
-            continue
-        # Normalize separators in the token to POSIX-style for comparison
-        import re
-
-        token_parts = [seg for seg in re.split(r"[\\/]+", token) if seg]
-        path_parts = list(path.as_posix().split("/"))
-        needed = len(token_parts)
-        if needed == 0:
-            continue
-        # Special-case simple tokens with no separators: also match file/directory name or stem equal to token
-        if needed == 1 and (name == token or stem == token):
-            return True
-        # Slide a window over path_parts and compare joined POSIX strings
-        for i in range(0, len(path_parts) - needed + 1):
-            if path_parts[i : i + needed] == token_parts:
+        # regex by default
+        try:
+            if re.search(token, target):
                 return True
+        except re.error:
+            # Invalid regex: treat as no match (alternatively, raise a CLI error upstream)
+            pass
     return False
 
 
