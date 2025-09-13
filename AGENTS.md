@@ -5,7 +5,6 @@ Carefully read and internalize the 3 Markdown files of the project before starti
 2. AGENTS.md (this file)
 3. PARITIES.md
 
-Then read the entire src/prin directory. It's small; this won't clutter your context window.
 Whatever you do, try to align with the existing design philosophy (What knowledge each component holds, what knowledge it intentionally does not hold, responsibility and separation, what should be reused, and so on.)
 
 ## Architecture
@@ -21,6 +20,7 @@ Engine-driven depth-first traversal with source adapters; the engine is source-a
 ## Source Adapters
 - File system: `is_empty` via AST; raises NotADirectoryError for files (implicit via scandir). Note: it's a hack, not something to be very proud of.
 - GitHub: list via Contents API; for file paths, raise NotADirectoryError so engine force-includes; ignore local .gitignore for repos.
+- Website: // todo
 
 ## CLI and flags
 - One shared parser in `cli_common` used by both implementations; no interactive prompts; consistent flags (`-e`, `-E`, `--no-ignore`, `-l`, etc.).
@@ -33,12 +33,11 @@ Engine-driven depth-first traversal with source adapters; the engine is source-a
 
 ## Installation, execution, tests and linting
 
-Everything has be executed, installed, tested and packaged using `uv`.
-**If `uv` is not installed in your environment, install it by running:**
+**Run, execute, test, and/remove packages with `uv`**.
+If `uv` is not available, install it with:
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
-- Ensure your PATH includes `$HOME/.local/bin` so `uv` is available in your shell.
 - Test with: `./test.sh [helpful pytest flags to your liking]`.
 - **Important: eagerly run tests frequently, even if the user didn't ask for it.**
  - To add or remove a dependency, use `uv add` or `uv remove`. Don't modify pyproject.toml directly.
