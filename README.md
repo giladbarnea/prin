@@ -122,7 +122,7 @@ In both cases, the `prin` executable should be available in your shell.
 - Lint and format: `./lint.sh` and `./format.sh`.
  - To add or remove a dependency, use `uv add` or `uv remove`.
 
-#### Task Completion Checklist
+#### Task Completion Checklist (create internal todo list)
 
 1. **Prep** (before any code)
 - [ ] Read AGENTS.md and PARITIES.md.
