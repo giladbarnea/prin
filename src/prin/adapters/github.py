@@ -28,12 +28,12 @@ def _auth_headers() -> Dict[str, str]:
     return headers
 
 
-class GitHubURL(TypedDict, total=False):
+class GitHubURL(TypedDict):
     owner: str
     repo: str
     subpath: str
-    # Optional git ref (branch, tag, or commit SHA) if present in the URL
-    ref: str
+    # Git ref (branch, tag, or commit SHA). Always present; may be None if not specified in URL.
+    ref: Optional[str]
 
 
 def parse_github_url(url: str) -> GitHubURL:
@@ -94,9 +94,8 @@ def parse_github_url(url: str) -> GitHubURL:
         "owner": owner,
         "repo": repo,
         "subpath": "/".join(subpath_parts),
+        "ref": ref,
     }
-    if ref:
-        data["ref"] = ref
     return data
 
 
@@ -203,7 +202,7 @@ class GitHubRepoSource(SourceAdapter):
         parsed_github_url: GitHubURL = parse_github_url(url)
         owner, repo = parsed_github_url["owner"], parsed_github_url["repo"]
         # Prefer explicit ref from URL (commit sha, tag, branch). Fallback to default branch.
-        ref = parsed_github_url.get("ref") or self._fetch_default_branch(owner, repo)
+        ref = parsed_github_url["ref"] or self._fetch_default_branch(owner, repo)
         self._ctx = _Ctx(owner=owner, repo=repo, ref=ref)
 
     @functools.lru_cache
