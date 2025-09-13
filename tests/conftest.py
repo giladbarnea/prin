@@ -219,10 +219,22 @@ def pytest_addoption(parser):
         help="Run only tests targeting the website adapter",
     )
     parser.addoption(
+        "--no-website",
+        action="store_true",
+        default=False,
+        help="Skip tests targeting the website adapter",
+    )
+    parser.addoption(
         "--repo",
         action="store_true",
         default=False,
         help="Run only tests targeting repository (GitHub) adapter",
+    )
+    parser.addoption(
+        "--no-repo",
+        action="store_true",
+        default=False,
+        help="Skip tests targeting repository (GitHub) adapter",
     )
 
 
@@ -244,10 +256,16 @@ def pytest_collection_modifyitems(config, items):
     # Apply adapter-based filtering if requested
     want_website = config.getoption("--website")
     want_repo = config.getoption("--repo")
-    if not (want_website or want_repo):
+    no_website = config.getoption("--no-website")
+    no_repo = config.getoption("--no-repo")
+
+    # If no include/exclude flags are provided, do nothing
+    if not (want_website or want_repo or no_website or no_repo):
         return
 
-    skip_filtered = pytest.mark.skip(reason="filtered by --website/--repo")
+    skip_filtered_includes = pytest.mark.skip(reason="filtered by --website/--repo")
+    skip_filtered_excludes = pytest.mark.skip(reason="disabled by --no-website/--no-repo")
+
     for item in items:
         # Prefer explicit markers when present; fall back to filename heuristics if none
         has_website_marker = "website" in item.keywords
@@ -265,6 +283,15 @@ def pytest_collection_modifyitems(config, items):
                     f"Test selected by name-based fallback; please add an explicit marker: {item.nodeid}",
                     UserWarning,
                 )
-        keep = (want_website and is_website) or (want_repo and is_repo)
-        if not keep:
-            item.add_marker(skip_filtered)
+
+        # Inclusion mode has precedence when specified
+        if want_website or want_repo:
+            keep = (want_website and is_website) or (want_repo and is_repo)
+            if not keep:
+                item.add_marker(skip_filtered_includes)
+            continue
+
+        # Otherwise apply exclusion-only mode
+        should_skip = (no_website and is_website) or (no_repo and is_repo)
+        if should_skip:
+            item.add_marker(skip_filtered_excludes)

@@ -206,12 +206,19 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - `tests/test_cli_engine_*.py`: traversal and path display behavior.
 - `tests/test_max_files_*.py`: `--max-files` semantics.
 - `tests/test_website_adapter_*.py`: website parsing and rendering.
+ - `tests/conftest.py`: adapter-specific pytest markers and selection flags (`--website`, `--repo`, `--no-website`, `--no-repo`).
+ - `pyproject.toml` `[tool.pytest.ini_options].markers`: `website`, `repo` declarations.
 
 #### Contract
 - For each implemented feature/flag, maintain parallel coverage for filesystem and GitHub (and website where applicable). Adding a feature implies adding/adapting tests in all relevant suites.
+ - Adapter markers/flags must map 1:1 to source adapters; include flags restrict to marked suites; exclude flags skip them.
 
 #### Triggers
 - Adding a new option/behavior; adding a new adapter.
+
+#### Tests
+- FS: `tests/test_options_fs.py` (for example flags); Repo: `tests/test_options_repo.py`; Website: `tests/test_website_adapter_*.py`.
+- Marker selection honored: `./test.sh --website` runs only website-marked tests; `./test.sh --no-repo` skips repo-marked tests.
 
 ## Set 12 [WEBSITE-LLMS-TXT-PARSING]: URL list parsing ↔ rendering
 #### Members
