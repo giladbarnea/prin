@@ -53,6 +53,18 @@ def test_parse_owner_repo(url):
             "d4ce90b21bc6c04642ebcf448f96357a8b474624",
             "README.md",
         ),
+        # blob at ref with fragment-only line range (strip #Lstart-Lend)
+        (
+            "https://github.com/TypingMind/awesome-typingmind/blob/d4ce90b21bc6c04642ebcf448f96357a8b474624/README.md#L5-L20",
+            "d4ce90b21bc6c04642ebcf448f96357a8b474624",
+            "README.md",
+        ),
+        # blob at ref with single-line fragment (strip #Lnum)
+        (
+            "https://github.com/TypingMind/awesome-typingmind/blob/d4ce90b21bc6c04642ebcf448f96357a8b474624/README.md#L12",
+            "d4ce90b21bc6c04642ebcf448f96357a8b474624",
+            "README.md",
+        ),
         # commit with short SHA (parsing only)
         (
             "https://github.com/TypingMind/awesome-typingmind/commit/d4ce90b",
