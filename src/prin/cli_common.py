@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 import textwrap
 from dataclasses import dataclass, field, replace
@@ -29,7 +30,7 @@ from prin.defaults import (
     Hidden,
 )
 from prin.filters import get_gitignore_exclusions
-from prin.types import _describe_predicate
+from prin.types import TGlob, _describe_predicate
 
 # Map shorthand/alias flags to their canonical expanded forms.
 # The expansion occurs before argparse parsing and preserves argument order.
@@ -118,21 +119,26 @@ class Context:
         return replace(self, **kwargs)
 
 
-def _normalize_extension(val: str) -> str:
+def _normalize_extension_to_glob(val: str | TGlob) -> TGlob:  # parity:
     """
-    >>> _normalize_extension("ext")
+    Ensures `val` is returned as a `*.ext` pattern.
+    >>> _normalize_extension_to_glob("ext")
     "*.ext"
-    >>> _normalize_extension(".ext")
+    >>> _normalize_extension_to_glob(".ext")
     "*.ext"
-    >>> _normalize_extension("*.ext")
+    >>> _normalize_extension_to_glob("*.ext")
     "*.ext"
+    >>> _normalize_extension_to_glob("like/this.ext")
+    ValueError: Extension cannot contain path separator 'like/this.ext'
     """
-    v = val.strip()
-    if v.startswith("*."):
-        return v
-    if v.startswith("."):
-        return f"*{v}"
-    return f"*.{v}"
+    val = val.strip()
+    if os.path.sep in val:
+        raise ValueError(f"Extension cannot contain path separator {val!r}")
+    if val.startswith("*."):
+        return TGlob(val)
+    if val.startswith("."):
+        return TGlob(f"*{val}")
+    return TGlob(f"*.{val}")
 
 
 def parse_common_args(argv: list[str] | None = None) -> Context:
@@ -217,7 +223,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
     parser.add_argument(
         "-e",
         "--extension",
-        type=_normalize_extension,
+        type=_normalize_extension_to_glob,
         default=DEFAULT_EXTENSIONS_FILTER,
         action="append",
         help="Only include files with the given extension (repeatable). Overrides exclusions.",

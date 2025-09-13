@@ -25,6 +25,7 @@ dev = [
     "coverage>=7.6.10",
     "ruff>=0.12.11",
     "symbex>=2.0",
+    "ipython>=9.5.0",
 ]
 
 [tool.ruff]

@@ -1,8 +1,12 @@
+import contextlib
+from re import Pattern
+
+
 import os
 import re
 from typing import Literal, TypeIs
 
-from prin.types import TExtension, TGlob, TRegex
+from prin.types import TGlob, TRegex
 
 # Each entry is a *single* regex that indicates "this looks like a regex, not a Python glob".
 # We join them with ' | ' and compile with re.VERBOSE for readability.
@@ -36,7 +40,7 @@ _REGEX_ONLY_PATTERNS = [
     r"(?<!\\)\((?:\\.|[^\\)])*?(?<!\\)\|(?:\\.|[^\\)])*?(?<!\\)\)",
 ]
 
-_RE_SIGNS = re.compile(" | ".join(_REGEX_ONLY_PATTERNS), re.VERBOSE)
+_RE_SIGNS: Pattern[str] = re.compile(" | ".join(_REGEX_ONLY_PATTERNS), re.VERBOSE)
 
 
 def classify_pattern(string: str) -> Literal["regex", "glob", "text"]:
@@ -67,7 +71,10 @@ def is_glob(string) -> TypeIs[TGlob]:
     return any(glob_sym in string for glob_sym in "*?[")
 
 
-def is_extension(string) -> TypeIs[TExtension]:
+def is_extension(string) -> TypeIs[TGlob]:
     if not isinstance(string, str):
         return False
-    return string.startswith(".") and os.path.sep not in string
+    from prin.cli_common import _normalize_extension_to_glob
+    with contextlib.suppress(ValueError):
+        return string == _normalize_extension_to_glob(string)
+    return False

@@ -8,7 +8,6 @@ from pathlib import PurePosixPath
 from typing import TYPE_CHECKING, Iterable, Protocol
 
 from prin import filters
-from prin.path_classifier import is_glob
 from prin.formatters import Formatter, HeaderFormatter
 
 if TYPE_CHECKING:
@@ -236,20 +235,8 @@ class DepthFirstPrinter:
         # The reference implementation accepts strings/paths/globs/callables
         return filters.is_excluded(entry, exclude=self.exclusions)
 
-    def _extension_match(self, filename: str) -> bool:
-        if not self.extensions:
-            return True
-        for pattern in self.extensions:
-            if is_glob(pattern):
-                from fnmatch import fnmatch
-
-                if fnmatch(filename, pattern):
-                    return True
-            else:
-                # Check exact extension match.
-                if filename.endswith("." + pattern.removeprefix(".")):
-                    return True
-        return False
+    def _extension_match(self, entry: Entry) -> bool:
+        return filters.extension_match(entry, extensions=self.extensions)
 
     def _handle_file(
         self,
@@ -271,7 +258,7 @@ class DepthFirstPrinter:
         if not force:
             if self._excluded(entry):
                 return
-            if not self._extension_match(entry.name):
+            if not self._extension_match(entry):
                 return
             if not self.include_empty and self.source.is_empty(entry.path):
                 return
