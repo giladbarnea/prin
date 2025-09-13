@@ -49,7 +49,9 @@ All .sh scripts automatically install uv if missing, take care of PATH and execu
 1. Know your weaknesses: your eagerness to solve a problem can cause tunnel vision. You may fix the issue but unintentionally create code duplication, deviate from the existing design, or introduce a regression in other coupled parts of the project you didn’t consider. The solution is to literally look around beyond the immediate fix, be aware of (and account for) coupling around the codebase, integrate with the existing design, and periodically refactor.
 2. You do your best work when you can verify yourself. With self-verification, you can and should practice continuous trial and error instead of a single shot in the dark. See [Development Cycle (Tight TDD Loop)](AGENTS.md) for how to work, verify, and report progress.
 
-## Development Cycle (Tight TDD Loop)
+---
+
+## Important: Development Cycle (Tight TDD Loop)
 
 #### Prep (before any code)
 1.	Read first: README.md and PARITIES.md.
@@ -73,15 +75,13 @@ Repeat the following until all new tests pass:
 4. Run ./format.sh to fix any fixable issues and print remaining, usually insignificant issues.
 5.	Final update to user: Summarize what passed, what changed, and what still remains to be done (if anything).
 
-## Important: Working Against and Updating PARITIES.md
+**BURN THAT INTO EVERY INTERNAL TODO LIST YOU CREATE.**
 
-`PARITIES.md` is the source of truth for what’s going on in the project. You are responsible for keeping it accurate after you have completed your task.
+## Important: Work Against and Update PARITIES.md
+
+1. `PARITIES.md` is the source of truth for what’s going on in the project. You are responsible for keeping it accurate after you have completed your task.
 
 Initially, before making code changes: map your plan against `PARITIES.md`. Identify which elements will be affected by your changes and have a general idea of what you’ll need to update when you’re done. 
 An ‘element’ is a piece of information ranging from a reference to a single symbol to a Member line, or, rarely, an entire set.
 
 After everything is working: return to `PARITIES.md` and surgically update any parts that are no longer accurate due to your changes. Add any new items introduced by your task, and follow the instructions in [Maintaining PARITIES.md](PARITIES.md) on how to maintain it.
-
-
-## A Note About Tests
-1. The test suite should not have any implementation footprint, nor acrobatics to make up for what the tool does or doesn't expose. If such a need arises, the project's design is flawed and should be improved until the test suite can "just test the tool".
