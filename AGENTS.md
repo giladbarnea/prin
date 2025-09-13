@@ -24,27 +24,22 @@ Engine-driven depth-first traversal with source adapters; the engine is source-a
 
 ## CLI and flags
 - One shared parser in `cli_common` used by both implementations; no interactive prompts; consistent flags (`-e`, `-E`, `--no-ignore`, `-l`, etc.).
-- `prin` dispatches: GitHub URL → repo implementation; otherwise filesystem. Keep URL detection minimal and robust.
+- `prin` dispatches: GitHub URL → repo implementation; otherwise filesystem. Keep URL detection minimal and robust. // todo: missing website
 - New CLI options' defaults should be defined and imported from defaults.py. When relevant, default consts should be reused consistently.
 - Some function signatures and class field lists should match CLI options, and updated accordingly when new options are added. These are the features of the tool as a whole as well as its main user interface. As of writing, these are src/prin/cli_common.Context, src/prin/core.DepthFirstPrinter.__init__, and src/prin/filters.resolve_exclusions, but there may be more — keep an eye for comments saying "{Parameter,Field} list should match CLI options."
 
 ## Filtering semantics
 // missing; todo
 
-## Installation, execution, tests and linting
+## How to install, execute, test and lint
 
-**Run, execute, test, and/remove packages with `uv`**.
-If `uv` is not available, install it with:
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-- Test with: `./test.sh [helpful pytest flags to your liking]`.
+### Use test.sh, run.sh and format.sh for testing, running `prin` and formatting
+
+All .sh scripts automatically install uv if missing, take care of PATH and execute with the right venv to spare you from doing that yourself.
+
 - **Important: eagerly run tests frequently, even if the user didn't ask for it.**
- - To add or remove a dependency, use `uv add` or `uv remove`. Don't modify pyproject.toml directly.
-- Lint and format with ./lint.sh and ./format.sh.
-- Run `prin` with ./run.sh [options].
-All .sh scripts automatically install uv if missing, take care of PATH and run with uv in the right venv automatically.
 
+ - To add or remove a dependency, use `uv add` or `uv remove`. Don't modify pyproject.toml directly.
 
 ## Gotchas
 - Make sure the environment in which the tests operate doesn't interfere with the test results. This can manifest as unplanned parsing of project's ignore files, inadvertedly honoring the tests directory of the project itself, and so on.
