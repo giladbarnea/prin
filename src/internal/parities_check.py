@@ -3,14 +3,14 @@
 parities_check.py — Interactive/CI diagnostics for PARITIES.md
 
 Rules implemented (configurable severities via constants):
-- Line-growth gate: ERROR if growth > FAIL_GROWTH (20 chars), WARN if growth ≥ WARN_GROWTH (5 chars).
-- ID uniqueness: error on duplicate Set IDs.
-- Cross-ref integrity: error if any referenced "Set <ID>" (outside headings) does not exist.
-- Dangling references: error if any **Members** file path does not exist (relative to CWD).
+- Line-growth gate: WARN if growth > FAIL_GROWTH (20 chars), SUGGESTION if growth ≥ WARN_GROWTH (5 chars).
+- ID uniqueness: warn on duplicate Set IDs.
+- Cross-ref integrity: warn if any referenced "Set <ID>" (outside headings) does not exist.
+- Dangling references: warn if any **Members** file path does not exist (relative to CWD).
 - Test presence (unified reference check): for each **Tests** entry like
-  "path/to/test_file.py::test_name", error if the file is missing or if the
-  test function is not present; if only a file is given, error if missing.
-- Merge opportunities (heuristic): WARN when two sets share ≥2 member paths or
+  "path/to/test_file.py::test_name", warn if the file is missing or if the
+  test function is not present; if only a file is given, warn if missing.
+- Merge opportunities (heuristic): SUGGESTION when two sets share ≥2 member paths or
   Jaccard similarity ≥ 0.5 (Members only). This is advisory.
 
 Usage examples:
@@ -23,7 +23,7 @@ Usage examples:
     # Explicit PARITIES and a baseline file on disk
     python tools/parities_check.py docs/PARITIES.md /tmp/old_PARITIES.md
 
-Exit code: non-zero if any ERROR was emitted.
+Exit code: non-zero if any WARN was emitted.
 """
 
 from __future__ import annotations
@@ -411,10 +411,10 @@ def rule_line_growth(current: str, baseline: Optional[str]) -> List[Message]:
     delta = len(current) - len(baseline)
     if delta > FAIL_GROWTH:
         msgs.append(
-            Message("ERROR", "LineGrowth", f"+{delta} chars exceeds fail threshold {FAIL_GROWTH}")
+            Message("WARN", "LineGrowth", f"+{delta} chars exceeds fail threshold {FAIL_GROWTH}")
         )
     elif delta >= WARN_GROWTH:
-        msgs.append(Message("WARN", "LineGrowth", f"+{delta} chars ≥ warn threshold {WARN_GROWTH}"))
+        msgs.append(Message("SUGGESTION", "LineGrowth", f"+{delta} chars ≥ warn threshold {WARN_GROWTH}"))
     else:
         msgs.append(
             Message(
@@ -433,7 +433,7 @@ def rule_id_uniqueness(parsed_parities: ParsedParities) -> List[Message]:
         if set_id in seen:
             msgs.append(
                 Message(
-                    "ERROR",
+                    "WARN",
                     "IDUniqueness",
                     f"Duplicate Set {set_id} (lines {seen[set_id]} and {set_block.heading_line})",
                 )
@@ -453,7 +453,7 @@ def rule_cross_ref(parsed_parities: ParsedParities) -> List[Message]:
             for line_no, line in uses:
                 msgs.append(
                     Message(
-                        "ERROR",
+                        "WARN",
                         "CrossRef",
                         f"Reference to Set {reference_id} on line {line_no} is unresolved: {line}",
                     )
@@ -497,7 +497,7 @@ def rule_dangling_refs(parsed_parities: ParsedParities) -> List[Message]:
     for set_id, path in missing:
         msgs.append(
             Message(
-                "ERROR", "DanglingMembers", f"Set {set_id}: member path not found (CWD): {path}"
+                "WARN", "DanglingMembers", f"Set {set_id}: member path not found (CWD): {path}"
             )
         )
     if not msgs:
@@ -519,26 +519,26 @@ def rule_tests(parsed_parities: ParsedParities) -> List[Message]:
 
                 matches = glob(str(file_path))
                 if not matches:
-                    msgs.append(Message("ERROR", "Tests", f"Set {set_id}: test file missing: {path}"))
+                    msgs.append(Message("WARN", "Tests", f"Set {set_id}: test file missing: {path}"))
                 continue
             if not file_path.exists():
-                msgs.append(Message("ERROR", "Tests", f"Set {set_id}: test file missing: {path}"))
+                msgs.append(Message("WARN", "Tests", f"Set {set_id}: test file missing: {path}"))
                 continue
             if test_name:
                 try:
                     text = file_path.read_text(encoding="utf-8", errors="ignore")
                 except Exception as e:
-                    msgs.append(Message("ERROR", "Tests", f"Set {set_id}: cannot read {path}: {e}"))
+                    msgs.append(Message("WARN", "Tests", f"Set {set_id}: cannot read {path}: {e}"))
                     continue
                 if not re.search(rf"\bdef\s+{re.escape(test_name)}\s*\(", text):
                     msgs.append(
                         Message(
-                            "ERROR",
+                            "WARN",
                             "Tests",
                             f"Set {set_id}: test function not found: {path}::{test_name}",
                         )
                     )
-    if not [m for m in msgs if m.severity == "ERROR"]:
+    if not [m for m in msgs if m.severity == "WARN"]:
         msgs.append(Message("INFO", "Tests", "All referenced tests/files are present"))
     return msgs
 
@@ -565,12 +565,12 @@ def rule_merge_opportunities(parsed_parities: ParsedParities) -> List[Message]:
             if len(shared) >= 2:
                 msgs.append(
                     Message(
-                        "WARN",
+                        "SUGGESTION",
                         "MergeOpportunity",
                         f"Sets {a} and {b} share {len(shared)} ID parts: {sorted(shared)}",
                     )
                 )
-    if not [m for m in msgs if m.severity == "WARN"]:
+    if not [m for m in msgs if m.severity == "SUGGESTION"]:
         msgs.append(Message("INFO", "MergeOpportunity", "No obvious merge candidates"))
     return msgs
 
@@ -636,7 +636,7 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
 
     parities_path = Path(args.parities).resolve()
     if not parities_path.exists():
-        print(f"[ERROR] Input: file not found: {parities_path}")
+        print(f"[WARN] Input: file not found: {parities_path}")
         return 2
 
     current_text = read_file_text(parities_path)
@@ -659,7 +659,7 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
             baseline_text = read_git_blob_rev_path(args.baseline, relative_path)
             if baseline_text is None:
                 print(
-                    f"[WARN] Baseline: git show {args.baseline}:{relative_path} failed; skipping growth check"
+                    f"[SUGGESTION] Baseline: git show {args.baseline}:{relative_path} failed; skipping growth check"
                 )
     else:
         # Default: origin/<current-branch>:<relpath>
@@ -668,7 +668,7 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
         spec = f"origin/{branch}:{relative_path}"
         baseline_text = read_git_blob_spec(spec)
         if baseline_text is None:
-            print(f"[WARN] Baseline: git show {spec} failed; skipping growth check")
+            print(f"[SUGGESTION] Baseline: git show {spec} failed; skipping growth check")
 
     parsed_parities = parse_parities(current_text)
 
@@ -681,12 +681,12 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
     messages += rule_merge_opportunities(parsed_parities)
 
     # Print grouped output
-    severity_order = {"ERROR": 0, "WARN": 1, "INFO": 2}
+    severity_order = {"WARN": 0, "SUGGESTION": 1, "INFO": 2}
     messages.sort(key=lambda m: (severity_order.get(m.severity, 3), m.rule))
     has_error = False
     for m in messages:
         print(str(m))
-        if m.severity == "ERROR":
+        if m.severity == "WARN":
             has_error = True
 
     return 1 if has_error else 0
