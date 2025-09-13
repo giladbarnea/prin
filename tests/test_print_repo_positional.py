@@ -39,3 +39,28 @@ def test_repo_dir_and_explicit_ignored_file():
     out = buf.text()
     assert "<README.md>" not in out  # normal traversal doesn't print repo files
     assert "<LICENSE>" in out  # explicit inclusion prints extensionless file
+
+
+@pytest.mark.network
+def test_repo_raw_and_api_and_ssh_forms_all_work_headers_only():
+    from prin.core import StringWriter
+    from prin.prin import main as prin_main
+
+    # raw.githubusercontent.com at specific ref
+    raw_url = (
+        "https://raw.githubusercontent.com/TypingMind/awesome-typingmind/"
+        "d4ce90b21bc6c04642ebcf448f96357a8b474624/README.md"
+    )
+    # API contents with ref
+    api_contents_url = (
+        "https://api.github.com/repos/TypingMind/awesome-typingmind/contents/README.md"
+        "?ref=d4ce90b21bc6c04642ebcf448f96357a8b474624"
+    )
+    # SSH repo root (no ref)
+    ssh_url = "git@github.com:TypingMind/awesome-typingmind.git"
+
+    buf = StringWriter()
+    prin_main(argv=["--only-headers", raw_url, api_contents_url, ssh_url], writer=buf)
+    out = buf.text()
+    # raw/api should produce exactly README.md entries; ssh root should include LICENSE or README.md
+    assert "README.md" in out

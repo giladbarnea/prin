@@ -7,7 +7,9 @@ from prin.adapters import github
 
 def is_github_url(token: str) -> bool:
     try:
-        return "github.com" in token and github.parse_github_url(token)
+        # Accept common GitHub hosts/forms, including raw and ssh
+        hostish = ("github.com" in token) or ("raw.githubusercontent.com" in token) or token.startswith("git@github.com:")
+        return bool(hostish and github.parse_github_url(token))
     except ValueError:
         return False
 

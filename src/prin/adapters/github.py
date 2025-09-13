@@ -10,6 +10,7 @@ from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any, Dict, Iterable, Optional, TypedDict
+from urllib.parse import parse_qs, urlparse
 
 import requests
 
@@ -49,16 +50,41 @@ def parse_github_url(url: str) -> GitHubURL:
 
     Raises ValueError if the URL is not a valid GitHub URL.
     """
+    u = url.strip()
+    # Determine host/path robustly across http(s), scheme-less, and ssh forms
+    host: str
+    path: str
+    query_params: dict[str, list[str]] = {}
+    if u.startswith("git@github.com:"):
+        host = "github.com"
+        path = u.split(":", 1)[1]
+    else:
+        # Ensure urlparse sees a scheme when missing
+        tmp = u
+        if not (u.startswith("http://") or u.startswith("https://")):
+            if u.startswith("www.") or u.startswith("github.com/") or u.startswith("api.github.com/") or u.startswith("raw.githubusercontent.com/"):
+                tmp = "https://" + u
+        parsed = urlparse(tmp)
+        query_params = parse_qs(parsed.query)
+        if parsed.netloc:
+            host = parsed.netloc.lower()
+            path = parsed.path
+        else:
+            # Fallback: scheme-less host/path
+            parts = u.split("/", 1)
+            host = (parts[0] if parts else "github.com").lower()
+            path = "/" + (parts[1] if len(parts) > 1 else "")
+
+    raw_base = f"{host}{('/' + path.lstrip('/')) if not path.startswith('/') else path}"
     raw = (
-        url.strip()
-        .removeprefix("git+")
-        .removeprefix("http://")
-        .removeprefix("https://")
+        raw_base
         .removeprefix("www.")
         .removeprefix("api.")
         .removeprefix("github.com/")
+        .removeprefix("raw.githubusercontent.com/")
         .removeprefix("repos/")
         .removesuffix("/")
+        .removesuffix(".git")
     )
 
     # Split into path segments once normalized
@@ -86,6 +112,23 @@ def parse_github_url(url: str) -> GitHubURL:
         # owner/repo/blob/<ref>/file/or/path
         ref = rest[1]
         subpath_parts = rest[2:]
+    elif host == "api.github.com" and rest[:1] == ["contents"]:
+        # api.github.com/repos/<owner>/<repo>/contents(/path)? with optional ?ref=
+        subpath_parts = rest[1:]
+        ref = (query_params.get("ref") or [None])[0]
+    elif host == "api.github.com" and rest[:2] == ["git", "trees"] and len(rest) >= 3:
+        # api.github.com/repos/<owner>/<repo>/git/trees/<ref>
+        ref = rest[2]
+        subpath_parts = []
+    elif host == "raw.githubusercontent.com" and len(rest) >= 1:
+        # raw.githubusercontent.com/<owner>/<repo>/<ref>/<path>
+        if len(rest) >= 1:
+            # For raw, the parts already start after repo; rebuild using parsed host path
+            # Re-parse: owner/repo handled earlier, so rest is [<ref>, path...]
+            # Since we normalized host+path, parts are owner, repo, <ref>, path...
+            # Adjust because earlier split used raw starting after host, so here rest includes ref and subpath
+            ref = rest[0] if rest else None
+            subpath_parts = rest[1:]
     else:
         # Treat everything after repo as a subpath. No explicit ref.
         subpath_parts = rest
