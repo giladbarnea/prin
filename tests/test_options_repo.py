@@ -76,6 +76,39 @@ def test_repo_commit_only_headers_two_files():
 
 
 @pytest.mark.network
+def test_repo_commit_readme_contents_matches():
+    # Specific commit and README.md contents should match expected text (ignoring whitespace diffs)
+    url = (
+        "https://github.com/TypingMind/awesome-typingmind/blob/"
+        "d4ce90b21bc6c04642ebcf448f96357a8b474624/README.md"
+    )
+
+    expected_readme_contents = """
+# awesome-typingmind
+Collection of useful resources
+for TypingMind
+"""
+
+    # Use XML to easily isolate the body between <README.md> tags
+    out = _run(["--tag", "xml", url])
+
+    start_tag = "<README.md>"
+    end_tag = "</README.md>"
+    start = out.find(start_tag)
+    assert start >= 0, "README.md header not found in output"
+    start_body = start + len(start_tag)
+    end = out.find(end_tag, start_body)
+    assert end > start_body, "README.md closing tag not found in output"
+    body = out[start_body:end]
+
+    def _normalize(s: str) -> str:
+        # Collapse all whitespace (spaces, tabs, newlines) to single spaces and trim
+        return " ".join(s.split()).strip()
+
+    assert _normalize(body) == _normalize(expected_readme_contents)
+
+
+@pytest.mark.network
 def test_repo_extension_filters():
     rust_repo = "https://github.com/trouchet/rust-hello"
     out_rs = _run(["-e", "rs", rust_repo])
