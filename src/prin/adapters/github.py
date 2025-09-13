@@ -28,17 +28,28 @@ def _auth_headers() -> Dict[str, str]:
     return headers
 
 
-class GitHubURL(TypedDict):
+class GitHubURL(TypedDict, total=False):
     owner: str
     repo: str
     subpath: str
+    # Optional git ref (branch, tag, or commit SHA) if present in the URL
+    ref: str
 
 
 def parse_github_url(url: str) -> GitHubURL:
     """
+    Parse a GitHub URL into owner, repo, optional ref, and subpath.
+
+    Supports common forms:
+    - https://github.com/{owner}/{repo}
+    - https://github.com/{owner}/{repo}/tree/{ref}/{path?}
+    - https://github.com/{owner}/{repo}/blob/{ref}/{path}
+    - https://github.com/{owner}/{repo}/commit/{sha}
+    - https://api.github.com/repos/{owner}/{repo}/...
+
     Raises ValueError if the URL is not a valid GitHub URL.
     """
-    owner_repo = (
+    raw = (
         url.strip()
         .removeprefix("git+")
         .removeprefix("http://")
@@ -49,18 +60,44 @@ def parse_github_url(url: str) -> GitHubURL:
         .removeprefix("repos/")
         .removesuffix("/")
     )
-    owner_repo = owner_repo.replace("blob/", "").removeprefix("master/").removeprefix("main/")
-    # At this point, the URL can be either:
-    # 1. "owner/repo/(<branch>/dir/file)?"
-    # 2. "owner/repo/(dir/file)?"
-    # We purposefully don't support branch so we assume it's all a subpath.
-    try:
-        owner, repo, *subpath = owner_repo.split("/")
-    except ValueError:
-        msg = f"Unrecognized GitHub URL: {url}"
-        raise ValueError(msg) from None
 
-    return GitHubURL(owner=owner, repo=repo, subpath="/".join(subpath))
+    # Split into path segments once normalized
+    parts = [p for p in raw.split("/") if p]
+    if len(parts) < 2:
+        msg = f"Unrecognized GitHub URL: {url}"
+        raise ValueError(msg)
+
+    owner, repo = parts[0], parts[1]
+    rest = parts[2:]
+
+    ref: str | None = None
+    subpath_parts: list[str] = []
+
+    # Handle special patterns if present
+    if rest[:1] == ["commit"] and len(rest) >= 2:
+        # owner/repo/commit/<sha>
+        ref = rest[1]
+        subpath_parts = []
+    elif rest[:1] == ["tree"] and len(rest) >= 2:
+        # owner/repo/tree/<ref>/optional/sub/path
+        ref = rest[1]
+        subpath_parts = rest[2:]
+    elif rest[:1] == ["blob"] and len(rest) >= 2:
+        # owner/repo/blob/<ref>/file/or/path
+        ref = rest[1]
+        subpath_parts = rest[2:]
+    else:
+        # Treat everything after repo as a subpath. No explicit ref.
+        subpath_parts = rest
+
+    data: GitHubURL = {
+        "owner": owner,
+        "repo": repo,
+        "subpath": "/".join(subpath_parts),
+    }
+    if ref:
+        data["ref"] = ref
+    return data
 
 
 def _parse_rate_limit_wait_seconds(resp: requests.Response) -> Optional[int]:
@@ -165,7 +202,8 @@ class GitHubRepoSource(SourceAdapter):
         self._session.headers.update(_auth_headers())
         parsed_github_url: GitHubURL = parse_github_url(url)
         owner, repo = parsed_github_url["owner"], parsed_github_url["repo"]
-        ref = self._fetch_default_branch(owner, repo)
+        # Prefer explicit ref from URL (commit sha, tag, branch). Fallback to default branch.
+        ref = parsed_github_url.get("ref") or self._fetch_default_branch(owner, repo)
         self._ctx = _Ctx(owner=owner, repo=repo, ref=ref)
 
     @functools.lru_cache

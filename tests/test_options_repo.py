@@ -63,6 +63,19 @@ def test_repo_only_headers_prints_headers_only():
 
 
 @pytest.mark.network
+def test_repo_commit_only_headers_two_files():
+    # Specific commit should reflect point-in-time state
+    url = (
+        "https://github.com/TypingMind/awesome-typingmind/commit/"
+        "d4ce90b21bc6c04642ebcf448f96357a8b474624"
+    )
+    out = _run(["--only-headers", url])
+    # Expect exactly two files listed
+    lines = [ln.strip() for ln in out.splitlines() if ln.strip()]
+    assert set(lines) == {"LICENSE", "README.md"}
+
+
+@pytest.mark.network
 def test_repo_extension_filters():
     rust_repo = "https://github.com/trouchet/rust-hello"
     out_rs = _run(["-e", "rs", rust_repo])
