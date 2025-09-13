@@ -25,7 +25,7 @@ Define deliberate couplings in the codebase—places, or _members_, that must re
 
 ### Always finish off your task by updating PARITIES.md
 
-You are responsible for updating this document after you've completed your task, to make it reflect the new state of the project.
+**You are responsible for updating this document after you've completed your task, to make it reflect the new state of the project.**
 
 See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed instructions on how to do this.
 
@@ -301,7 +301,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 
 -----------------------------------------
 
-# Maintaining `PARITIES.md`
+# Important: Maintaining `PARITIES.md`
 
 This section defines how to keep `PARITIES.md` truthful, accurate, terse, and durable as the project evolves.
 
@@ -312,17 +312,19 @@ This section defines how to keep `PARITIES.md` truthful, accurate, terse, and du
 - Keep **signal over noise**: short, testable, and unambiguous.
 - You are responsible for updating it after making changes that have to do with any of the members it lists. 
 
-## Updating `PARITIES.md`: Definition of Done
+## Update `PARITIES.md`: Definition of Done
 
 DoD: PARITIES.md is once again a snapshot of the codebase, pointing out intentionally coupled elements and paired aspects in the codebase.
 
-1. References to elements that have been moved or renamed are updated
-2. References to elements that have been deleted are deleted
-3. Newly created elements are integrated into the parity sets, added to the set (or multiple sets) of members they are coupled to, and referenced throughout the doc where appropriate.
+1. Fix elements that have been moved or renamed
+2. Delete references to elements that have been deleted
+3. Integrate newly created elements into the parity sets:
+a. Add to the set (or multiple sets) of members they are coupled to, and 
+b. Reference in other parity sets where appropriate.
 
 
-## Set block template
-Use this exact shape for every set; keep headings and their order.
+## Parity Set Structure 
+Keep this exact shape in every new or existing set:
 
 ```
 ## Set <ID>: <Short name, 3–6 words>
@@ -386,7 +388,6 @@ If you exceed these budgets, ask the user to review.
 
 #### Merge or split sets
 Different sets can share members, although ideally this should be minimized. This is common with generic members used for a variety of different needs.  What draws a line between sets, even if they share a member or two,  is their domains. Each set deals with a different subject.
-
 
 ## Anti-patterns (avoid)
 
