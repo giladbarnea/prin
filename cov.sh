@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
+set -uo pipefail
+source .common.sh
 
-set -e
-set -x
+function main(){
+    ensure_uv_installed
+    set -e
+    set -x
+    uv run coverage run --source=. -m pytest --no-network "$@"
+    uv run coverage report --show-missing
+    uv run coverage xml -o coverage.xml
+    uv run coverage html --title "${@-coverage}"
+}
 
-# Run tests with coverage, defaulting to skipping network tests. Extra args are forwarded to pytest.
-uv run coverage run --source=. -m pytest --no-network "$@"
-uv run coverage report --show-missing
-uv run coverage xml -o coverage.xml
-uv run coverage html --title "${@-coverage}"
+main
