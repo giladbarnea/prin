@@ -1,0 +1,283 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.3, pytest-8.4.1, pluggy-1.6.0 -- /workspace/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /workspace
+configfile: pyproject.toml
+collecting ... collected 179 items
+
+tests/test_cli_engine_positional.py::test_explicit_single_ignored_file_is_printed PASSED
+tests/test_cli_engine_positional.py::test_two_sibling_directories_both_subdirs_of_root_print_relative_paths_to_cwd PASSED
+tests/test_cli_engine_positional.py::test_one_dir_outside_root_assumes_root_and_subdir_of_root_prints_relative_path_to_root PASSED
+tests/test_cli_engine_positional.py::test_directory_and_explicit_ignored_file_inside PASSED
+tests/test_cli_engine_tmp_path.py::test_cli_engine_happy_path PASSED
+tests/test_cli_engine_tmp_path.py::test_cli_engine_isolation PASSED
+tests/test_filesystem_source.py::test_is_empty_returns_true_for_semantically_empty_python_file PASSED
+tests/test_filesystem_source.py::test_is_empty_returns_false_for_non_empty_python_file PASSED
+tests/test_filesystem_source.py::test_is_empty_returns_true_for_truly_empty_text_file PASSED
+tests/test_filesystem_source.py::test_is_empty_returns_false_for_non_empty_text_file_with_python_syntax PASSED
+tests/test_github_adapter.py::test_parse_owner_repo[http://www.github.com/TypingMind/awesome-typingmind] PASSED
+tests/test_github_adapter.py::test_parse_owner_repo[https://www.github.com/TypingMind/awesome-typingmind] PASSED
+tests/test_github_adapter.py::test_parse_owner_repo[http://github.com/TypingMind/awesome-typingmind] PASSED
+tests/test_github_adapter.py::test_parse_owner_repo[https://github.com/TypingMind/awesome-typingmind] PASSED
+tests/test_github_adapter.py::test_parse_owner_repo[www.github.com/TypingMind/awesome-typingmind] PASSED
+tests/test_github_adapter.py::test_parse_owner_repo[github.com/TypingMind/awesome-typingmind] PASSED
+tests/test_github_adapter.py::test_parse_owner_repo[github.com/TypingMind/awesome-typingmind/] PASSED
+tests/test_github_adapter.py::test_parse_owner_repo[github.com/TypingMind/awesome-typingmind/README.md] PASSED
+tests/test_github_adapter.py::test_parse_owner_repo[github.com/TypingMind/awesome-typingmind/blob/README.md] PASSED
+tests/test_github_adapter.py::test_parse_owner_repo[github.com/TypingMind/awesome-typingmind/logos/logo.png] PASSED
+tests/test_github_adapter.py::test_parse_owner_repo[github.com/TypingMind/awesome-typingmind/blob/logos/logo.png] PASSED
+tests/test_github_adapter.py::test_parse_owner_repo[github.com/TypingMind/awesome-typingmind/blob/master/logos/logo.png] PASSED
+tests/test_github_adapter.py::test_parse_owner_repo[github.com/TypingMind/awesome-typingmind/blob/main/logos/logo.png] PASSED
+tests/test_github_adapter.py::test_parse_owner_repo[https://api.github.com/repos/TypingMind/awesome-typingmind/git/trees/master] PASSED
+tests/test_github_adapter.py::test_parse_owner_repo[git+https://github.com/TypingMind/awesome-typingmind] PASSED
+tests/test_github_adapter.py::test_parse_ref_and_subpath[https://github.com/TypingMind/awesome-typingmind/tree/d4ce90b21bc6c04642ebcf448f96357a8b474624-d4ce90b21bc6c04642ebcf448f96357a8b474624-] PASSED
+tests/test_github_adapter.py::test_parse_ref_and_subpath[https://github.com/TypingMind/awesome-typingmind/tree/d4ce90b21bc6c04642ebcf448f96357a8b474624/logos-d4ce90b21bc6c04642ebcf448f96357a8b474624-logos] PASSED
+tests/test_github_adapter.py::test_parse_ref_and_subpath[https://github.com/TypingMind/awesome-typingmind/blob/d4ce90b21bc6c04642ebcf448f96357a8b474624/README.md?plain=1#L1-L10-d4ce90b21bc6c04642ebcf448f96357a8b474624-README.md] PASSED
+tests/test_github_adapter.py::test_parse_ref_and_subpath[https://github.com/TypingMind/awesome-typingmind/blob/d4ce90b21bc6c04642ebcf448f96357a8b474624/README.md#L5-L20-d4ce90b21bc6c04642ebcf448f96357a8b474624-README.md] PASSED
+tests/test_github_adapter.py::test_parse_ref_and_subpath[https://github.com/TypingMind/awesome-typingmind/blob/d4ce90b21bc6c04642ebcf448f96357a8b474624/README.md#L12-d4ce90b21bc6c04642ebcf448f96357a8b474624-README.md] PASSED
+tests/test_github_adapter.py::test_parse_ref_and_subpath[https://github.com/TypingMind/awesome-typingmind/commit/d4ce90b-d4ce90b-] PASSED
+tests/test_github_adapter.py::test_parse_ref_and_subpath[https://api.github.com/repos/TypingMind/awesome-typingmind/contents/README.md?ref=d4ce90b21bc6c04642ebcf448f96357a8b474624-d4ce90b21bc6c04642ebcf448f96357a8b474624-README.md] PASSED
+tests/test_github_adapter.py::test_parse_ref_and_subpath[https://api.github.com/repos/TypingMind/awesome-typingmind/contents?ref=d4ce90b21bc6c04642ebcf448f96357a8b474624-d4ce90b21bc6c04642ebcf448f96357a8b474624-] PASSED
+tests/test_github_adapter.py::test_parse_ref_and_subpath[https://api.github.com/repos/TypingMind/awesome-typingmind/git/trees/d4ce90b21bc6c04642ebcf448f96357a8b474624-d4ce90b21bc6c04642ebcf448f96357a8b474624-] PASSED
+tests/test_github_adapter.py::test_parse_ref_and_subpath[https://raw.githubusercontent.com/TypingMind/awesome-typingmind/d4ce90b21bc6c04642ebcf448f96357a8b474624/README.md-d4ce90b21bc6c04642ebcf448f96357a8b474624-README.md] PASSED
+tests/test_github_adapter.py::test_parse_ref_and_subpath[https://github.com/TypingMind/awesome-typingmind.git/-None-] PASSED
+tests/test_github_adapter.py::test_parse_ref_and_subpath[git@github.com:TypingMind/awesome-typingmind.git-None-] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[github.com/TypingMind/awesome-typingmind-exp0] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://github.com/TypingMind/awesome-typingmind-exp1] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[github.com/TypingMind/awesome-typingmind.git-exp2] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[github.com/TypingMind/awesome-typingmind/-exp3] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[www.github.com/TypingMind/awesome-typingmind-exp4] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[git+https://github.com/TypingMind/awesome-typingmind-exp5] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://github.com/TypingMind/awesome-typingmind.git-exp6] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://github.com/TypingMind/awesome-typingmind/-exp7] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://www.github.com/TypingMind/awesome-typingmind-exp8] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[github.com/TypingMind/awesome-typingmind.git/-exp9] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[www.github.com/TypingMind/awesome-typingmind.git-exp10] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[www.github.com/TypingMind/awesome-typingmind/-exp11] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://www.github.com/TypingMind/awesome-typingmind/-exp12] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[git+https://github.com/TypingMind/awesome-typingmind.git-exp13] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[github.com/TypingMind/awesome-typingmind/docs/Guide.md-exp14] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://github.com/TypingMind/awesome-typingmind/docs/Guide.md-exp15] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[github.com/TypingMind/awesome-typingmind/docs/Guide.md/-exp16] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[www.github.com/TypingMind/awesome-typingmind/docs/Guide.md-exp17] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://github.com/TypingMind/awesome-typingmind/docs/Guide.md/-exp18] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://www.github.com/TypingMind/awesome-typingmind/docs/Guide.md-exp19] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[www.github.com/TypingMind/awesome-typingmind/docs/Guide.md/-exp20] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://www.github.com/TypingMind/awesome-typingmind/docs/Guide.md/-exp21] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[github.com/TypingMind/awesome-typingmind/tree/deadbeefcafebabe-exp22] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://github.com/TypingMind/awesome-typingmind/tree/deadbeefcafebabe-exp23] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[github.com/TypingMind/awesome-typingmind/tree/deadbeefcafebabe/-exp24] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[www.github.com/TypingMind/awesome-typingmind/tree/deadbeefcafebabe-exp25] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://github.com/TypingMind/awesome-typingmind/tree/deadbeefcafebabe/-exp26] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://www.github.com/TypingMind/awesome-typingmind/tree/deadbeefcafebabe-exp27] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[www.github.com/TypingMind/awesome-typingmind/tree/deadbeefcafebabe/-exp28] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://www.github.com/TypingMind/awesome-typingmind/tree/deadbeefcafebabe/-exp29] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[github.com/TypingMind/awesome-typingmind/tree/deadbeefcafebabe/docs-exp30] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://github.com/TypingMind/awesome-typingmind/tree/deadbeefcafebabe/docs-exp31] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[github.com/TypingMind/awesome-typingmind/tree/deadbeefcafebabe/docs/-exp32] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[www.github.com/TypingMind/awesome-typingmind/tree/deadbeefcafebabe/docs-exp33] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://github.com/TypingMind/awesome-typingmind/tree/deadbeefcafebabe/docs/-exp34] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://www.github.com/TypingMind/awesome-typingmind/tree/deadbeefcafebabe/docs-exp35] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[www.github.com/TypingMind/awesome-typingmind/tree/deadbeefcafebabe/docs/-exp36] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://www.github.com/TypingMind/awesome-typingmind/tree/deadbeefcafebabe/docs/-exp37] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[github.com/TypingMind/awesome-typingmind/blob/deadbeefcafebabe/docs/Guide.md-exp38] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://github.com/TypingMind/awesome-typingmind/blob/deadbeefcafebabe/docs/Guide.md-exp39] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[github.com/TypingMind/awesome-typingmind/blob/deadbeefcafebabe/docs/Guide.md/-exp40] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[www.github.com/TypingMind/awesome-typingmind/blob/deadbeefcafebabe/docs/Guide.md-exp41] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://github.com/TypingMind/awesome-typingmind/blob/deadbeefcafebabe/docs/Guide.md/-exp42] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://www.github.com/TypingMind/awesome-typingmind/blob/deadbeefcafebabe/docs/Guide.md-exp43] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[www.github.com/TypingMind/awesome-typingmind/blob/deadbeefcafebabe/docs/Guide.md/-exp44] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://www.github.com/TypingMind/awesome-typingmind/blob/deadbeefcafebabe/docs/Guide.md/-exp45] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[github.com/TypingMind/awesome-typingmind/commit/deadbeefcafebabe-exp46] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://github.com/TypingMind/awesome-typingmind/commit/deadbeefcafebabe-exp47] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[github.com/TypingMind/awesome-typingmind/commit/deadbeefcafebabe/-exp48] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[www.github.com/TypingMind/awesome-typingmind/commit/deadbeefcafebabe-exp49] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://github.com/TypingMind/awesome-typingmind/commit/deadbeefcafebabe/-exp50] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://www.github.com/TypingMind/awesome-typingmind/commit/deadbeefcafebabe-exp51] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[www.github.com/TypingMind/awesome-typingmind/commit/deadbeefcafebabe/-exp52] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://www.github.com/TypingMind/awesome-typingmind/commit/deadbeefcafebabe/-exp53] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[api.github.com/repos/TypingMind/awesome-typingmind/contents?ref=deadbeefcafebabe-exp54] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://api.github.com/repos/TypingMind/awesome-typingmind/contents?ref=deadbeefcafebabe-exp55] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[api.github.com/repos/TypingMind/awesome-typingmind/contents/docs/Guide.md?ref=deadbeefcafebabe-exp56] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://api.github.com/repos/TypingMind/awesome-typingmind/contents/docs/Guide.md?ref=deadbeefcafebabe-exp57] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[api.github.com/repos/TypingMind/awesome-typingmind/git/trees/deadbeefcafebabe-exp58] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://api.github.com/repos/TypingMind/awesome-typingmind/git/trees/deadbeefcafebabe-exp59] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[raw.githubusercontent.com/TypingMind/awesome-typingmind/deadbeefcafebabe/docs/Guide.md-exp60] PASSED
+tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations[https://raw.githubusercontent.com/TypingMind/awesome-typingmind/deadbeefcafebabe/docs/Guide.md-exp61] PASSED
+tests/test_matching.py::test_text_query[in_out0] FAILED
+tests/test_matching.py::test_glob_query[in_out0] FAILED
+tests/test_max_files_fs.py::test_max_files_limits_printed_files_all_included PASSED
+tests/test_max_files_fs.py::test_max_files_skips_non_matching_and_still_prints_four PASSED
+tests/test_max_files_repo.py::test_repo_max_files_one SKIPPED (network
+disabled via --no-network)
+tests/test_options_fs.py::test_no_options_specified_everything_is_printed PASSED
+tests/test_options_fs.py::test_hidden_includes_dotfiles_and_dotdirs PASSED
+tests/test_options_fs.py::test_include_tests_flag_includes_tests_dir PASSED
+tests/test_options_fs.py::test_include_lock_flag_includes_lock_files PASSED
+tests/test_options_fs.py::test_include_binary_includes_binary_like_files PASSED
+tests/test_options_fs.py::test_no_docs_excludes_markdown_and_rst PASSED
+tests/test_options_fs.py::test_include_empty_includes_truly_empty_and_semantically_empty PASSED
+tests/test_options_fs.py::test_only_headers_prints_headers_only PASSED
+tests/test_options_fs.py::test_extension_filters_by_extension PASSED
+tests/test_options_fs.py::test_module_named_locking_is_not_excluded PASSED
+tests/test_options_fs.py::test_literal_exclude_token_matches_segments_not_substrings PASSED
+tests/test_options_fs.py::test_exclude_glob_and_literal PASSED
+tests/test_options_fs.py::test_no_ignore_respects_gitignore_unless_disabled SKIPPED
+tests/test_options_fs.py::test_tag_md_outputs_markdown_format PASSED
+tests/test_options_fs.py::test_unrestricted_includes_gitignored PASSED
+tests/test_options_fs.py::test_uu_includes_hidden_and_gitignored PASSED
+tests/test_options_fs.py::test_no_exclude_includes_everything SKIPPED
+tests/test_options_repo.py::test_repo_defaults_readme_present_binaries_excluded SKIPPED
+tests/test_options_repo.py::test_repo_include_binary_includes_pngs SKIPPED
+tests/test_options_repo.py::test_repo_no_docs_excludes_markdown_and_rst SKIPPED
+tests/test_options_repo.py::test_repo_only_headers_prints_headers_only SKIPPED
+tests/test_options_repo.py::test_repo_commit_only_headers_two_files SKIPPED
+tests/test_options_repo.py::test_repo_commit_readme_contents_matches SKIPPED
+tests/test_options_repo.py::test_repo_extension_filters SKIPPED (network
+disabled via --no-network)
+tests/test_options_repo.py::test_repo_exclude_glob_and_literal SKIPPED
+tests/test_options_repo.py::test_repo_no_exclude_disables_all_default_exclusions SKIPPED
+tests/test_options_repo.py::test_repo_tag_md_outputs_markdown_format SKIPPED
+tests/test_options_repo.py::test_repo_include_empty SKIPPED (network
+disabled via --no-network)
+tests/test_options_repo.py::test_repo_include_lock SKIPPED (network
+disabled via --no-network)
+tests/test_options_repo.py::test_repo_module_named_locking_is_not_excluded SKIPPED
+tests/test_options_repo.py::test_repo_literal_exclude_token_matches_segments_not_substrings SKIPPED
+tests/test_options_repo.py::test_repo_unrestricted_includes_gitignored SKIPPED
+tests/test_options_repo.py::test_repo_uu_includes_hidden_and_gitignored SKIPPED
+tests/test_options_repo.py::test_repo_hidden_includes_dotfiles_and_dotdirs SKIPPED
+tests/test_options_repo.py::test_repo_include_tests_flag_includes_tests_dir SKIPPED
+tests/test_options_repo.py::test_repo_no_options_specified_everything_is_printed SKIPPED
+tests/test_options_repo.py::test_repo_no_ignore SKIPPED (Not supported
+ATM)
+tests/test_parities_check.py::test_block_members_tokens PASSED
+tests/test_parities_check.py::test_first_set_contract_triggers_tests_tokens PASSED
+tests/test_parities_check.py::test_symbex_resolves_member_symbols PASSED
+tests/test_parities_check.py::test_set2_sections_and_tokens_h3_h4_headings PASSED
+tests/test_parities_check.py::test_set3_only_headers_enforcement_members_contract_tests PASSED
+tests/test_parities_check.py::test_cli_flag_pair_extraction_all_forms PASSED
+tests/test_parities_check.py::test_members_categorization_cli_flags_and_pytest_specs PASSED
+tests/test_parities_check.py::test_merge_opportunity_id_parts_only[[Alpha-Beta-Gamma]-[alpha-Delta-Epsilon]-False] PASSED
+tests/test_parities_check.py::test_merge_opportunity_id_parts_only[[CLI-CTX-DEFAULTs-README]-[readme-defaults-core]-True] PASSED
+tests/test_parities_check.py::test_merge_opportunity_id_parts_only[[FORMATTER-SELECTION-README]-[readme-selection-formatter]-True] PASSED
+tests/test_pattern_classifier.py::test_anchor_start_caret PASSED
+tests/test_pattern_classifier.py::test_anchor_end_dollar PASSED
+tests/test_pattern_classifier.py::test_unescaped_alternation_bar PASSED
+tests/test_pattern_classifier.py::test_quantifier_exact_m PASSED
+tests/test_pattern_classifier.py::test_quantifier_m_comma PASSED
+tests/test_pattern_classifier.py::test_quantifier_comma_m PASSED
+tests/test_pattern_classifier.py::test_quantifier_m_n PASSED
+tests/test_pattern_classifier.py::test_lookaround_or_inline_flags PASSED
+tests/test_pattern_classifier.py::test_backreference_decimal PASSED
+tests/test_pattern_classifier.py::test_regex_shorthands_and_anchors PASSED
+tests/test_pattern_classifier.py::test_unicode_property_class PASSED
+tests/test_pattern_classifier.py::test_regex_style_escaped_metachar PASSED
+tests/test_pattern_classifier.py::test_regexy_parens_with_alternation PASSED
+tests/test_pattern_classifier.py::test_common_globs_not_regex[*.py] PASSED
+tests/test_pattern_classifier.py::test_common_globs_not_regex[src/*/test?.txt] PASSED
+tests/test_pattern_classifier.py::test_common_globs_not_regex[[0-9].csv] PASSED
+tests/test_pattern_classifier.py::test_common_globs_not_regex[**/*.md] PASSED
+tests/test_pattern_classifier.py::test_common_globs_not_regex[foo.*] PASSED
+tests/test_pattern_classifier.py::test_common_globs_not_regex[**/foo*bar.txt] PASSED
+tests/test_pattern_classifier.py::test_text[Report (final).pdf] PASSED
+tests/test_pattern_classifier.py::test_text[C++/a+b.txt] PASSED
+tests/test_print_mixed_fs_repo.py::test_mixed_fs_repo_interchangeably SKIPPED
+tests/test_print_repo_positional.py::test_repo_explicit_ignored_file_is_printed SKIPPED
+tests/test_print_repo_positional.py::test_pass_two_repositories_positionally_print_both SKIPPED
+tests/test_print_repo_positional.py::test_repo_dir_and_explicit_ignored_file SKIPPED
+tests/test_print_repo_positional.py::test_repo_raw_and_api_and_ssh_forms_all_work_headers_only SKIPPED
+tests/test_website_adapter.py::test_website_llms_txt_presence_and_one_file_md_output SKIPPED
+tests/test_website_adapter_all_urls.py::test_all_llms_txt_markdown_urls_are_loaded SKIPPED
+
+=================================== FAILURES ===================================
+___________________________ test_text_query[in_out0] ___________________________
+
+prin_tmp_path = PosixPath('/tmp/prin.4ndna90z')
+in_out = {'/bar': '', '/baz.txt': '', 'ar': 'foo/bar/', 'ar/': '', ...}
+
+    @pytest.mark.parametrize(
+        "in_out",
+        [
+            {
+                "ar": "foo/bar/",
+                "az": "foo/bar/baz.txt",
+                "bar": "foo/bar/",
+                "baz.txt": "foo/bar/baz.txt",
+                "ar/": "",
+                "/bar": "",
+                "/baz.txt": "",
+                "ar/ba": "",
+                "bar/baz.txt": "",
+            }
+        ],
+    )
+    def test_text_query(prin_tmp_path: Path, in_out: dict[str, str]):
+        file = prin_tmp_path / "foo" / "bar" / "baz.txt"
+        file.parent.mkdir(parents=True, exist_ok=True)
+        file.touch(exist_ok=True)
+        file.write_text("hi baz.txt")
+        src = FileSystemSource(root_cwd=prin_tmp_path)
+        printer = DepthFirstPrinter(
+            src,
+            HeaderFormatter(),
+            ctx=Context(paths=[str(prin_tmp_path)]),
+        )
+        buf = StringWriter()
+        query, expected_match = list(in_out.items())[0]
+        printer.run([query], buf)
+        out = buf.text()
+        if expected_match:
+>           assert expected_match in out, f"Expected match for {query!r}, but got {out!r}"
+E           AssertionError: Expected match for 'ar', but got ''
+E           assert 'foo/bar/' in ''
+
+tests/test_matching.py:53: AssertionError
+___________________________ test_glob_query[in_out0] ___________________________
+
+prin_tmp_path = PosixPath('/tmp/prin.kw7v06r3')
+in_out = {'*/bar*': '', '*/baz.txt*': '', '*ar*': 'foo/bar/', '*ar/*': '', ...}
+
+    @pytest.mark.parametrize(
+        "in_out",
+        [
+            {
+                "*ar*": "foo/bar/",
+                "*az*": "foo/bar/baz.txt",
+                "*bar*": "foo/bar/",
+                "*baz.txt*": "foo/bar/baz.txt",
+                "*ar/*": "",
+                "*/bar*": "",
+                "*/baz.txt*": "",
+                "*ar/ba*": "",
+                "*bar/baz.txt*": "",
+            }
+        ],
+    )
+    def test_glob_query(prin_tmp_path: Path, in_out: dict[str, str]):
+        file = prin_tmp_path / "foo" / "bar" / "baz.txt"
+        file.parent.mkdir(parents=True, exist_ok=True)
+        file.touch(exist_ok=True)
+        file.write_text("hi baz.txt")
+        src = FileSystemSource(root_cwd=prin_tmp_path)
+        printer = DepthFirstPrinter(
+            src,
+            HeaderFormatter(),
+            ctx=Context(paths=[str(prin_tmp_path)]),
+        )
+        buf = StringWriter()
+        query, expected_match = list(in_out.items())[0]
+        printer.run([query], buf)
+        out = buf.text()
+        if expected_match:
+>           assert expected_match in out, f"Expected match for {query!r}, but got {out!r}"
+E           AssertionError: Expected match for '*ar*', but got ''
+E           assert 'foo/bar/' in ''
+
+tests/test_matching.py:90: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_matching.py::test_text_query[in_out0] - AssertionError: Expected match for 'ar', but got ''
+assert 'foo/bar/' in ''
+FAILED tests/test_matching.py::test_glob_query[in_out0] - AssertionError: Expected match for '*ar*', but got ''
+assert 'foo/bar/' in ''
+================== 2 failed, 147 passed, 30 skipped in 0.79s ===================
