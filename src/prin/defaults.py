@@ -48,14 +48,15 @@ DEFAULT_DOC_EXTENSIONS: list[str] = ["*.md", "*.rst", "*.mdx"]
 
 
 DEFAULT_TEST_EXCLUSIONS: list[TExclusion] = [
-    # Directories named 'test' or 'tests' anywhere in path
-    r"(^|/)tests(/|$)",
-    r"(^|/)test(/|$)",
-    # Filenames that contain '.test' before an optional further extension
-    r"\\.test(\\.|$)",
-    # TypeScript/Javascript spec/test filename conventions
-    r"\\.spec\\.tsx?$",
-    r"\\.test\\.tsx?$",
+    "*.test",
+    "tests/*",  # This should work but doesn't
+    "tests*",  # This is a workaround that should be removed once the above works
+    "test/*",
+    "*.spec.ts",
+    "*.spec.ts*",
+    "*.test.ts",
+    "*.test.ts*",
+    "test_*",
 ]
 
 
