@@ -77,7 +77,7 @@ Repeat the following until all new tests pass:
 4. Run ./format.sh to fix any fixable issues and print remaining, usually insignificant issues.
 5.	Final update to user: Summarize what passed, what changed, and what still remains to be done (if anything).
 
-**BURN THAT INTO EVERY INTERNAL TODO LIST YOU CREATE.**
+**always add an item to every to-do list you create throughout the entire session saying 'ensure I remember the instructions about maintaining and updating PARITIES.md and the instructions about the TDD dev cycle'.**
 
 ## Important: Work Against and Update PARITIES.md
 
