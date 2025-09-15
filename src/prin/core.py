@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import sys
 from dataclasses import dataclass
 from enum import Enum, auto
@@ -180,6 +181,8 @@ class DepthFirstPrinter:
         self.extensions = ctx.extensions
         self.include_empty = ctx.include_empty
         self.only_headers = ctx.only_headers
+        # Capture provided paths for query-mode traversal bases
+        self._ctx_paths = list(getattr(ctx, "paths", []))
 
     def run(self, roots: list[str], writer: Writer, budget: "FileBudget | None" = None) -> None:
         roots = roots or ["."]
@@ -216,7 +219,13 @@ class DepthFirstPrinter:
                     )
                     continue
                 except FileNotFoundError:
-                    # Skip missing paths. Smell: will cover-up a bug in list_dir.
+                    # Treat the token as a search query: traverse configured context paths
+                    self._run_query(
+                        token=root_spec,
+                        writer=writer,
+                        anchor_base=anchor_base,
+                        budget=budget,
+                    )
                     continue
                 # Sort directories then files, both case-insensitive
                 dirs = [e for e in entries if e.kind is NodeKind.DIRECTORY]
@@ -286,3 +295,105 @@ class DepthFirstPrinter:
             return rel.replace("\\", "/")
         except Exception:
             return str(path)
+
+    def _run_query(
+        self,
+        *,
+        token: str,
+        writer: Writer,
+        anchor_base: PurePosixPath | None,
+        budget: "FileBudget | None" = None,
+    ) -> None:
+        """
+        Fallback query mode: interpret the provided token as a pattern and search
+        under the context-provided base paths. Regex is the default matching mode
+        for tokens that are not recognized as globs.
+        """
+        if not token:
+            return
+
+        # Regex-by-default: compile raw token and use re.search on display paths
+        try:
+            pattern = re.compile(token)
+        except re.error:
+            # If the pattern is invalid, do nothing
+            return
+
+        bases: list[str] = self._ctx_paths or ["."]
+        for base_spec in bases:
+            if budget is not None and budget.spent():
+                return
+            try:
+                base_root = self.source.resolve_root(base_spec)
+            except Exception:
+                continue
+
+            # Compute display base similar to regular traversal
+            display_base = base_root
+            if anchor_base is not None:
+                try:
+                    _ = base_root.relative_to(anchor_base)
+                    display_base = anchor_base
+                except Exception:
+                    display_base = base_root
+
+            # DFS starting at base_root
+            stack: list[PurePosixPath] = [base_root]
+            while stack:
+                if budget is not None and budget.spent():
+                    return
+                current = stack.pop()
+                try:
+                    entries = list(self.source.list_dir(current))
+                except NotADirectoryError:
+                    # Should not happen for base traversal, but handle gracefully
+                    file_entry = Entry(path=current, name=current.name, kind=NodeKind.FILE)
+                    self._maybe_print_query_match(file_entry, pattern, writer, display_base, budget)
+                    continue
+                except FileNotFoundError:
+                    continue
+
+                # Sort for deterministic order
+                dirs = [e for e in entries if e.kind is NodeKind.DIRECTORY]
+                files = [e for e in entries if e.kind is NodeKind.FILE]
+                dirs.sort(key=lambda e: e.name.casefold())
+                files.sort(key=lambda e: e.name.casefold())
+
+                # Recurse into directories and check directory match for headers mode
+                for entry in reversed(dirs):
+                    if not self._excluded(entry):
+                        # If directory display path matches, print the directory header
+                        dir_path_str = self._display_path(entry.path, display_base) + "/"
+                        if pattern.search(dir_path_str):
+                            key = str(entry.path)
+                            if key not in self._printed_paths:
+                                writer.write(self.formatter.format(dir_path_str, "..."))
+                                budget and budget.consume()
+                                self._printed_paths.add(key)
+                        stack.append(entry.path)
+
+                # Files: print via regular handler if the display path matches
+                for entry in files:
+                    self._maybe_print_query_match(entry, pattern, writer, display_base, budget)
+
+    def _maybe_print_query_match(
+        self,
+        entry: Entry,
+        pattern: "re.Pattern[str]",
+        writer: Writer,
+        display_base: PurePosixPath,
+        budget: "FileBudget | None",
+    ) -> None:
+        if budget and budget.spent():
+            return
+        if self._excluded(entry):
+            return
+        if not self._extension_match(entry):
+            return
+        if not self.include_empty and self.source.is_empty(entry.path):
+            return
+        path_str = self._display_path(entry.path, display_base)
+        if not pattern.search(path_str):
+            return
+        # Delegate to regular file handler for printing and budget bookkeeping
+        self._handle_file(entry, writer, base=display_base, budget=budget)
