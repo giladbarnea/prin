@@ -3,7 +3,7 @@ set -euo pipefail
 source .common.sh
 
 function main(){
-	ensure_uv_installed
+	ensure_uv
 
 	message "Installing prin..."
 	uv tool --no-cache install --refresh . --reinstall
