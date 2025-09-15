@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-uv tool run --refresh "$@"
+uv tool run --refresh . -- "$@"
