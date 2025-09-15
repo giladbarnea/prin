@@ -254,3 +254,47 @@ def test_repo_no_ignore():
     url = "https://github.com/TypingMind/awesome-typingmind"
     out = _run(["--no-ignore", url])
     assert isinstance(out, str)
+
+
+@pytest.mark.network
+def test_repo_hidden_includes_dotfiles_and_dotdirs():
+    # A tiny repo that contains a .gitignore at the root
+    url = "https://github.com/trouchet/rust-hello"
+
+    # By default, dotfiles should be excluded
+    out_default = _run(["--only-headers", url])
+    assert ".gitignore\n" not in out_default
+
+    # With --hidden, dotfiles should be included
+    out_hidden = _run(["--only-headers", "--hidden", url])
+    assert ".gitignore\n" in out_hidden
+
+
+@pytest.mark.network
+def test_repo_uu_includes_hidden_and_no_ignore():
+    # -uu expands to --hidden --no-ignore; for repos we already ignore local gitignore,
+    # so we assert that hidden files are included when using -uu.
+    url = "https://github.com/trouchet/rust-hello"
+    out = _run(["--only-headers", "-uu", url])
+    assert ".gitignore\n" in out
+
+
+@pytest.mark.network
+def test_repo_include_tests_flag_includes_tests_dir():
+    # Choose a small repo with a stable tests/ directory
+    url = "https://github.com/pallets/markupsafe"
+    out = _run(["--only-headers", url])
+    assert "tests/" not in out
+
+    out_with_tests = _run(["--only-headers", "--include-tests", url])
+    assert "tests/" in out_with_tests
+
+
+@pytest.mark.network
+def test_repo_unrestricted_includes_hidden_but_not_affecting_gitignore_behavior():
+    # -u maps to --no-ignore; for repos we do not process local gitignore,
+    # so the practical effect for repos is no change in output compared to default.
+    url = "https://github.com/TypingMind/awesome-typingmind"
+    out_default = _run(["--only-headers", url])
+    out_unrestricted = _run(["--only-headers", "-u", url])
+    assert out_default == out_unrestricted
