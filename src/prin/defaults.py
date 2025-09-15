@@ -7,153 +7,159 @@
 
 # region ---[ Default Paths and Exclusions ]---
 
-from typing import Literal, LiteralString
+import re
+from typing import Literal
 
-from prin.types import TExclusion
+from prin.types import Glob, Pattern
 
-Hidden = lambda x: x.startswith(".")  # pyright: ignore[reportUnknownLambdaType]
+Hidden = Glob(".*")
 """Covers .env, .idea, and all dot-dirs and dot-files."""
-HasCacheSubstr = lambda x: "cache" in str(x).lower()  # pyright: ignore[reportUnknownLambdaType]
 
-DEFAULT_EXCLUSIONS: list[TExclusion] = [
-    lambda x: x.endswith("egg-info"),
-    "build",
-    "bin",
-    "dist",
-    "node_modules",
-    HasCacheSubstr,
+DEFAULT_EXCLUSIONS: list[Pattern] = [
+    Glob("*egg-info"),
+    re.compile("build"),
+    re.compile("bin"),
+    re.compile("dist"),
+    re.compile("node_modules"),
+    re.compile(r"cache", re.IGNORECASE),
     # Build artifacts and dependencies
-    "target",
-    "vendor",
-    "out",
-    "coverage",
+    re.compile("target"),
+    re.compile("vendor"),
+    re.compile("out"),
+    re.compile("coverage"),
     # Additional common directories/files
-    "venv",
-    "DerivedData",
-    "Pods",
-    "Carthage/Build",
-    "coverage.out",
+    re.compile("venv"),
+    re.compile("DerivedData"),
+    re.compile("Pods"),
+    re.compile(r"Carthage/Build"),
+    re.compile(r"coverage\.out"),
+    # Editor workspace and config files
+    Glob("*.code-workspace"),  # VS Code/Cursor
+    Glob("*.sublime-project"),  # Sublime Text
+    Glob("*.sublime-workspace"),  # Sublime Text
+    re.compile(r"Session\.vim"),  # Vim/Neovim
+    re.compile(r"\.vim"),  # Vim
+    re.compile(r"\.emacs\.d"),  # Emacs
+    Glob("*~"),  # Emacs backup files
     # Logs and temporary files
-    "logs",
-    "*.log",
-    "*.tmp",
+    re.compile(r"logs", re.IGNORECASE),
+    Glob("*.log"),
+    Glob("*.tmp"),
     # Environment and secrets
-    "secrets",
-    "*.key",
-    "*.pem",
+    re.compile("secrets", re.IGNORECASE),
+    Glob("*.key"),
+    Glob("*.pem"),
 ]
 
 
-DEFAULT_DOC_EXTENSIONS: list[str] = ["*.md", "*.rst", "*.mdx"]
+DEFAULT_DOC_EXTENSIONS: list[Glob] = [Glob("*.md"), Glob("*.rst"), Glob("*.mdx")]
 
 
-DEFAULT_TEST_EXCLUSIONS: list[TExclusion] = [
-    "*.test",
-    "tests/*",  # This should work but doesn't
-    "tests*",  # This is a workaround that should be removed once the above works
-    "test/*",
-    "*.spec.ts",
-    "*.spec.ts*",
-    "*.test.ts",
-    "*.test.ts*",
-    "test_*",
+DEFAULT_TEST_EXCLUSIONS: list[Pattern] = [
+    re.compile(r".*\.test(\..+)?"),
+    re.compile(r"tests?/"),
+    re.compile(r"\.spec\.tsx?"),
+    re.compile(r".test\.tsx?"),
+    re.compile(r"/test_.*\.py.?"),
 ]
 
 
-DEFAULT_LOCK_EXCLUSIONS: list[TExclusion] = [
-    "*.lock",
+DEFAULT_LOCK_EXCLUSIONS: list[Pattern] = [
+    Glob("*.lock"),
+    Glob("*.lockfile"),
     # JavaScript/Node
-    "package-lock.json",
-    "pnpm-lock.yaml",
-    "go.sum",
-    "bun.lockb",
-    "Package.resolved",
-    "gradle.lockfile",
-    "packages.lock.json",
+    re.compile(r"package-lock\.json"),
+    re.compile(r"pnpm-lock\.yaml"),
+    re.compile(r"go\.sum"),
+    re.compile(r"bun\.lockb"),
+    re.compile(r"Package\.resolved"),
+    re.compile(r"Cartfile\.resolved"),
+    re.compile(r"packages\.lock\.json"),
 ]
 
 
-DEFAULT_BINARY_EXCLUSIONS: list[TExclusion] = [
+DEFAULT_BINARY_EXCLUSIONS: list[Pattern] = [
     # Binary files
-    "*.pyc",
-    "*.pyo",
-    "*.pyd",
-    "*.exe",
-    "*.dll",
-    "*.app",
-    "*.deb",
-    "*.rpm",
-    "*.dot",
+    Glob("*.pyc"),
+    Glob("*.pyo"),
+    Glob("*.pyd"),
+    Glob("*.exe"),
+    Glob("*.dll"),
+    Glob("*.app"),
+    Glob("*.deb"),
+    Glob("*.rpm"),
+    Glob("*.dot"),
+    re.compile(r"bin/"),  # Dir
     # Archives
-    "*.zip",
-    "*.tar",
-    "*.gz",
-    "*.bz2",
-    "*.xz",
-    "*.7z",
-    "*.rar",
-    "*.jar",
-    "*.war",
-    "*.ear",
+    Glob("*.zip"),
+    Glob("*.tar"),
+    Glob("*.gz"),
+    Glob("*.bz2"),
+    Glob("*.xz"),
+    Glob("*.7z"),
+    Glob("*.rar"),
+    Glob("*.jar"),
+    Glob("*.war"),
+    Glob("*.ear"),
     # Media files
-    "*.png",
-    "*.jpg",
-    "*.jpeg",
-    "*.gif",
-    "*.bmp",
-    "*.ico",
-    "*.svg",
-    "*.mp3",
-    "*.mp4",
-    "*.avi",
-    "*.mov",
-    "*.wav",
-    "*.pdf",  # TODO: Remove this when we support PDFs
+    Glob("*.png"),
+    Glob("*.jpg"),
+    Glob("*.jpeg"),
+    Glob("*.gif"),
+    Glob("*.bmp"),
+    Glob("*.ico"),
+    Glob("*.svg"),
+    Glob("*.mp3"),
+    Glob("*.mp4"),
+    Glob("*.avi"),
+    Glob("*.mov"),
+    Glob("*.wav"),
+    Glob("*.pdf"),  # TODO: Remove this when we support PDFs
     # Database and data files
-    "*.db",
-    "*.sqlite",
-    "*.sqlite3",
-    "*.dat",
-    "*.bin",
+    Glob("*.db"),
+    Glob("*.sqlite"),
+    Glob("*.sqlite3"),
+    Glob("*.dat"),
+    Glob("*.bin"),
     # IDE and editor files
-    "*.swp",
-    "*.swo",
+    Glob("*.swp"),
+    Glob("*.swo"),
     # Language-specific
-    "*.class",
-    "*.o",
-    "*.so",
-    "*.dylib",
+    Glob("*.class"),
+    Glob("*.o"),
+    Glob("*.so"),
+    Glob("*.dylib"),
     # Additional binary formats
-    "*.node",
-    "*.wasm",
-    "*.zst",
-    "*.lz",
+    Glob("*.node"),
+    Glob("*.wasm"),
+    Glob("*.zst"),
+    Glob("*.lz"),
     # Fonts
-    "*.ttf",
-    "*.otf",
-    "*.woff",
-    "*.woff2",
-    "*.eot",
+    Glob("*.ttf"),
+    Glob("*.otf"),
+    Glob("*.woff"),
+    Glob("*.woff2"),
+    Glob("*.eot"),
     # Windows build outputs
-    "*.obj",
-    "*.lib",
-    "*.pdb",
-    "*.ilk",
+    Glob("*.obj"),
+    Glob("*.lib"),
+    Glob("*.pdb"),
+    Glob("*.ilk"),
     # Installers/bundles
-    "*.dmg",
-    "*.pkg",
-    "*.msi",
-    "*.apk",
-    "*.ipa",
+    Glob("*.dmg"),
+    Glob("*.pkg"),
+    Glob("*.msi"),
+    Glob("*.apk"),
+    Glob("*.ipa"),
     # Scientific/data formats
-    "*.h5",
-    "*.hdf5",
-    "*.npz",
-    "*.npy",
-    "*.mat",
-    "*.parquet",
-    "*.feather",
-    "*.arrow",
+    Glob("*.h5"),
+    Glob("*.hdf5"),
+    Glob("*.npz"),
+    Glob("*.npy"),
+    Glob("*.mat"),
+    Glob("*.parquet"),
+    Glob("*.feather"),
+    Glob("*.arrow"),
 ]
 
 # endregion ---[ Default Paths and Exclusions ]---
@@ -173,7 +179,7 @@ DEFAULT_NO_IGNORE = False
 DEFAULT_INCLUDE_HIDDEN = False
 
 # Output format tag defaults
-DEFAULT_TAG: LiteralString = "xml"
+DEFAULT_TAG: Literal["xml"] = "xml"
 DEFAULT_TAG_CHOICES: Literal["xml", "md"] = [DEFAULT_TAG, "md"]
 
 # endregion ---[ Default CLI Options ]---

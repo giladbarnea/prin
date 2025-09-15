@@ -87,16 +87,16 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - FS: `tests/test_options_fs.py::test_only_headers_prints_headers_only`
 - Repo: `tests/test_options_repo.py::test_repo_only_headers_prints_headers_only`
 
-## Set 4 [FILTER-CATEGORIES-CLI-FLAGS-CONTEXT-FIELDS-TESTS-FS-FIXTURE-README]: Filter categories ↔ CLI flags ↔ Context fields ↔ FS Tests fixture ↔ README
+## Set 4 [FILTER-CATEGORIES-CLI-FLAGS-DEFAULTS-CONTEXT-FIELDS-TESTS-FS-FIXTURE-README]: Filter categories ↔ CLI flags ↔ Defaults ↔ Context fields ↔ FS Tests fixture ↔ README
 
 #### Members
-- `src/prin/cli_common.py`: CLI flags, `Context` fields.
-- `src/prin/defaults.py`: `DEFAULT_EXCLUSIONS`, `DEFAULT_TEST_EXCLUSIONS`, `DEFAULT_LOCK_EXCLUSIONS`, `DEFAULT_BINARY_EXCLUSIONS`, `DEFAULT_DOC_EXTENSIONS`, `Hidden`.
+- `src/prin/cli_common.py`: CLI flags, `Context` fields, CLI documentation in `parse_common_args`.
+- `src/prin/defaults.py`: patterns in `DEFAULT_EXCLUSIONS`, `DEFAULT_TEST_EXCLUSIONS`, `DEFAULT_LOCK_EXCLUSIONS`, `DEFAULT_BINARY_EXCLUSIONS`, `DEFAULT_DOC_EXTENSIONS`, `Hidden`; default CLI configuration by all the `DEFAULT_*` scalar constants.
 - `README.md` sections: “Sane Defaults for LLM Input”, “Output Control”, CLI Options”.
 - FS test fixture: `tests/conftest.py::fs_root` (mock files/paths and `VFS` field for each category).
 
 #### Contract
-- Filter flags exposed by the CLI must have corresponding DEFAULT_* consts in `defaults.py`, `Context` fields, representation in `README.md` in specified sections, mocks in `conftest.fs_root` and a field in `conftest.VFS`.
+- Filter flags exposed by the CLI in `cli_common.py` must have corresponding DEFAULT_* patterns and DEFAULT_* feature flags in `defaults.py`, `Context` fields, representation in `README.md` in specified sections, synced CLI help in `parse_common_args`, mocks in `conftest.fs_root` and a field in `conftest.VFS`.
 
 #### Triggers
 - Adding/removing/renaming a filter category; changing category semantics.
@@ -116,10 +116,9 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 
 #### Contract
 - Inclusion/exclusion and extension matching must behave identically regardless of source type. Any change to filters or engine matching must be validated for both filesystem and repository sources.
-- The classifier distinguishes three kinds of patterns: `regex`, `glob`, and `text`.
-  * `regex`: Matching is not implemented.
+- The classifier distinguishes two kinds of patterns: `regex` and `glob`.
+  * `regex`: matched by `re.search`.
   * `glob`: matched via `fnmatch`.
-  * `text`: matched by exact path-segment sequence, not substrings; supports multi-part tokens containing separators.
 - Explicit extensions are normalized by `_normalize_extension_to_glob`. Changes to normalization rules must be reflected in `filters.is_excluded` and `filters.extension_match` behavior.
 - Changes to classifier rules must be reflected in `filters.is_excluded` and `filters.extension_match` behavior.
 
@@ -129,7 +128,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Tests
 - FS: `tests/test_options_fs.py::test_exclude_glob_and_literal`, `::test_extension_filters_by_extension`, `::test_literal_exclude_token_matches_segments_not_substrings`
 - Repo: `tests/test_options_repo.py::test_repo_exclude_glob_and_literal`, `::test_repo_extension_filters`, `::test_repo_literal_exclude_token_matches_segments_not_substrings`
-- Classifier: `tests/test_pattern_classifier.py` (covers `regex`/`glob`/`text`)
+- Classifier: `tests/test_pattern_classifier.py` (covers `regex`/`glob`)
 
 
 ## Set 6 [SOURCE-ADAPTER-INTERFACE]: Protocol and uniform adapter semantics

@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 authors = [
-    { name = "Cursor Agent", email = "cursoragent@cursor.com" }
+    { name = "Gilad Barnea", email = "giladbrn@gmail.com" }
 ]
 requires-python = ">=3.13"
 dependencies = [
@@ -118,6 +118,11 @@ markers = [
   "network: tests that require network access",
   "website: tests that target website adapter",
   "repo: tests that target repository adapter",
+]
+addopts = [
+  "--doctest-modules",
+  "--capture=no",
+  "--disable-pytest-warnings"
 ]
 
 [tool.coverage.run]

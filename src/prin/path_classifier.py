@@ -3,7 +3,7 @@ import re
 from re import Pattern
 from typing import Literal, TypeIs
 
-from prin.types import TGlob, TRegex
+from prin.types import Glob, TReCompilable
 
 # Each entry is a *single* regex that indicates "this looks like a regex, not a Python glob".
 # We join them with ' | ' and compile with re.VERBOSE for readability.
@@ -40,32 +40,42 @@ _REGEX_ONLY_PATTERNS = [
 _RE_SIGNS: Pattern[str] = re.compile(" | ".join(_REGEX_ONLY_PATTERNS), re.VERBOSE)
 
 
-def classify_pattern(string: str) -> Literal["regex", "glob"]:
+def classify_pattern(pattern) -> Literal["regex", "glob"]:
     """Return pattern kind: glob if it looks like a glob, else regex by default."""
-    if is_glob(string):
+    if is_glob(pattern):
         return "glob"
     return "regex"
 
 
-def is_regex(string) -> TypeIs[TRegex]:
-    if not isinstance(string, str):
+def is_regex(pattern) -> TypeIs[TReCompilable]:
+    if isinstance(pattern, (re.Pattern, TReCompilable)):
+        return True
+    if isinstance(pattern, Glob):
         return False
-    return bool(_RE_SIGNS.search(string))
-
-
-def is_glob(string) -> TypeIs[TGlob]:
-    if not isinstance(string, str):
+    if not isinstance(pattern, str):
         return False
-    if is_regex(string):
+    return bool(_RE_SIGNS.search(pattern))
+
+
+def is_glob(pattern) -> TypeIs[Glob]:
+    if isinstance(pattern, Glob):
+        return True
+    if not isinstance(pattern, str):
         return False
-    return any(glob_sym in string for glob_sym in "*?[")
+    if isinstance(pattern, TReCompilable) or is_regex(pattern):
+        return False
+    return any(glob_sym in pattern for glob_sym in "*?[")
 
 
-def is_extension(string) -> TypeIs[TGlob]:
-    if not isinstance(string, str):
+def is_extension(pattern) -> TypeIs[Glob]:
+    if isinstance(pattern, (re.Pattern, TReCompilable)):
+        raise NotImplementedError(
+            "We should theoretically be able to check if a regex is an extension, but we don't yet. Got: {string!r}"
+        )
+    if not isinstance(pattern, str):
         return False
     from prin.cli_common import _normalize_extension_to_glob
 
     with contextlib.suppress(ValueError):
-        return string == _normalize_extension_to_glob(string)
+        return pattern == _normalize_extension_to_glob(pattern)
     return False

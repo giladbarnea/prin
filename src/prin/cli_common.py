@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import os
 import sys
 import textwrap
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 from typing import Literal
 
 from prin.defaults import (
@@ -30,7 +31,7 @@ from prin.defaults import (
     Hidden,
 )
 from prin.filters import get_gitignore_exclusions
-from prin.types import TGlob, _describe_predicate
+from prin.types import Glob, TPath, _describe_predicate
 
 # Map shorthand/alias flags to their canonical expanded forms.
 # The expansion occurs before argparse parsing and preserves argument order.
@@ -116,29 +117,31 @@ class Context:
 
     def replace(self, **kwargs) -> Context:
         """Creates a new copy of the context with the given kwargs updated."""
-        return replace(self, **kwargs)
+        return dataclasses.replace(self, **kwargs)
 
 
-def _normalize_extension_to_glob(val: str | TGlob) -> TGlob:  # parity:
+def _normalize_extension_to_glob(val: TPath | Glob) -> Glob:
     """
-    Ensures `val` is returned as a `*.ext` pattern.
+    Ensures `val` is returned as a `Glob("*.ext")`.
     >>> _normalize_extension_to_glob("ext")
-    "*.ext"
+    Glob("*.ext")
     >>> _normalize_extension_to_glob(".ext")
-    "*.ext"
+    Glob("*.ext")
     >>> _normalize_extension_to_glob("*.ext")
-    "*.ext"
+    Glob("*.ext")
     >>> _normalize_extension_to_glob("like/this.ext")
-    ValueError: Extension cannot contain path separator 'like/this.ext'
+    ValueError: Extension cannot be empty or contain path separator 'like/this.ext'
+    >>> _normalize_extension_to_glob("")
+    ValueError: Extension cannot be empty or contain path separator ''
     """
     val = val.strip()
-    if os.path.sep in val:
-        raise ValueError(f"Extension cannot contain path separator {val!r}")
+    if not val or os.path.sep in val:
+        raise ValueError(f"Extension cannot be empty or contain path separator {val!r}")
     if val.startswith("*."):
-        return TGlob(val)
+        return Glob(val)
     if val.startswith("."):
-        return TGlob(f"*{val}")
-    return TGlob(f"*.{val}")
+        return Glob(f"*{val}")
+    return Glob(f"*.{val}")
 
 
 def parse_common_args(argv: list[str] | None = None) -> Context:

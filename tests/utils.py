@@ -1,8 +1,11 @@
 from pathlib import Path
 
 
-def write_file(path: Path, content: str) -> None:
+def write_file(path: Path, content: str | None) -> None:
     path = Path(path)
+    if content is None:
+        path.mkdir(parents=True, exist_ok=True)
+        return
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
 
