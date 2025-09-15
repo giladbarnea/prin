@@ -20,20 +20,19 @@ class FileSystemSource(SourceAdapter):
         return _to_posix((self._cwd / root_spec).resolve())
 
     def list_dir(self, dir_path: PurePosixPath) -> Iterable[Entry]:
-        p = Path(str(dir_path))
         entries: list[Entry] = []
-        with os.scandir(p) as it:
-            for e in it:
-                if e.is_dir(follow_symlinks=False):
+        with os.scandir(Path(str(dir_path))) as dir_iterator:
+            for entry in dir_iterator:
+                if entry.is_dir(follow_symlinks=False):
                     kind = NodeKind.DIRECTORY
-                elif e.is_file(follow_symlinks=False):
+                elif entry.is_file(follow_symlinks=False):
                     kind = NodeKind.FILE
                 else:
                     kind = NodeKind.OTHER
                 entries.append(
                     Entry(
-                        path=_to_posix(Path(e.path)),
-                        name=e.name,
+                        path=_to_posix(Path(entry.path)),
+                        name=entry.name,
                         kind=kind,
                     )
                 )

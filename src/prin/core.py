@@ -158,6 +158,13 @@ class FileBudget:
 
 
 class DepthFirstPrinter:
+    source: SourceAdapter
+    formatter: Formatter
+    exclusions: list
+    extensions: list
+    include_empty: bool
+    only_headers: bool
+
     def __init__(
         self,
         source: SourceAdapter,

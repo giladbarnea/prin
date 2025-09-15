@@ -24,12 +24,12 @@ def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None
     # Treat empty-string tokens as no-ops for local paths to avoid unintended CWD traversal
     local_paths: list[str] = []
     repo_urls: list[str] = []
-    for tok in ctx.paths:
-        if util.is_github_url(tok):
-            repo_urls.append(tok)
+    for path in ctx.paths:
+        if util.is_github_url(path):
+            repo_urls.append(path)
         else:
-            if tok != "":
-                local_paths.append(tok)
+            if path != "":
+                local_paths.append(path)
 
     # Global print budget shared across sources
     budget = FileBudget(ctx.max_files)
