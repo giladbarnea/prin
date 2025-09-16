@@ -1,4 +1,4 @@
-set -uo pipefail
+set -o pipefail
 source .common.sh
 
 function main(){

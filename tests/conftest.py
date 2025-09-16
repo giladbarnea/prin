@@ -147,7 +147,7 @@ def fs_root() -> VFS:
         secret_files,
         lock_files,
     ]
-    all_keys = [key for d in all_dicts for key,value in d.items() if value]
+    all_keys = [key for d in all_dicts for key, value in d.items() if value]
     assert sorted(all_keys) == sorted(list(set(all_keys))), "Not all keys are unique"
 
     # Ensure all values (file contents) are unique across all dictionaries

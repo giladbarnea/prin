@@ -5,9 +5,8 @@ import re
 import sys
 from dataclasses import dataclass
 from enum import Enum, auto
-from pathlib import Path as _FsPath
 from pathlib import PurePosixPath
-from typing import TYPE_CHECKING, Iterable, Protocol
+from typing import TYPE_CHECKING, Iterable, Protocol, Self
 
 from prin import filters
 from prin.formatters import Formatter, HeaderFormatter
@@ -35,10 +34,18 @@ class Writer(Protocol):
 
 
 class SourceAdapter(Protocol):
-    def resolve_root(self, root_spec: str) -> PurePosixPath: ...
-    def list_dir(self, dir_path: PurePosixPath) -> Iterable[Entry]: ...
-    def read_file_bytes(self, file_path: PurePosixPath) -> bytes: ...
-    def is_empty(self, file_path: PurePosixPath) -> bool: ...
+    """
+    Filesystem-style adapter for various sources.
+    Maintains a single root path that filesystem operations are relative to.
+    """
+
+    root: PurePosixPath
+
+    def resolve_pattern(self: Self, path) -> PurePosixPath: ...
+    def list_dir(self: Self, dir_path) -> Iterable[Entry]: ...
+    def read_file_bytes(self: Self, file_path) -> bytes: ...
+    def is_empty(self: Self, file_path) -> bool: ...
+    def subpath_exists(self: Self, path) -> bool: ...
 
 
 def _is_text_semantically_empty(text: str) -> bool:
@@ -191,24 +198,17 @@ class DepthFirstPrinter:
         self.include_empty = ctx.include_empty
         self.only_headers = ctx.only_headers
 
-    def run(self, roots: list[str], writer: Writer, budget: "FileBudget | None" = None) -> None:
-        roots = roots or ["."]
-        # Anchor base corresponds to the execution root (e.g., cwd for filesystem)
-        try:
-            anchor_base = self.source.resolve_root(".")
-        except Exception:
-            anchor_base = None  # Fallback: no anchor; each root is its own base
-
-        for root_spec in roots:
+    def run(self, patterns: list, writer: Writer, budget: "FileBudget | None" = None) -> None:
+        for pattern in patterns:
             if budget is not None and budget.spent():
                 return
-            root = self.source.resolve_root(root_spec)
+            root = self.source.resolve_pattern(pattern)
 
             # Experimental: if the resolved root does not exist on the filesystem,
             # treat the token as a search pattern and match files by name using re.search
-            # when the token is classified as regex or text. This is used by tests/test_matching.py.
+            # when the token is classified as regex. This is used by tests/test_matching.py.
             try:
-                if anchor_base is not None and not _FsPath(str(root)).exists():
+                if anchor_base is not None and not self.source.subpath_exists(root):
                     self._search_and_print(anchor_base, root_spec, writer, budget)
                     continue
             except Exception:
@@ -240,8 +240,19 @@ class DepthFirstPrinter:
                     # Skip missing paths. Smell: will cover-up a bug in list_dir.
                     continue
                 # Sort directories then files, both case-insensitive
-                dirs = [e for e in entries if e.kind is NodeKind.DIRECTORY]
-                files = [e for e in entries if e.kind is NodeKind.FILE]
+                dirs, files = [], []
+                for e in entries:
+                    match e.kind:
+                        case NodeKind.DIRECTORY:
+                            dirs.append(e)
+                        case NodeKind.FILE:
+                            files.append(e)
+                        case _:
+                            import logging
+
+                            logging.getLogger(__name__).warning(
+                                "[WARNING] Unexpected node kind: %r", e.kind
+                            )
                 dirs.sort(key=lambda e: e.name.casefold())
                 files.sort(key=lambda e: e.name.casefold())
 
@@ -265,7 +276,6 @@ class DepthFirstPrinter:
             rel = self._display_path(entry.path, base)
         except Exception:
             rel = str(entry.path)
-        rel = rel.replace("\\", "/")
         kind = classify_pattern(token)
         if kind == "glob":
             from fnmatch import fnmatch
@@ -298,15 +308,29 @@ class DepthFirstPrinter:
             except NotADirectoryError:
                 # Treat current as a file
                 file_entry = Entry(path=current, name=current.name, kind=NodeKind.FILE)
-                if not self._excluded(file_entry) and self._extension_match(file_entry):
-                    if self._pattern_matches(file_entry, token, base=base):
-                        self._handle_file(file_entry, writer, base=base, budget=budget)
+                if (
+                    not self._excluded(file_entry)
+                    and self._extension_match(file_entry)
+                    and self._pattern_matches(file_entry, token, base=base)
+                ):
+                    self._handle_file(file_entry, writer, base=base, budget=budget)
                 continue
             except FileNotFoundError:
                 continue
 
-            dirs = [e for e in entries if e.kind is NodeKind.DIRECTORY]
-            files = [e for e in entries if e.kind is NodeKind.FILE]
+            dirs, files = [], []
+            for e in entries:
+                match e.kind:
+                    case NodeKind.DIRECTORY:
+                        dirs.append(e)
+                    case NodeKind.FILE:
+                        files.append(e)
+                    case _:
+                        import logging
+
+                        logging.getLogger(__name__).warning(
+                            "[WARNING] Unexpected node kind: %r", e.kind
+                        )
             dirs.sort(key=lambda e: e.name.casefold())
             files.sort(key=lambda e: e.name.casefold())
 
@@ -375,7 +399,5 @@ class DepthFirstPrinter:
             rel = os.path.relpath(str(path), start=str(base))
             if rel == "." or rel == "":
                 return path.name
-            # Make sure we use POSIX separators in output
-            return rel.replace("\\", "/")
         except Exception:
             return str(path)

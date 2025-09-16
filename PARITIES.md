@@ -134,12 +134,12 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 ## Set 6 [SOURCE-ADAPTER-INTERFACE]: Protocol and uniform adapter semantics
 
 #### Members
-- Protocol: `src/prin/core.py`: `SourceAdapter` with `resolve_root`, `list_dir`, `read_file_bytes`, `is_empty` (and `Entry`/`NodeKind` shapes).
+- Protocol: `src/prin/core.py`: `SourceAdapter` with `resolve_pattern`, `list_dir`, `read_file_bytes`, `is_empty` (and `Entry`/`NodeKind` shapes).
 - Implementations: `src/prin/adapters/filesystem.py`, `src/prin/adapters/github.py`, `src/prin/adapters/website.py`.
 
 #### Contract
 - All adapters implement the four methods with identical semantics expected by the engine:
-- `resolve_root` returns a stable POSIX-like root for display anchoring.
+- `resolve_pattern` returns a stable POSIX-like root for display anchoring.
 - `list_dir` raises `NotADirectoryError` when the input is a file (so explicit roots are force-included).
 - `read_file_bytes` returns raw bytes.
 - `is_empty` uses shared semantic emptiness (see Set 7); Website may defer emptiness until after fetch but must honor the shared definition.

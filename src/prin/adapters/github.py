@@ -256,7 +256,7 @@ class GitHubRepoSource(SourceAdapter):
         r = _get(self._session, f"{API_BASE}/repos/{owner}/{repo}")
         return r.json()["default_branch"]
 
-    def resolve_root(self, root_spec: str) -> PurePosixPath:
+    def resolve_pattern(self, root_spec: str) -> PurePosixPath:
         # We treat the repo root as empty path
         return PurePosixPath(root_spec or "")
 

@@ -128,7 +128,7 @@ class _Ctx:
 class WebsiteSource(SourceAdapter):
     """
     Website adapter that expects an llms.txt file under the provided base URL.
-    - resolve_root: takes a base website URL (e.g., https://example.com/docs)
+    - resolve_pattern: takes a base website URL (e.g., https://example.com/docs)
     - list_dir: returns entries corresponding to URLs listed in llms.txt as FILE nodes
     - read_file_bytes: downloads the content at the URL
     - is_empty: always False (emptiness determined later after download)
@@ -176,7 +176,7 @@ class WebsiteSource(SourceAdapter):
         self._ctx = _Ctx(base_url=base, urls=resolved, key_to_url=key_to_url)
         return self._ctx
 
-    def resolve_root(self, root_spec: str) -> PurePosixPath:
+    def resolve_pattern(self, root_spec: str) -> PurePosixPath:
         # Treat the list as a virtual directory root
         self._ensure_ctx()
         return PurePosixPath()

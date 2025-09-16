@@ -20,7 +20,6 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
-    "pudb>=2025.1",
     "pytest>=8.4.1",
     "coverage>=7.6.10",
     "ruff>=0.12.11",
@@ -28,6 +27,8 @@ dev = [
     "ipython>=9.5.0",
     "pytest-clarity>=1.0.1",
     "pytest-sugar>=1.1.1",
+    "pudb>=2025.1",
+    "wrapt>=1.17.3",
     "pytest-pudb>=0.7.0",
 ]
 
