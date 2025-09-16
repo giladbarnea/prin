@@ -29,7 +29,6 @@ dev = [
     "pytest-sugar>=1.1.1",
     "pudb>=2025.1",
     "wrapt>=1.17.3",
-    "pytest-pudb>=0.7.0",
 ]
 
 [tool.ruff]
