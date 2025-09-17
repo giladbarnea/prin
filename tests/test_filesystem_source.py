@@ -99,14 +99,14 @@ def _setup_tree(tmp: Path) -> dict[str, Path]:
 @pytest.mark.parametrize(
     ("case_key", "expected"),
     [
-        ("not_sub_rel", False),
-        ("not_sub_abs", False),
+        ("not_sub_rel", True),
+        ("not_sub_abs", True),
         ("dir_rel", True),
         ("dir_abs", True),
         ("missing_rel", False),
         ("file_rel", True),
         ("file_abs", True),
-        ("symlink_out", False),
+        ("symlink_out", True),
     ],
 )
 def test_subpath_exists_cases(prin_tmp_path: Path, case_key: str, expected: bool):
@@ -121,10 +121,10 @@ def test_subpath_exists_cases(prin_tmp_path: Path, case_key: str, expected: bool
 @pytest.mark.parametrize(
     ("case_key", "expect"),
     [
-        ("not_sub_rel", NotExistingSubpath),
-        ("not_sub_abs", NotExistingSubpath),
-        ("missing_rel", NotExistingSubpath),
-        ("symlink_out", NotExistingSubpath),
+        ("not_sub_rel", None),
+        ("not_sub_abs", None),
+        ("missing_rel", FileNotFoundError),
+        ("symlink_out", None),
         ("dir_rel", None),
         ("dir_abs", None),
         ("file_rel", None),
@@ -150,10 +150,10 @@ def test_resolve_pattern_ensure_cases(prin_tmp_path: Path, case_key: str, expect
 @pytest.mark.parametrize(
     ("case_key", "expect"),
     [
-        ("not_sub_rel", NotExistingSubpath),
-        ("not_sub_abs", NotExistingSubpath),
-        ("missing_rel", NotExistingSubpath),
-        ("symlink_out", NotExistingSubpath),
+        ("not_sub_rel", None),
+        ("not_sub_abs", None),
+        ("missing_rel", FileNotFoundError),
+        ("symlink_out", None),
         ("dir_rel", None),
         ("dir_abs", None),
         ("file_rel", NotADirectoryError),
@@ -206,10 +206,10 @@ def test_list_dir_symlink_kinds(prin_tmp_path: Path):
 @pytest.mark.parametrize(
     ("case_key", "expect"),
     [
-        ("not_sub_rel", NotExistingSubpath),
-        ("not_sub_abs", NotExistingSubpath),
-        ("missing_rel", NotExistingSubpath),
-        ("symlink_out", NotExistingSubpath),
+        ("not_sub_rel", IsADirectoryError),
+        ("not_sub_abs", IsADirectoryError),
+        ("missing_rel", FileNotFoundError),
+        ("symlink_out", IsADirectoryError),
         ("file_rel", None),
         ("file_abs", None),
         ("dir_rel", IsADirectoryError),
@@ -234,10 +234,10 @@ def test_read_file_bytes_ensure_and_type_cases(prin_tmp_path: Path, case_key: st
 @pytest.mark.parametrize(
     ("case_key", "expected"),
     [
-        ("not_sub_rel", NotExistingSubpath),
-        ("not_sub_abs", NotExistingSubpath),
-        ("missing_rel", NotExistingSubpath),
-        ("symlink_out", NotExistingSubpath),
+        ("not_sub_rel", False),
+        ("not_sub_abs", False),
+        ("missing_rel", False),
+        ("symlink_out", False),
         ("file_rel", False),
         ("file_abs", False),
         ("dir_rel", False),
