@@ -1,0 +1,57 @@
+Candidates: 54
+- cursor/update-to-do-list-instructions-in-markdown-43fd — PR #65: Update to-do list instructions in markdown — merged at 2025-09-15T11:58:11+00:00
+- cursor/check-test-collection-script-for-errors-f404 — PR #64: Check test collection script for errors — merged at 2025-09-14T16:56:45+00:00
+- cursor/remove-unused-classifier-file-a5e2 — PR #61: Remove unused classifier file — merged at 2025-09-13T13:23:31+00:00
+- cursor/update-config-and-docs-with-new-flags-d534 — PR #59: Update config and docs with new flags — merged at 2025-09-13T11:23:45+00:00
+- cursor/adjust-parities-check-logging-levels-011a — PR #60: Adjust parities-check logging levels — merged at 2025-09-13T11:15:47+00:00
+- cursor/categorize-github-url-formats-for-testing-21c3 — PR #58: Categorize github url formats for testing — merged at 2025-09-13T08:51:39+00:00
+- cursor/add-commit-specific-github-repo-support-ea2a — PR #57: Add commit-specific GitHub repo support — merged at 2025-09-13T08:21:16+00:00
+- cursor/check-for-github-repo-filesystem-test-equivalent-9a10 — PR #56: Check for github repo filesystem test equivalent — merged at 2025-09-12T20:47:29+00:00
+- cursor/analyze-parities-concept-in-markdown-files-b624 — PR #55: Analyze parities concept in markdown files — merged at 2025-09-12T18:22:27+00:00
+- cursor/update-markdown-cross-references-to-section-links-7d99 — PR #54: Update markdown cross-references to section links — merged at 2025-09-12T14:18:35+00:00
+- cursor/fix-build-workflow-syntax-error-e9d9 — PR #53: Fix build workflow syntax error — merged at 2025-09-12T13:04:44+00:00
+- cursor/merge-fix-parities — PR #52: Fix parities check bugs — merged at 2025-09-12T12:55:27+00:00
+- cursor/update-agents-md-with-parities-md-guidance-380b — PR #49: Update AGENTS.md with PARITIES.md guidance — closed at 2025-09-12T12:19:16+00:00
+- cursor/update-agents-md-with-parities-md-maintenance-instructions-6cf9 — PR #48: Update AGENTS.md with PARITIES.md maintenance instructions — closed at 2025-09-12T12:19:07+00:00
+- cursor/check-for-blocking-github-workflows-fd8f — PR #51: Check for blocking github workflows — merged at 2025-09-12T12:11:20+00:00
+- cursor/add-custom-cli-flags-for-tests-862a — PR #47: Add custom cli flags for tests — merged at 2025-09-11T14:45:38+00:00
+- cursor/improve-parities-check-script-robustness-29ec — PR #45: Improve parities check script robustness — merged at 2025-09-11T13:13:06+00:00
+- cursor/update-documentation-for-dependency-management-e983 — PR #46: Update documentation for dependency management — merged at 2025-09-11T04:54:06+00:00
+- codex/expand-variable-names-in-parities-check.py — PR #43: Expand variable names in parities check script — merged at 2025-09-10T20:05:55+00:00
+- giladbarnea-patch-1 — PR #42: Update PARITIES.md — merged at 2025-09-10T14:07:30+00:00
+- codex/fix-formatting-in-parities.md — PR #41: docs: structure PARITIES section — merged at 2025-09-10T12:13:54+00:00
+- cursor/check-and-add-missing-github-repo-tests-ecbd — PR #40: Check and add missing github repo tests — merged at 2025-09-10T10:58:38+00:00
+- cursor/debug-external-directory-exclusion-in-tests-808f — PR #39: Debug external directory exclusion in tests — merged at 2025-09-09T20:26:38+00:00
+- cursor/implement-pytest-coverage-with-readme-badge-9d24 — PR #38: Implement pytest coverage with README badge — merged at 2025-09-09T16:07:54+00:00
+- cursor/implement-website-adapter-cache-like-github-e11d — PR #35: Implement website adapter cache like github — merged at 2025-09-09T05:10:00+00:00
+- cursor/setup-code-coverage-and-add-badge-1c1b — PR #34: Setup code coverage and add badge — merged at 2025-09-08T22:14:25+00:00
+- cursor/add-basic-github-ci-for-test-sh-1ace — PR #33: Add basic github ci for test.sh — merged at 2025-09-08T21:43:30+00:00
+- cursor/update-readme-roadmap-for-cli-and-core-1bdb — PR #31: Update readme roadmap for cli and core — merged at 2025-09-08T20:22:08+00:00
+- cursor/fix-repo-only-headers-test-output-ff1d — PR #30: Fix repo only-headers test output — merged at 2025-09-08T20:13:39+00:00
+- cursor/register-and-use-network-pytest-marker-6714 — PR #29: Register and use network pytest marker — merged at 2025-09-08T17:29:52+00:00
+- cursor/refine-default-constant-categories-8369 — PR #26: Refine default constant categories — closed at 2025-09-08T13:53:26+00:00
+- cursor/fetch-and-process-website-urls-8023 — PR #25: Fetch and process website urls — merged at 2025-09-08T07:41:26+00:00
+- cursor/refactor-path-classifier-and-types-modules-3c22 — PR #24: Refactor path classifier and types modules — merged at 2025-09-08T05:49:05+00:00
+- cursor/alias-argument-expansion-for-cli-ba90 — PR #23: Alias argument expansion for cli — merged at 2025-09-07T22:11:06+00:00
+- cursor/implement-hidden-option-and-fix-test-coverage-a58c — PR #22: Implement hidden option and fix test coverage — merged at 2025-09-07T21:44:06+00:00
+- cursor/unskip-test-for-repo-with-cargo-lock-e1ef — PR #21: Unskip test for repo with Cargo.lock — merged at 2025-09-07T21:10:53+00:00
+- cursor/ignore-comments-in-python-file-empty-check-0685 — PR #20: Ignore comments in python file empty check — merged at 2025-09-07T21:05:11+00:00
+- cursor/create-session-scoped-mock-file-system-fixture-3736 — PR #6: Create session-scoped mock file system fixture — closed at 2025-09-07T20:29:15+00:00
+- cursor/handle-extensionless-files-and-fix-markdown-7155 — PR #8: Handle extensionless files and fix markdown — closed at 2025-09-07T20:28:41+00:00
+- cursor/fix-file-system-inclusion-and-extension-bugs-8fc0 — PR #14: Fix file system inclusion and extension bugs — closed at 2025-09-07T20:28:32+00:00
+- cursor/implement-repo-tests-from-markdown-instructions-fa82 — PR #19: Implement repo tests from markdown instructions — closed at 2025-09-07T20:28:21+00:00
+- cursor/find-implemented-todo-filesystem-tests-e313 — PR #18: Find implemented TODO filesystem tests — merged at 2025-09-07T18:04:05+00:00
+- cursor/improve-test-assertions-for-file-output-ff9c — PR #17: Improve test assertions for file output — merged at 2025-09-07T17:53:42+00:00
+- cursor/enhance-fake-file-system-fixture-for-tests-c5aa — PR #16: Enhance fake file system fixture for tests — merged at 2025-09-07T12:37:16+00:00
+- cursor/add-test-for-no-options-specified-836b — PR #15: Add test for no options specified — merged at 2025-09-07T08:35:11+00:00
+- cursor/implement-fake-filesystem-tests-for-cli-options-c897 — PR #13: Implement fake filesystem tests for CLI options — merged at 2025-09-06T22:16:08+00:00
+- cursor/check-function-usage-in-print-files-5b1d — PR #12: Check function usage in print files — merged at 2025-09-06T20:31:55+00:00
+- cursor/cache-github-adapter-get-method-46c0 — PR #11: Cache github adapter _get method — merged at 2025-09-06T20:21:29+00:00
+- cursor/analyze-tests-for-conftest-py-creation-4426 — PR #10: Analyze tests for conftest.py creation — merged at 2025-09-06T19:24:55+00:00
+- cursor/adjust-default-search-behavior-and-report-failures-1383 — PR #9: Adjust default search behavior and report failures — merged at 2025-09-06T12:37:37+00:00
+- cursor/add-max-files-option-to-prin-9bc0 — PR #7: Add max files option to prin — merged at 2025-09-06T09:59:58+00:00
+- cursor/unskip-and-fix-failing-test-378a — PR #5: Unskip and fix failing test — merged at 2025-09-02T15:13:07+00:00
+- cursor/update-roadmap-with-feature-status-0ef8 — PR #4: Update roadmap with feature status — merged at 2025-08-31T11:36:21+00:00
+- cursor/compare-cli-options-to-roadmap-b4a0 — PR #3: Compare CLI options to roadmap — merged at 2025-08-31T11:16:30+00:00
+
+DRY-RUN: No branches were deleted. Re-run with --execute to delete the above branches.
