@@ -1,5 +1,0 @@
-/workspace/scripts/cleanup_closed_pr_branches.py:298: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
-  cutoff = datetime.utcnow() - timedelta(days=args.days)
-Stale branches (>= 10 behind and >= 7 days since last commit, no open PR): 2
-- feat/defaults-globs-updates — 1 ahead, 161 behind — last commit 2025-09-08T13:45:53+00:00
-- fix/relative-paths-outside-root — 0 ahead, 136 behind — last commit 2025-09-08T19:58:20+00:00
