@@ -341,11 +341,11 @@ def main() -> int:
         return 10
 
     # Standard behavior: list/delete PR-closed branches; optionally include stale branches
-    auth_key = headers.get("Authorization", "")
+    auth_key = token or ""
     pr_candidates = find_candidate_branches(headers, owner, repo, default_branch, auth_key)
 
     def _branch_commit_times(name: str) -> Tuple[int, int, Optional[str], Optional[str]]:
-        ahead, behind = get_ahead_behind_cached(owner, repo, default_branch, name, headers.get("Authorization", ""))
+        ahead, behind = get_ahead_behind_cached(owner, repo, default_branch, name, auth_key)
         last_iso = get_branch_tip_commit_iso_datetime(headers, owner, repo, name)
         first_iso = last_iso
         try:
@@ -488,9 +488,9 @@ def main() -> int:
         branch = entry["branch"]
         if branch == default_branch:
             continue
-        if not branch_exists_cached(owner, repo, branch, headers.get("Authorization", "")):
+        if not branch_exists_cached(owner, repo, branch, auth_key):
             continue
-        if is_branch_protected_cached(owner, repo, branch, headers.get("Authorization", "")):
+        if is_branch_protected_cached(owner, repo, branch, auth_key):
             continue
         if entry.get("kind") == "without_pr" and entry.get("has_open_pr") and not args.delete_stale_with_open_prs:
             not_deleted_open_pr.append(branch)
