@@ -2,7 +2,7 @@ import argparse
 import os
 import re
 import subprocess
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Iterable, List, Optional, Tuple
 
 import requests
@@ -152,6 +152,37 @@ def get_open_pr_head_refs(headers: Dict[str, str], owner: str, repo: str) -> Dic
     return branch_to_prs
 
 
+def list_branches(headers: Dict[str, str], owner: str, repo: str) -> List[dict]:
+    url = f"{GITHUB_API}/repos/{owner}/{repo}/branches"
+    params = {"per_page": "100"}
+    return list(_get_with_pagination(url, headers, params))
+
+
+def get_branch_tip_commit_iso_datetime(headers: Dict[str, str], owner: str, repo: str, branch: str) -> Optional[str]:
+    # Use commits API to get the latest commit on the branch
+    url = f"{GITHUB_API}/repos/{owner}/{repo}/commits"
+    params = {"sha": branch, "per_page": "1"}
+    resp = requests.get(url, headers=headers, params=params, timeout=30)
+    if resp.status_code == 404:
+        return None
+    resp.raise_for_status()
+    data = resp.json()
+    if not isinstance(data, list) or not data:
+        return None
+    commit = data[0]
+    date_str = (((commit.get("commit") or {}).get("author") or {}).get("date"))
+    return _iso(date_str)
+
+
+def get_ahead_behind(headers: Dict[str, str], owner: str, repo: str, default_branch: str, branch: str) -> Tuple[int, int]:
+    # Compare base...head where base is default
+    url = f"{GITHUB_API}/repos/{owner}/{repo}/compare/{default_branch}...{branch}"
+    resp = requests.get(url, headers=headers, timeout=30)
+    resp.raise_for_status()
+    data = resp.json()
+    return int(data.get("ahead_by", 0)), int(data.get("behind_by", 0))
+
+
 def get_closed_prs_from_same_repo(headers: Dict[str, str], owner: str, repo: str) -> List[dict]:
     url = f"{GITHUB_API}/repos/{owner}/{repo}/pulls"
     params = {"state": "closed", "per_page": "100"}
@@ -246,6 +277,10 @@ def main() -> None:
     parser.add_argument("--owner", help="GitHub repo owner (optional; auto-detected if omitted)")
     parser.add_argument("--repo", help="GitHub repo name (optional; auto-detected if omitted)")
     parser.add_argument("--execute", action="store_true", help="Actually delete branches (otherwise dry-run)")
+    # Stale detection
+    parser.add_argument("--stale", action="store_true", help="List stale branches (no deletion)")
+    parser.add_argument("--behind", type=int, default=10, help="Minimum commits behind default to consider stale")
+    parser.add_argument("--days", type=int, default=7, help="Minimum days since last commit to consider stale")
     args = parser.parse_args()
 
     token = _get_token_with_fallback()
@@ -254,6 +289,51 @@ def main() -> None:
 
     owner, repo = discover_repo_owner_and_name(args.owner, args.repo)
     headers = _api_headers(token)
+
+    # If user requested stale listing, do that and exit
+    if args.stale:
+        default_branch = get_default_branch(headers, owner, repo)
+        open_refs = get_open_pr_head_refs(headers, owner, repo)
+        branches = list_branches(headers, owner, repo)
+        cutoff = datetime.utcnow() - timedelta(days=args.days)
+
+        stale: List[Tuple[str, int, int, Optional[str]]] = []
+        for b in branches:
+            name = b.get("name")
+            if not name or name == default_branch:
+                continue
+            # Skip branches with open PRs
+            if name in open_refs:
+                continue
+            # Exclude protected branches from stale reporting? Keep them, but just report.
+            try:
+                ahead, behind = get_ahead_behind(headers, owner, repo, default_branch, name)
+            except requests.HTTPError as e:
+                # Retry unauthenticated on 401 if we had a token
+                if getattr(e, "response", None) is not None and e.response.status_code == 401 and token:
+                    ahead, behind = get_ahead_behind(_api_headers(None), owner, repo, default_branch, name)
+                else:
+                    raise
+            # Last commit on branch
+            tip_iso = get_branch_tip_commit_iso_datetime(headers, owner, repo, name)
+            tip_dt = None
+            if tip_iso:
+                try:
+                    tip_dt = datetime.fromisoformat(tip_iso.replace("Z", "+00:00")).astimezone(tz=None).replace(tzinfo=None)
+                except Exception:
+                    tip_dt = None
+            is_old_enough = tip_dt is None or tip_dt <= cutoff
+            if behind >= args.behind and is_old_enough:
+                stale.append((name, ahead, behind, tip_iso))
+
+        if not stale:
+            print("No stale branches found.")
+            return
+        print(f"Stale branches (>= {args.behind} behind and >= {args.days} days since last commit, no open PR): {len(stale)}")
+        for name, ahead, behind, tip_iso in sorted(stale, key=lambda x: (x[2], x[0]), reverse=True):
+            when = tip_iso or "unknown-date"
+            print(f"- {name} — {ahead} ahead, {behind} behind — last commit {when}")
+        return
 
     try:
         candidates = find_candidate_branches(headers, owner, repo)
