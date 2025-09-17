@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pytest
 
-from prin.adapters.errors import NotExistingSubpath
 from prin.adapters.filesystem import FileSystemSource
 from tests.utils import write_file
 

@@ -302,7 +302,6 @@ dev = [
     { name = "pudb" },
     { name = "pytest" },
     { name = "pytest-clarity" },
-    { name = "pytest-pudb" },
     { name = "pytest-sugar" },
     { name = "ruff" },
     { name = "symbex" },
@@ -319,7 +318,6 @@ dev = [
     { name = "pudb", specifier = ">=2025.1" },
     { name = "pytest", specifier = ">=8.4.1" },
     { name = "pytest-clarity", specifier = ">=1.0.1" },
-    { name = "pytest-pudb", specifier = ">=0.7.0" },
     { name = "pytest-sugar", specifier = ">=1.1.1" },
     { name = "ruff", specifier = ">=0.12.11" },
     { name = "symbex", specifier = ">=2.0" },
@@ -407,19 +405,6 @@ dependencies = [
     { name = "rich" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/52/5c/cafa97944de55738a6a2c5a7cee00d073cb80495032d2b112c4546525eca/pytest-clarity-1.0.1.tar.gz", hash = "sha256:505fe345fad4fe11c6a4187fe683f2c7c52c077caa1e135f3e483fe112db7772", size = 4891, upload-time = "2021-06-11T18:16:18.372Z" }
-
-[[package]]
-name = "pytest-pudb"
-version = "0.7.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pudb" },
-    { name = "pytest" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/e0/f8/c37b32117b089520673dba84eae159c182c343a6dd19114cf44ec2e6a53a/pytest-pudb-0.7.0.tar.gz", hash = "sha256:0ea87316d39c82163d340c28a168e08a163b8d3f484e60a53c9fd5eefe432c63", size = 4379, upload-time = "2018-10-25T15:26:41.107Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/14/b1/c7778f0833bec731a5e46947e4aefbb20c6996d4dfe58d649430e640147f/pytest_pudb-0.7.0-py2.py3-none-any.whl", hash = "sha256:21e96fc16f313a7bd75e1df1b151de8a721144318b0ae8350208d6554222005a", size = 4687, upload-time = "2018-10-25T15:26:39.818Z" },
-]
 
 [[package]]
 name = "pytest-sugar"
