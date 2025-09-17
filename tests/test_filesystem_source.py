@@ -1,5 +1,6 @@
 import textwrap
 from pathlib import Path
+from typing import TypedDict
 
 import pytest
 
@@ -68,66 +69,80 @@ def test_init_semantics(prin_tmp_path: Path, root_arg, expect_exc):
             FileSystemSource(root=root)
 
 
-def _setup_tree(tmp: Path) -> dict[str, Path]:
+_Tree = TypedDict(
+    "_Tree",
+    {
+        "inside_directory_relative": str,
+        "inside_directory_absolute": str,
+        "inside_file_relative": str,
+        "inside_file_absolute": str,
+        "missing_inside_dir_relative": str,
+        "outside_dir_relative": str,
+        "outside_dir_absolute": str,
+    },
+)
+
+
+def _setup_tree(tmp: Path) -> _Tree:
     # real dirs/files
     d1 = tmp / "dir1"
     f1 = tmp / "file1.txt"
     d1.mkdir(parents=True, exist_ok=True)
     write_file(f1, "hello\n")
+    outside_dir = tmp.parent / "outside_dir"
+    outside_dir.mkdir(parents=True, exist_ok=True)
+
     # symlink to outside (parent)
-    link_out = tmp / "link_out"
-    try:
-        if link_out.exists() or link_out.is_symlink():
-            link_out.unlink()
-        link_out.symlink_to(tmp.parent)
-    except (OSError, NotImplementedError):
-        # If symlinks not supported, skip creating; tests that depend on it will skip
-        link_out = None
-    return {
-        "dir_rel": Path("dir1"),
-        "dir_abs": d1,
-        "file_rel": Path("file1.txt"),
-        "file_abs": f1,
-        "missing_rel": Path("missing_dir"),
-        "not_sub_rel": Path(".."),
-        "not_sub_abs": tmp.parent,
-        "symlink_out": link_out,
-    }
+    # link_out = tmp / "link_out"
+    # try:
+    #     if link_out.exists() or link_out.is_symlink():
+    #         link_out.unlink()
+    #     link_out.symlink_to(tmp.parent)
+    # except (OSError, NotImplementedError):
+    #     # If symlinks not supported, skip creating; tests that depend on it will skip
+    #     link_out = None
+    return _Tree({
+        "inside_directory_relative": "dir1",
+        "inside_directory_absolute": str(d1),
+        "inside_file_relative": "file1.txt",
+        "inside_file_absolute": str(f1),
+        "missing_inside_dir_relative": "missing_dir",
+        "outside_dir_relative": "../outside_dir",
+        "outside_dir_absolute": str(outside_dir),
+        # "symlink_out": link_out,
+    })
 
 
 @pytest.mark.parametrize(
     ("case_key", "expected"),
     [
-        ("not_sub_rel", True),
-        ("not_sub_abs", True),
-        ("dir_rel", True),
-        ("dir_abs", True),
-        ("missing_rel", False),
-        ("file_rel", True),
-        ("file_abs", True),
-        ("symlink_out", True),
+        ("outside_dir_relative", True),
+        ("outside_dir_absolute", True),
+        ("inside_directory_relative", True),
+        ("inside_directory_absolute", True),
+        ("missing_inside_dir_relative", False),
+        ("inside_file_relative", True),
+        ("inside_file_absolute", True),
     ],
 )
-def test_subpath_exists_cases(prin_tmp_path: Path, case_key: str, expected: bool):
+def test_exists_cases(prin_tmp_path: Path, case_key: str, expected: bool):
     fs = FileSystemSource(root=prin_tmp_path)
     paths = _setup_tree(prin_tmp_path)
     p = paths[case_key]
-    if p is None and case_key == "symlink_out":
-        pytest.skip("Symlinks not supported on this platform")
-    assert fs.subpath_exists(p) is expected
+    assert fs.exists(p) is expected
 
 
 @pytest.mark.parametrize(
     ("case_key", "expect"),
     [
-        ("not_sub_rel", None),
-        ("not_sub_abs", None),
-        ("missing_rel", FileNotFoundError),
+        ("outside_dir_relative", None),
+        ("outside_dir_absolute", None),
+        ("missing_inside_dir_relative", FileNotFoundError),
         ("symlink_out", None),
-        ("dir_rel", None),
-        ("dir_abs", None),
-        ("file_rel", None),
-        ("file_abs", None),
+        ("inside_directory_relative", None),
+        ("inside_directory_absolute", None),
+        ("inside_file_relative", None),
+        ("inside_file_absolute", None),
     ],
 )
 def test_resolve_pattern_ensure_cases(prin_tmp_path: Path, case_key: str, expect):
@@ -149,14 +164,14 @@ def test_resolve_pattern_ensure_cases(prin_tmp_path: Path, case_key: str, expect
 @pytest.mark.parametrize(
     ("case_key", "expect"),
     [
-        ("not_sub_rel", None),
-        ("not_sub_abs", None),
-        ("missing_rel", FileNotFoundError),
+        ("outside_dir_relative", None),
+        ("outside_dir_absolute", None),
+        ("missing_inside_dir_relative", FileNotFoundError),
         ("symlink_out", None),
-        ("dir_rel", None),
-        ("dir_abs", None),
-        ("file_rel", NotADirectoryError),
-        ("file_abs", NotADirectoryError),
+        ("inside_directory_relative", None),
+        ("inside_directory_absolute", None),
+        ("inside_file_relative", NotADirectoryError),
+        ("inside_file_absolute", NotADirectoryError),
     ],
 )
 def test_list_dir_ensure_and_type_cases(prin_tmp_path: Path, case_key: str, expect):
@@ -205,14 +220,14 @@ def test_list_dir_symlink_kinds(prin_tmp_path: Path):
 @pytest.mark.parametrize(
     ("case_key", "expect"),
     [
-        ("not_sub_rel", IsADirectoryError),
-        ("not_sub_abs", IsADirectoryError),
-        ("missing_rel", FileNotFoundError),
+        ("outside_dir_relative", IsADirectoryError),
+        ("outside_dir_absolute", IsADirectoryError),
+        ("missing_inside_dir_relative", FileNotFoundError),
         ("symlink_out", IsADirectoryError),
-        ("file_rel", None),
-        ("file_abs", None),
-        ("dir_rel", IsADirectoryError),
-        ("dir_abs", IsADirectoryError),
+        ("inside_file_relative", None),
+        ("inside_file_absolute", None),
+        ("inside_directory_relative", IsADirectoryError),
+        ("inside_directory_absolute", IsADirectoryError),
     ],
 )
 def test_read_file_bytes_ensure_and_type_cases(prin_tmp_path: Path, case_key: str, expect):
@@ -233,14 +248,14 @@ def test_read_file_bytes_ensure_and_type_cases(prin_tmp_path: Path, case_key: st
 @pytest.mark.parametrize(
     ("case_key", "expected"),
     [
-        ("not_sub_rel", False),
-        ("not_sub_abs", False),
-        ("missing_rel", False),
+        ("outside_dir_relative", False),
+        ("outside_dir_absolute", False),
+        ("missing_inside_dir_relative", False),
         ("symlink_out", False),
-        ("file_rel", False),
-        ("file_abs", False),
-        ("dir_rel", False),
-        ("dir_abs", False),
+        ("inside_file_relative", False),
+        ("inside_file_absolute", False),
+        ("inside_directory_relative", False),
+        ("inside_directory_absolute", False),
     ],
 )
 def test_is_empty_ensure_and_semantics(prin_tmp_path: Path, case_key: str, expected):

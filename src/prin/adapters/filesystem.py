@@ -56,7 +56,7 @@ class FileSystemSource(SourceAdapter):
             # import pudb
 
             # pudb.set_trace()
-            if not self.subpath_exists(candidate):
+            if not self.exists(candidate):
                 raise errors.NotExistingSubpath(
                     f"{path!r} is not an existing subpath of {self.root!r}"
                 )
@@ -97,8 +97,8 @@ class FileSystemSource(SourceAdapter):
     def read_file_bytes(self, file_path) -> bytes:
         return file_path.read_bytes()
 
-    def subpath_exists(self, path) -> bool:
-        p = Path(path)
+    def exists(self, path) -> bool:
+        return Path(path).exists()
         try:
             # Subtle bug: resolve resolves symlinks, which is undesired
             target = (self.root / p).resolve(strict=True)

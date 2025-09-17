@@ -45,7 +45,7 @@ class SourceAdapter(Protocol):
     def list_dir(self: Self, dir_path) -> Iterable[Entry]: ...
     def read_file_bytes(self: Self, file_path) -> bytes: ...
     def is_empty(self: Self, file_path) -> bool: ...
-    def subpath_exists(self: Self, path) -> bool: ...
+    def exists(self: Self, path) -> bool: ...
 
 
 def _is_text_semantically_empty(text: str) -> bool:
@@ -208,7 +208,7 @@ class DepthFirstPrinter:
             # treat the token as a search pattern and match files by name using re.search
             # when the token is classified as regex. This is used by tests/test_matching.py.
             try:
-                if anchor_base is not None and not self.source.subpath_exists(root):
+                if anchor_base is not None and not self.source.exists(root):
                     self._search_and_print(anchor_base, root_spec, writer, budget)
                     continue
             except Exception:

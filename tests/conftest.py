@@ -224,7 +224,7 @@ def fs_root() -> VFS:
         shutil.rmtree(root, ignore_errors=True)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def prin_tmp_path():
     """Create a temporary directory with 'prin' prefix, avoiding test-related substrings."""
     import shutil
