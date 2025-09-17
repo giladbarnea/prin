@@ -3,7 +3,7 @@ import os
 import re
 import subprocess
 from datetime import datetime, timedelta
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple, Any
 
 import requests
 
@@ -281,6 +281,7 @@ def main() -> None:
     parser.add_argument("--stale", action="store_true", help="List stale branches (no deletion)")
     parser.add_argument("--behind", type=int, default=10, help="Minimum commits behind default to consider stale")
     parser.add_argument("--days", type=int, default=7, help="Minimum days since last commit to consider stale")
+    parser.add_argument("-s", "--with-stale", action="store_true", help="Include stale branches (>= --behind behind and >= --days days old) in deletion candidates, regardless of PR association")
     args = parser.parse_args()
 
     token = _get_token_with_fallback()
@@ -335,15 +336,187 @@ def main() -> None:
             print(f"- {name} — {ahead} ahead, {behind} behind — last commit {when}")
         return
 
+    # Standard behavior: list/delete PR-closed branches; optionally include stale branches
     try:
-        candidates = find_candidate_branches(headers, owner, repo)
+        pr_candidates = find_candidate_branches(headers, owner, repo)
     except requests.HTTPError as e:
         # If auth failed but we have a token (possibly expired/invalid), retry without auth for public repos
         if getattr(e, "response", None) is not None and e.response.status_code == 401 and token:
             headers = _api_headers(None)
-            candidates = find_candidate_branches(headers, owner, repo)
+            pr_candidates = find_candidate_branches(headers, owner, repo)
         else:
             raise
+
+    # Enrich PR candidates with ahead/behind and commit times
+    default_branch = get_default_branch(headers, owner, repo)
+
+    def _branch_commit_times(name: str) -> Tuple[int, int, Optional[str], Optional[str]]:
+        ahead, behind = get_ahead_behind(headers, owner, repo, default_branch, name)
+        last_iso = get_branch_tip_commit_iso_datetime(headers, owner, repo, name)
+        first_iso = last_iso
+        try:
+            if ahead > 0:
+                # Fetch compare commits to identify the first unique commit on branch
+                url = f"{GITHUB_API}/repos/{owner}/{repo}/compare/{default_branch}...{name}"
+                resp = requests.get(url, headers=headers, timeout=30)
+                resp.raise_for_status()
+                data = resp.json()
+                commits = data.get("commits") or []
+                if commits:
+                    c0 = commits[0]
+                    first_iso = _iso((((c0.get("commit") or {}).get("author") or {}).get("date")))
+        except requests.HTTPError as e:
+            if getattr(e, "response", None) is not None and e.response.status_code == 401 and token:
+                # retry unauthenticated
+                ah = _api_headers(None)
+                ahead, behind = get_ahead_behind(ah, owner, repo, default_branch, name)
+                last_iso = get_branch_tip_commit_iso_datetime(ah, owner, repo, name)
+        return ahead, behind, first_iso, last_iso
+
+    # Prepare PR list entries (B+PR)
+    pr_by_branch: Dict[str, Tuple[dict, str]] = {}
+    for branch, pr, when in pr_candidates:
+        pr_by_branch[branch] = (pr, when)
+
+    # Optional stale scan to include branches regardless of PR association
+    stale_by_branch: Dict[str, Dict[str, Any]] = {}
+    if args.with_stale:
+        cutoff = datetime.utcnow() - timedelta(days=args.days)
+        branches = list_branches(headers, owner, repo)
+        for b in branches:
+            name = b.get("name")
+            if not name or name == default_branch:
+                continue
+            # Skip default and non-existent handled above; keep protected branches in listing but they'll be filtered on delete
+            ahead, behind, first_iso, last_iso = _branch_commit_times(name)
+            # Parse last commit iso to datetime for staleness
+            last_dt = None
+            if last_iso:
+                try:
+                    last_dt = datetime.fromisoformat(last_iso.replace("Z", "+00:00")).astimezone(tz=None).replace(tzinfo=None)
+                except Exception:
+                    last_dt = None
+            is_old_enough = last_dt is None or last_dt <= cutoff
+            if behind >= args.behind and is_old_enough:
+                stale_by_branch[name] = {
+                    "ahead": ahead,
+                    "behind": behind,
+                    "first_iso": first_iso,
+                    "last_iso": last_iso,
+                }
+
+    # Merge and de-duplicate (prefer PR info for branches that appear in both)
+    merged_entries: List[Dict[str, Any]] = []
+    seen: set[str] = set()
+
+    # Add PR-based entries first
+    for branch, (pr, when) in pr_by_branch.items():
+        ahead, behind, first_iso, last_iso = _branch_commit_times(branch)
+        merged_entries.append({
+            "branch": branch,
+            "kind": "with_pr",
+            "pr": pr,
+            "recent_iso": when,
+            "ahead": ahead,
+            "behind": behind,
+            "first_iso": first_iso,
+            "last_iso": last_iso,
+        })
+        seen.add(branch)
+
+    # Add stale-only branches that weren't in PR list
+    if args.with_stale:
+        for branch, info in stale_by_branch.items():
+            if branch in seen:
+                continue
+            merged_entries.append({
+                "branch": branch,
+                "kind": "without_pr",
+                "recent_iso": info.get("last_iso") or "",
+                "ahead": info.get("ahead", 0),
+                "behind": info.get("behind", 0),
+                "first_iso": info.get("first_iso"),
+                "last_iso": info.get("last_iso"),
+            })
+            seen.add(branch)
+
+    # If not executing, present the list; else proceed to delete
+    if not args.execute:
+        if not merged_entries:
+            if args.with_stale:
+                print("No branches eligible for deletion were found (including stale criteria).")
+            else:
+                print("No branches eligible for deletion were found.")
+            return
+
+        # Sort by recent first: PR merged/closed time for with_pr; last commit for without_pr
+        def _recent_key(entry: Dict[str, Any]) -> str:
+            iso = entry.get("recent_iso") or ""
+            return iso
+
+        merged_entries.sort(key=_recent_key, reverse=True)
+
+        # Numbered plaintext list with requested formats
+        print(f"Candidates: {len(merged_entries)}")
+        for idx, entry in enumerate(merged_entries, start=1):
+            branch = entry["branch"]
+            ahead = entry.get("ahead", 0)
+            behind = entry.get("behind", 0)
+            first_iso = entry.get("first_iso") or ""
+            last_iso = entry.get("last_iso") or ""
+            def fmt(dt: str, with_seconds: bool = False) -> str:
+                if not dt:
+                    return "unknown"
+                try:
+                    d = datetime.fromisoformat(dt.replace("Z", "+00:00"))
+                    if with_seconds:
+                        return d.strftime("%Y-%m-%d %H:%M:%S")
+                    return d.strftime("%Y-%m-%d %H:%M")
+                except Exception:
+                    return dt
+
+            if entry["kind"] == "without_pr":
+                print(f"{idx}. {branch} — {ahead} ahead, {behind} behind — first commit {fmt(first_iso)} — last commit {fmt(last_iso)}")
+            else:
+                pr = entry["pr"]
+                number = pr.get("number")
+                title = pr.get("title")
+                merged_at = _iso(pr.get("merged_at"))
+                closed_at = _iso(pr.get("closed_at"))
+                when = merged_at or closed_at or entry.get("recent_iso") or ""
+                print(f"{idx}. {branch} — PR #{number}: {title!s} — first commit {fmt(first_iso)} — last commit {fmt(last_iso)}")
+                print(f"— merged at {fmt(when, with_seconds=True)}")
+
+        print("\nDRY-RUN: No branches were deleted. Re-run with --execute to delete the above branches.")
+        return
+
+    # Execute deletion path
+    # Build final deletion set from merged entries, re-check safety filters
+    deletion_order = merged_entries
+    # If no stale requested, deletion_order is PR-based only
+    branches_to_delete: List[str] = []
+    for entry in deletion_order:
+        branch = entry["branch"]
+        if branch == default_branch:
+            continue
+        if not branch_exists(headers, owner, repo, branch):
+            continue
+        if is_branch_protected(headers, owner, repo, branch):
+            continue
+        branches_to_delete.append(branch)
+
+    if not branches_to_delete:
+        print("No branches passed deletion safety checks. Nothing to delete.")
+        return
+
+    print("\nDeleting branches...")
+    for branch in branches_to_delete:
+        try:
+            delete_branch(headers, owner, repo, branch)
+            print(f"Deleted: {branch}")
+        except requests.HTTPError as e:
+            print(f"Failed to delete {branch}: {e}")
+    return
 
     if not candidates:
         print("No branches eligible for deletion were found.")
