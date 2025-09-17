@@ -4,6 +4,7 @@ import re
 import subprocess
 from datetime import datetime, timedelta
 from typing import Dict, Iterable, List, Optional, Tuple, Any
+import sys
 
 import requests
 
@@ -329,12 +330,12 @@ def main() -> None:
 
         if not stale:
             print("No stale branches found.")
-            return
+            sys.exit(0)
         print(f"Stale branches (>= {args.behind} behind and >= {args.days} days since last commit, no open PR): {len(stale)}")
         for name, ahead, behind, tip_iso in sorted(stale, key=lambda x: (x[2], x[0]), reverse=True):
             when = tip_iso or "unknown-date"
             print(f"- {name} — {ahead} ahead, {behind} behind — last commit {when}")
-        return
+        sys.exit(10)
 
     # Standard behavior: list/delete PR-closed branches; optionally include stale branches
     try:
@@ -447,7 +448,7 @@ def main() -> None:
                 print("No branches eligible for deletion were found (including stale criteria).")
             else:
                 print("No branches eligible for deletion were found.")
-            return
+            sys.exit(0)
 
         # Sort by recent first: PR merged/closed time for with_pr; last commit for without_pr
         def _recent_key(entry: Dict[str, Any]) -> str:
@@ -488,7 +489,7 @@ def main() -> None:
                 print(f"— merged at {fmt(when, with_seconds=True)}")
 
         print("\nDRY-RUN: No branches were deleted. Re-run with --execute to delete the above branches.")
-        return
+        sys.exit(10)
 
     # Execute deletion path
     # Build final deletion set from merged entries, re-check safety filters
@@ -507,7 +508,7 @@ def main() -> None:
 
     if not branches_to_delete:
         print("No branches passed deletion safety checks. Nothing to delete.")
-        return
+        sys.exit(0)
 
     print("\nDeleting branches...")
     for branch in branches_to_delete:
@@ -516,33 +517,7 @@ def main() -> None:
             print(f"Deleted: {branch}")
         except requests.HTTPError as e:
             print(f"Failed to delete {branch}: {e}")
-    return
-
-    if not candidates:
-        print("No branches eligible for deletion were found.")
-        return
-
-    print(f"Candidates: {len(candidates)}")
-    for branch, pr, when in candidates:
-        number = pr.get("number")
-        title = pr.get("title")
-        merged_at = _iso(pr.get("merged_at"))
-        closed_at = _iso(pr.get("closed_at"))
-        status = "merged" if merged_at else "closed"
-        ts = merged_at or closed_at or when or ""
-        print(f"- {branch} — PR #{number}: {title!s} — {status} at {ts}")
-
-    if not args.execute:
-        print("\nDRY-RUN: No branches were deleted. Re-run with --execute to delete the above branches.")
-        return
-
-    print("\nDeleting branches...")
-    for branch, pr, _ in candidates:
-        try:
-            delete_branch(headers, owner, repo, branch)
-            print(f"Deleted: {branch} (PR #{pr.get('number')})")
-        except requests.HTTPError as e:
-            print(f"Failed to delete {branch}: {e}")
+    sys.exit(0)
 
 
 if __name__ == "__main__":
