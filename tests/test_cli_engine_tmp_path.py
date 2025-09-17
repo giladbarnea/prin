@@ -30,7 +30,7 @@ def test_cli_engine_happy_path(tmp_path):
     write_file(tmp_path / "tests" / "test_something.py", "def test_x():\n    assert True\n")
 
     # Use hardcoded filters to isolate traversal/printing happy path
-    src = FileSystemSource(root=tmp_path)
+    src = FileSystemSource(tmp_path)
     printer = DepthFirstPrinter(
         src,
         XmlFormatter(),
@@ -62,7 +62,7 @@ def test_cli_engine_isolation(tmp_path):
     touch_file(tmp_path / "__pycache__" / "c.pyc")
 
     # Bypass parser-derived filters; hardcode simple includes/excludes
-    src = FileSystemSource(root=tmp_path)
+    src = FileSystemSource(tmp_path)
     printer = DepthFirstPrinter(
         src,
         XmlFormatter(),

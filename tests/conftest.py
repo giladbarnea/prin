@@ -231,7 +231,7 @@ def prin_tmp_path():
     import tempfile
 
     # Equivalent to `mktemp -t prin` - creates temp dir with 'prin' prefix
-    temp_dir = Path(tempfile.mkdtemp(prefix="prin."))
+    temp_dir = Path(tempfile.mkdtemp(prefix="prin.")).resolve()
     try:
         yield temp_dir
     finally:

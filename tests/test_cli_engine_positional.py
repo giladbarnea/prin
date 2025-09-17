@@ -34,7 +34,7 @@ def test_explicit_single_ignored_file_is_printed(prin_tmp_path: Path):
     # Create an ignored-by-default file (e.g., binary-like or lock)
     lock = prin_tmp_path / "poetry.lock"
     write_file(lock, "poetry-lock-content-unique\n")
-    out = _run(FileSystemSource(root=prin_tmp_path), [str(lock)])
+    out = _run(FileSystemSource(prin_tmp_path), [str(lock)])
     assert "<poetry.lock>" in out
 
 
@@ -45,7 +45,7 @@ def test_two_sibling_directories_both_subdirs_of_root_print_relative_paths_to_cw
     write_file(prin_tmp_path / "dirA" / "a.py", "print('dirA/a.py')\n")
     write_file(prin_tmp_path / "dirB" / "b.md", "# dirB/b.md\n")
     out = _run(
-        FileSystemSource(root=prin_tmp_path),
+        FileSystemSource(prin_tmp_path),
         [str(prin_tmp_path / "dirA"), str(prin_tmp_path / "dirB")],
     )
     # Paths are relative to each provided root
@@ -61,7 +61,7 @@ def test_one_dir_outside_root_assumes_root_and_subdir_of_root_prints_relative_pa
     Scripts is passed two positional arguments: /foo/dirA /entirely-different-dir/dirB
     Expect files in /foo/dirA to be printed relative to /foo, and files in /entirely-different-dir/dirB to be printed relative to /entirely-different-dir/dirB
     """
-    source = FileSystemSource(root=prin_tmp_path)
+    source = FileSystemSource(prin_tmp_path)
     subdir_to_source = prin_tmp_path / "dirA"
     dir_outside_source = Path(tempfile.mkdtemp(prefix="outside_source"))
     write_file(subdir_to_source / "a.py", "print('dirA/a.py')\n")
@@ -78,7 +78,7 @@ def test_directory_and_explicit_ignored_file_inside(prin_tmp_path: Path):
     touch_file(prin_tmp_path / "junk.pyc")
     # Explicitly pass both the directory and the ignored file path
     out = _run(
-        FileSystemSource(root=prin_tmp_path),
+        FileSystemSource(prin_tmp_path),
         [str(prin_tmp_path), str(prin_tmp_path / "junk.pyc")],
         ctx=Context(include_binary=False),
     )

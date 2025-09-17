@@ -32,7 +32,7 @@ def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None
         if util.is_github_url(path):
             repo_urls.append(path)
         else:
-            cwd_filesystem_source.resolve_pattern(path)
+            cwd_filesystem_source.resolve(path)
             local_paths.append(path)
 
     # Global print budget shared across sources

@@ -5,7 +5,7 @@ import re
 import sys
 from dataclasses import dataclass
 from enum import Enum, auto
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING, Iterable, Protocol, Self
 
 from prin import filters
@@ -36,12 +36,22 @@ class Writer(Protocol):
 class SourceAdapter(Protocol):
     """
     Filesystem-style adapter for various sources.
-    Maintains a single root path that filesystem operations are relative to.
+    Keeps a single anchor path used as the base for displaying file-like paths.
+    Responsibilities:
+    - List directories.
+    - Read files.
+    - Check if files are empty.
+    - Traverse tree.
+    - Providing a display path string to the printer for a given path.
+
+    Non-responsibilities:
+    - Interpreting patterns.
     """
 
-    root: PurePosixPath
+    anchor: Path
 
-    def resolve_pattern(self: Self, path) -> PurePosixPath: ...
+    def resolve_display(self: Self, path) -> str: ...
+    def resolve(self: Self, path) -> PurePosixPath: ...
     def list_dir(self: Self, dir_path) -> Iterable[Entry]: ...
     def read_file_bytes(self: Self, file_path) -> bytes: ...
     def is_empty(self: Self, file_path) -> bool: ...
@@ -202,7 +212,7 @@ class DepthFirstPrinter:
         for pattern in patterns:
             if budget is not None and budget.spent():
                 return
-            root = self.source.resolve_pattern(pattern)
+            root = self.source.resolve(pattern)
 
             # Experimental: if the resolved root does not exist on the filesystem,
             # treat the token as a search pattern and match files by name using re.search
