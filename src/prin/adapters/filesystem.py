@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import functools
 import os
+import re
+from fnmatch import fnmatch
 from pathlib import Path, PurePosixPath
 from typing import Iterable, Self
 
 from prin import core
 from prin.core import Entry, NodeKind, SourceAdapter
+from prin.path_classifier import classify_pattern
 
 
 def settrace_if_returns(value):
@@ -175,3 +178,68 @@ class FileSystemSource(SourceAdapter):
             except (FileNotFoundError, NotADirectoryError, PermissionError):
                 # Skip paths that disappeared or aren't traversable
                 continue
+
+    def _display_rel(self, path: Path, base: Path) -> str:
+        try:
+            rel = os.path.relpath(str(path), start=str(base))
+            if rel == "." or rel == "":
+                return path.name
+            return rel
+        except Exception:
+            return str(path)
+
+    def walk(self, token: str) -> Iterable[Entry]:
+        """
+        Unified traversal entrypoint.
+        - If token resolves to an existing path: yield files depth-first relative to display base
+          (anchor if root under anchor; otherwise the root itself). Explicit file roots marked.
+        - If not existing: treat token as a pattern; traverse from anchor and yield only matching files.
+        """
+        root = self.resolve(token)
+        anchor = self.anchor
+
+        if root.exists():
+            base = anchor if str(root).startswith(str(anchor) + os.sep) or root == anchor else root
+            # File root → single explicit entry
+            if root.is_file():
+                rel = self._display_rel(root, base)
+                yield Entry(
+                    path=PurePosixPath(rel),
+                    name=root.name,
+                    kind=NodeKind.FILE,
+                    abs_path=PurePosixPath(str(root)),
+                    explicit=True,
+                )
+                return
+            # Directory root → DFS
+            for e in self.walk_dfs(root):
+                f_abs = Path(str(e.path))
+                rel = self._display_rel(f_abs, base)
+                yield Entry(
+                    path=PurePosixPath(rel),
+                    name=e.name,
+                    kind=e.kind,
+                    abs_path=PurePosixPath(str(f_abs)),
+                )
+            return
+
+        # Pattern fallback: search from anchor, match against display-relative path
+        kind = classify_pattern(token)
+        for e in self.walk_dfs(anchor):
+            f_abs = Path(str(e.path))
+            rel = self._display_rel(f_abs, anchor)
+            match = False
+            if kind == "glob":
+                match = fnmatch(rel, token)
+            else:
+                try:
+                    match = re.search(token, rel) is not None
+                except re.error:
+                    match = False
+            if match:
+                yield Entry(
+                    path=PurePosixPath(rel),
+                    name=e.name,
+                    kind=e.kind,
+                    abs_path=PurePosixPath(str(f_abs)),
+                )
