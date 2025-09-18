@@ -103,7 +103,8 @@ class FileSystemSource(SourceAdapter):
         return self.resolve(file_path).read_bytes()
 
     def exists(self, path) -> bool:
-        return self.resolve(path).exists(follow_symlinks=False)
+        # Path.exists() does not support follow_symlinks, and resolve() already normalizes.
+        return self.resolve(path).exists()
 
     @_ensure_exists
     def is_empty(self, file_path) -> bool:
@@ -113,3 +114,64 @@ class FileSystemSource(SourceAdapter):
             return True
         path = self.resolve(file_path)
         return core.is_blob_semantically_empty(blob, path)
+
+    # Depth-first traversal delegated to the adapter. Yields files only, in stable order.
+    def walk_dfs(self, root) -> Iterable[Entry]:
+        """
+        Yield Entry objects for files under the given root in depth-first order.
+
+        - If root is a file, yields that single file entry.
+        - If root is a directory, traverses directories first (case-insensitive sort),
+          then files (case-insensitive sort) at each level.
+        - Symbolic links are not followed.
+        """
+        start = Path(str(root))
+        # If it's a file, emit and stop
+        try:
+            if start.is_file():
+                yield Entry(path=PurePosixPath(str(start)), name=start.name, kind=NodeKind.FILE)
+                return
+        except Exception:
+            # Non-existent or inaccessible; let caller decide handling
+            return
+
+        # Treat non-directories as non-traversable
+        if not start.exists() or not start.is_dir():
+            return
+
+        stack: list[Path] = [start]
+        while stack:
+            current = stack.pop()
+            try:
+                with os.scandir(current) as it:
+                    dirs: list[os.DirEntry] = []
+                    files: list[os.DirEntry] = []
+                    for entry in it:
+                        try:
+                            if entry.is_dir(follow_symlinks=False):
+                                dirs.append(entry)
+                            elif entry.is_file(follow_symlinks=False):
+                                files.append(entry)
+                            else:
+                                # Skip OTHER kinds
+                                continue
+                        except PermissionError:
+                            continue
+                # Sort directories then files, both case-insensitive
+                dirs.sort(key=lambda e: e.name.casefold())
+                files.sort(key=lambda e: e.name.casefold())
+
+                # Push directories in reverse order for stack-based DFS
+                for d in reversed(dirs):
+                    stack.append(Path(d.path))
+
+                # Yield files at this level
+                for f in files:
+                    yield Entry(
+                        path=PurePosixPath(f.path),
+                        name=f.name,
+                        kind=NodeKind.FILE,
+                    )
+            except (FileNotFoundError, NotADirectoryError, PermissionError):
+                # Skip paths that disappeared or aren't traversable
+                continue

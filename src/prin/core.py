@@ -212,12 +212,14 @@ class DepthFirstPrinter:
         for pattern in patterns:
             if budget is not None and budget.spent():
                 return
-            root = self.source.resolve(pattern)
+            root_spec = pattern
+            root = self.source.resolve(root_spec)
 
             # Experimental: if the resolved root does not exist on the filesystem,
             # treat the token as a search pattern and match files by name using re.search
             # when the token is classified as regex. This is used by tests/test_matching.py.
             try:
+                anchor_base = getattr(self.source, "anchor", None)
                 if anchor_base is not None and not self.source.exists(root):
                     self._search_and_print(anchor_base, root_spec, writer, budget)
                     continue
@@ -226,12 +228,31 @@ class DepthFirstPrinter:
                 pass
             # Decide display base: if root is under anchor_base, use anchor; otherwise the root itself
             display_base = root
+            anchor_base = getattr(self.source, "anchor", None)
             if anchor_base is not None:
                 try:
                     _ = root.relative_to(anchor_base)
                     display_base = anchor_base
                 except Exception:
                     display_base = root
+            # Prefer adapter-provided DFS walk when available; fall back to engine traversal
+            if hasattr(self.source, "walk_dfs"):
+                # If explicit file root, force-include and skip traversal
+                try:
+                    _ = list(self.source.list_dir(root))
+                except NotADirectoryError:
+                    file_entry = Entry(path=root, name=root.name, kind=NodeKind.FILE)
+                    self._handle_file(file_entry, writer, base=display_base, force=True, budget=budget)
+                    continue
+                except FileNotFoundError:
+                    continue
+                for entry in self.source.walk_dfs(root):
+                    if budget is not None and budget.spent():
+                        return
+                    self._handle_file(entry, writer, base=display_base, budget=budget)
+                continue
+
+            # Fallback: engine does the traversal
             stack: list[PurePosixPath] = [root]
             while stack:
                 if budget is not None and budget.spent():
@@ -308,6 +329,22 @@ class DepthFirstPrinter:
 
         Respects existing exclusion, extension, and emptiness rules.
         """
+        # Prefer adapter traversal when available
+        if hasattr(self.source, "walk_dfs"):
+            for entry in self.source.walk_dfs(base):
+                if budget is not None and budget.spent():
+                    return
+                if self._excluded(entry):
+                    continue
+                if not self._extension_match(entry):
+                    continue
+                if not self.include_empty and self.source.is_empty(entry.path):
+                    continue
+                if self._pattern_matches(entry, token, base=base):
+                    self._handle_file(entry, writer, base=base, budget=budget)
+            return
+
+        # Fallback: engine traversal
         stack: list[PurePosixPath] = [base]
         while stack:
             if budget is not None and budget.spent():
@@ -409,5 +446,6 @@ class DepthFirstPrinter:
             rel = os.path.relpath(str(path), start=str(base))
             if rel == "." or rel == "":
                 return path.name
+            return rel
         except Exception:
             return str(path)
