@@ -45,7 +45,7 @@ prin agents/graph github.com/pydantic/pydantic-ai/{docs,examples} | claude -p "C
 
 #### Attaching a library's documentation to your prompt
 ```sh
-prin . https://docs.framework.io | codex "Leverage framework's API better to remove custom implementations where possible"
+prin . https://docs.framework.io | codex "Leverage framework's API to remove custom implementations."
 ```
 
 See `prin --help` for the full list of options.

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import functools
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Iterable, Self
 
 from prin import core
@@ -91,7 +91,7 @@ class FileSystemSource(SourceAdapter):
                     kind = NodeKind.OTHER
                 entries.append(
                     Entry(
-                        path=_to_posix(Path(entry.path)),
+                        path=PurePosixPath(entry.path),
                         name=entry.name,
                         kind=kind,
                     )

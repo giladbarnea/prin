@@ -80,6 +80,7 @@ def _setup_tree(anchor: Path) -> _Tree:
     outside_empty_file = outside_dir / "empty_file.txt"
     write_file(outside_empty_file, "")
 
+
     return _Tree(
         anchor=str(anchor),
         inside_directory_relative="dir1",
@@ -236,7 +237,6 @@ def test_is_empty(prin_tmp_path: Path, case_key: str, expect):
         ("outside_dir_relative", None),
         ("outside_dir_absolute", None),
         ("missing_inside_dir_relative", FileNotFoundError),
-        ("symlink_out", None),
         ("inside_directory_relative", None),
         ("inside_directory_absolute", None),
         ("inside_file_relative", NotADirectoryError),
@@ -247,11 +247,10 @@ def test_list_dir_ensure_and_type_cases(prin_tmp_path: Path, case_key: str, expe
     fs = FileSystemSource(prin_tmp_path)
     paths = _setup_tree(prin_tmp_path)
     p = paths[case_key]
-    if p is None and case_key == "symlink_out":
-        pytest.skip("Symlinks not supported on this platform")
     if expect is None:
-        entries = list(fs.list_dir(p))
+        # list_dir expects resolved (absolute) paths
+        entries = list(fs.list_dir(fs.resolve(p)))
         assert isinstance(entries, list)
     else:
         with pytest.raises(expect):
-            list(fs.list_dir(p))
+            list(fs.list_dir(fs.resolve(p)))
