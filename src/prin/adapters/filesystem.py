@@ -9,6 +9,7 @@ from typing import Iterable, Self
 
 from prin import core
 from prin.core import Entry, NodeKind, SourceAdapter
+from prin.filters import extension_match, is_excluded
 from prin.path_classifier import classify_pattern
 
 
@@ -47,9 +48,16 @@ class FileSystemSource(SourceAdapter):
     """
 
     anchor: Path
+    # Configuration derived from Context (filters)
+    exclusions: list
+    extensions: list
+    include_empty: bool
 
     def __init__(self, anchor=None) -> None:
         self.anchor = Path(anchor or Path.cwd()).resolve()
+        self.exclusions = []
+        self.extensions = []
+        self.include_empty = False
         super().__init__()
 
     def __repr__(self) -> str:
@@ -243,3 +251,31 @@ class FileSystemSource(SourceAdapter):
                     kind=e.kind,
                     abs_path=PurePosixPath(str(f_abs)),
                 )
+
+    # Configuration from Context
+    def configure(self, ctx) -> None:
+        self.exclusions = ctx.exclusions
+        self.extensions = ctx.extensions
+        self.include_empty = ctx.include_empty
+
+    # Source-owned filtering decision
+    def should_print(self, entry: Entry) -> bool:
+        if entry.explicit:
+            return True
+        # Exclusion rules
+        dummy = Entry(path=PurePosixPath(entry.path), name=entry.name, kind=entry.kind)
+        if is_excluded(dummy, exclude=self.exclusions):
+            return False
+        if not extension_match(dummy, extensions=self.extensions):
+            return False
+        if not self.include_empty and self.is_empty(entry.abs_path or entry.path):
+            return False
+        return True
+
+    # Source-owned body reading and text/binary decision
+    def read_body_text(self, entry: Entry) -> tuple[str | None, bool]:
+        blob = self.read_file_bytes(entry.abs_path or entry.path)
+        if core._is_text_bytes(blob):
+            text = core._decode_text(blob)
+            return text, False
+        return None, True

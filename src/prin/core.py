@@ -6,7 +6,6 @@ from enum import Enum, auto
 from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING, Iterable, Protocol, Self
 
-from prin import filters
 from prin.formatters import Formatter, HeaderFormatter
 
 if TYPE_CHECKING:
@@ -57,7 +56,10 @@ class SourceAdapter(Protocol):
     def read_file_bytes(self: Self, file_path) -> bytes: ...
     def is_empty(self: Self, file_path) -> bool: ...
     def exists(self: Self, path) -> bool: ...
+    def configure(self: Self, ctx: "Context") -> None: ...
     def walk(self: Self, token: str) -> Iterable[Entry]: ...
+    def should_print(self: Self, entry: Entry) -> bool: ...
+    def read_body_text(self: Self, entry: Entry) -> tuple[str | None, bool]: ...
 
 
 def _is_text_semantically_empty(text: str) -> bool:
@@ -202,6 +204,8 @@ class DepthFirstPrinter:
         self.formatter = formatter
 
         self._set_from_context(ctx)
+        # Delegate configuration to the source (filters, extensions, include_empty, etc.)
+        self.source.configure(ctx)
         self._printed_paths: set[str] = set()
 
     def _set_from_context(self, ctx: "Context") -> None:
@@ -219,13 +223,6 @@ class DepthFirstPrinter:
                     return
                 self._handle_file(entry, writer, budget=budget)
 
-    def _excluded(self, entry: Entry) -> bool:
-        # The reference implementation accepts strings/paths/globs/callables
-        return filters.is_excluded(entry, exclude=self.exclusions)
-
-    def _extension_match(self, entry: Entry) -> bool:
-        return filters.extension_match(entry, extensions=self.extensions)
-
     def _handle_file(
         self,
         entry: Entry,
@@ -242,23 +239,18 @@ class DepthFirstPrinter:
         if budget and budget.spent():
             return
 
-        if not (force or entry.explicit):
-            if self._excluded(entry):
-                return
-            if not self._extension_match(entry):
-                return
-            if not self.include_empty and self.source.is_empty(entry.abs_path or entry.path):
-                return
+        # Delegate include/exclude logic to the source
+        if not (force or self.source.should_print(entry)):
+            return
 
         path_str = entry.path.as_posix()
         if self.only_headers:
             writer.write(self.formatter.format(path_str, ...))
         else:
-            blob = self.source.read_file_bytes(entry.abs_path or entry.path)
-            if _is_text_bytes(blob):
-                text = _decode_text(blob)
-                writer.write(self.formatter.format(path_str, text))
-            else:
+            body_text, is_binary = self.source.read_body_text(entry)
+            if is_binary:
                 writer.write(self.formatter.binary(path_str))
+            else:
+                writer.write(self.formatter.format(path_str, body_text or ""))
         budget and budget.consume()
         self._printed_paths.add(key)
