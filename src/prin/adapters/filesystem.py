@@ -2,11 +2,15 @@ from __future__ import annotations
 
 import functools
 import os
+import re
+from fnmatch import fnmatch
 from pathlib import Path, PurePosixPath
 from typing import Iterable, Self
 
 from prin import core
 from prin.core import Entry, NodeKind, SourceAdapter
+from prin.filters import extension_match, is_excluded
+from prin.path_classifier import classify_pattern
 
 
 def settrace_if_returns(value):
@@ -44,9 +48,16 @@ class FileSystemSource(SourceAdapter):
     """
 
     anchor: Path
+    # Configuration derived from Context (filters)
+    exclusions: list
+    extensions: list
+    include_empty: bool
 
     def __init__(self, anchor=None) -> None:
         self.anchor = Path(anchor or Path.cwd()).resolve()
+        self.exclusions = []
+        self.extensions = []
+        self.include_empty = False
         super().__init__()
 
     def __repr__(self) -> str:
@@ -64,11 +75,7 @@ class FileSystemSource(SourceAdapter):
 
         return wrapper
 
-    def resolve_display(self, path) -> str:
-        """
-        Following the behavior of fd and rg, displayed paths are agnostic of the anchor.
-        """
-        return str(path)
+    # Removed: display is computed internally by walk(); keep no public API.
 
     def resolve(self, path) -> Path:
         """
@@ -103,7 +110,8 @@ class FileSystemSource(SourceAdapter):
         return self.resolve(file_path).read_bytes()
 
     def exists(self, path) -> bool:
-        return self.resolve(path).exists(follow_symlinks=False)
+        # Path.exists() does not support follow_symlinks, and resolve() already normalizes.
+        return self.resolve(path).exists()
 
     @_ensure_exists
     def is_empty(self, file_path) -> bool:
@@ -113,3 +121,155 @@ class FileSystemSource(SourceAdapter):
             return True
         path = self.resolve(file_path)
         return core.is_blob_semantically_empty(blob, path)
+
+    # Depth-first traversal delegated to the adapter. Yields files only, in stable order.
+    def walk_dfs(self, root) -> Iterable[Entry]:
+        """
+        Yield Entry objects for files under the given root in depth-first order.
+
+        - If root is a file, yields that single file entry.
+        - If root is a directory, traverses directories first (case-insensitive sort),
+          then files (case-insensitive sort) at each level.
+        - Symbolic links are not followed.
+        """
+        start = Path(str(root))
+        # If it's a file, emit and stop
+        try:
+            if start.is_file():
+                yield Entry(path=PurePosixPath(str(start)), name=start.name, kind=NodeKind.FILE)
+                return
+        except Exception:
+            # Non-existent or inaccessible; let caller decide handling
+            return
+
+        # Treat non-directories as non-traversable
+        if not start.exists() or not start.is_dir():
+            return
+
+        stack: list[Path] = [start]
+        while stack:
+            current = stack.pop()
+            try:
+                with os.scandir(current) as it:
+                    dirs: list[os.DirEntry] = []
+                    files: list[os.DirEntry] = []
+                    for entry in it:
+                        try:
+                            if entry.is_dir(follow_symlinks=False):
+                                dirs.append(entry)
+                            elif entry.is_file(follow_symlinks=False):
+                                files.append(entry)
+                            else:
+                                # Skip OTHER kinds
+                                continue
+                        except PermissionError:
+                            continue
+                # Sort directories then files, both case-insensitive
+                dirs.sort(key=lambda e: e.name.casefold())
+                files.sort(key=lambda e: e.name.casefold())
+
+                # Push directories in reverse order for stack-based DFS
+                for d in reversed(dirs):
+                    stack.append(Path(d.path))
+
+                # Yield files at this level
+                for f in files:
+                    yield Entry(
+                        path=PurePosixPath(f.path),
+                        name=f.name,
+                        kind=NodeKind.FILE,
+                    )
+            except (FileNotFoundError, NotADirectoryError, PermissionError):
+                # Skip paths that disappeared or aren't traversable
+                continue
+
+    def _display_rel(self, path: Path, base: Path) -> str:
+        try:
+            rel = os.path.relpath(str(path), start=str(base))
+            if rel == "." or rel == "":
+                return path.name
+            return rel
+        except Exception:
+            return str(path)
+
+    def walk(self, token: str) -> Iterable[Entry]:
+        """
+        Unified traversal entrypoint.
+        - If token resolves to an existing path: yield files depth-first relative to display base
+          (anchor if root under anchor; otherwise the root itself). Explicit file roots marked.
+        - If not existing: treat token as a pattern; traverse from anchor and yield only matching files.
+        """
+        root = self.resolve(token)
+        anchor = self.anchor
+
+        if root.exists():
+            base = anchor if str(root).startswith(str(anchor) + os.sep) or root == anchor else root
+            # File root → single explicit entry
+            if root.is_file():
+                rel = self._display_rel(root, base)
+                yield Entry(
+                    path=PurePosixPath(rel),
+                    name=root.name,
+                    kind=NodeKind.FILE,
+                    abs_path=PurePosixPath(str(root)),
+                    explicit=True,
+                )
+                return
+            # Directory root → DFS
+            for e in self.walk_dfs(root):
+                f_abs = Path(str(e.path))
+                rel = self._display_rel(f_abs, base)
+                yield Entry(
+                    path=PurePosixPath(rel),
+                    name=e.name,
+                    kind=e.kind,
+                    abs_path=PurePosixPath(str(f_abs)),
+                )
+            return
+
+        # Pattern fallback: search from anchor, match against display-relative path
+        kind = classify_pattern(token)
+        for e in self.walk_dfs(anchor):
+            f_abs = Path(str(e.path))
+            rel = self._display_rel(f_abs, anchor)
+            match = False
+            if kind == "glob":
+                match = fnmatch(rel, token)
+            else:
+                try:
+                    match = re.search(token, rel) is not None
+                except re.error:
+                    match = False
+            if match:
+                yield Entry(
+                    path=PurePosixPath(rel),
+                    name=e.name,
+                    kind=e.kind,
+                    abs_path=PurePosixPath(str(f_abs)),
+                )
+
+    # Configuration from Context
+    def configure(self, ctx) -> None:
+        self.exclusions = ctx.exclusions
+        self.extensions = ctx.extensions
+        self.include_empty = ctx.include_empty
+
+    # Source-owned filtering decision
+    def should_print(self, entry: Entry) -> bool:
+        if entry.explicit:
+            return True
+        # Exclusion rules
+        dummy = Entry(path=PurePosixPath(entry.path), name=entry.name, kind=entry.kind)
+        if is_excluded(dummy, exclude=self.exclusions):
+            return False
+        if not extension_match(dummy, extensions=self.extensions):
+            return False
+        return not (not self.include_empty and self.is_empty(entry.abs_path or entry.path))
+
+    # Source-owned body reading and text/binary decision
+    def read_body_text(self, entry: Entry) -> tuple[str | None, bool]:
+        blob = self.read_file_bytes(entry.abs_path or entry.path)
+        if core._is_text_bytes(blob):
+            text = core._decode_text(blob)
+            return text, False
+        return None, True
