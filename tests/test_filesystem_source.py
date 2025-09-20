@@ -97,30 +97,9 @@ def _setup_tree(anchor: Path) -> _Tree:
     )
 
 
-@pytest.mark.parametrize(
-    ("case_key", "expect"),
-    [
-        ("inside_directory_relative", "dir1"),
-        ("inside_directory_relative_dots", "./dir1"),
-        ("inside_directory_absolute", "{anchor}/dir1"),
-        ("inside_file_relative", "file1.txt"),
-        ("inside_file_relative_dots", "./file1.txt"),
-        ("inside_file_absolute", "{anchor}/file1.txt"),
-        ("missing_inside_dir_relative", "missing_dir"),
-        ("missing_inside_dir_relative_dots", "./missing_dir"),
-        ("outside_dir_relative", "../outside_dir"),
-        ("outside_dir_absolute", "{outside_dir}"),
-        ("outside_file_relative", "../outside_dir/outside_file.txt"),
-        ("outside_file_absolute", "{outside_dir}/outside_file.txt"),
-    ],
-)
-def test_resolve_display(prin_tmp_path: Path, case_key: str, expect):
-    fs = FileSystemSource(prin_tmp_path)
-    tree: _Tree = _setup_tree(prin_tmp_path)
-    path = tree[case_key]
-    expect = expect.format(anchor=tree.anchor, outside_dir=tree.outside_dir_absolute)
-    resolved = fs.resolve_display(path)
-    assert resolved == expect
+@pytest.mark.skip("resolve_display removed; adapter computes display internally in walk()")
+def test_resolve_display():
+    pass
 
 
 @pytest.mark.parametrize(

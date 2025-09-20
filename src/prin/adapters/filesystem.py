@@ -75,11 +75,7 @@ class FileSystemSource(SourceAdapter):
 
         return wrapper
 
-    def resolve_display(self, path) -> str:
-        """
-        Following the behavior of fd and rg, displayed paths are agnostic of the anchor.
-        """
-        return str(path)
+    # Removed: display is computed internally by walk(); keep no public API.
 
     def resolve(self, path) -> Path:
         """
@@ -268,9 +264,7 @@ class FileSystemSource(SourceAdapter):
             return False
         if not extension_match(dummy, extensions=self.extensions):
             return False
-        if not self.include_empty and self.is_empty(entry.abs_path or entry.path):
-            return False
-        return True
+        return not (not self.include_empty and self.is_empty(entry.abs_path or entry.path))
 
     # Source-owned body reading and text/binary decision
     def read_body_text(self, entry: Entry) -> tuple[str | None, bool]:
