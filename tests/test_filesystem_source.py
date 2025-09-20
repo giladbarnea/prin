@@ -80,7 +80,6 @@ def _setup_tree(anchor: Path) -> _Tree:
     outside_empty_file = outside_dir / "empty_file.txt"
     write_file(outside_empty_file, "")
 
-
     return _Tree(
         anchor=str(anchor),
         inside_directory_relative="dir1",

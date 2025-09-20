@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import os
-import re
 import sys
 from dataclasses import dataclass
 from enum import Enum, auto
@@ -10,7 +8,6 @@ from typing import TYPE_CHECKING, Iterable, Protocol, Self
 
 from prin import filters
 from prin.formatters import Formatter, HeaderFormatter
-from prin.path_classifier import classify_pattern
 
 if TYPE_CHECKING:
     from .cli_common import Context
@@ -222,33 +219,6 @@ class DepthFirstPrinter:
                     return
                 self._handle_file(entry, writer, budget=budget)
 
-    def _pattern_matches(self, entry: Entry, token: str, *, base: PurePosixPath) -> bool:
-        """
-        Return True if entry's name matches token according to experimental rules.
-
-        For this POC, when token is classified as regex or text, we use re.search
-        against the entry's filename (not the full path) to mimic fd-like behavior
-        of matching within a single path segment.
-        """
-        # Two modes only: glob or regex (regex by default). Match against full POSIX path (relative to base).
-        try:
-            rel = self._display_path(entry.path, base)
-        except Exception:
-            rel = str(entry.path)
-        kind = classify_pattern(token)
-        if kind == "glob":
-            from fnmatch import fnmatch
-
-            return fnmatch(rel, token)
-        try:
-            return re.search(token, rel) is not None
-        except re.error:
-            return False
-
-    def _search_and_print(self, base: PurePosixPath, token: str, writer: Writer, budget: "FileBudget | None") -> None:
-        # No-op: search handled by adapter.walk
-        return
-
     def _excluded(self, entry: Entry) -> bool:
         # The reference implementation accepts strings/paths/globs/callables
         return filters.is_excluded(entry, exclude=self.exclusions)
@@ -292,4 +262,3 @@ class DepthFirstPrinter:
                 writer.write(self.formatter.binary(path_str))
         budget and budget.consume()
         self._printed_paths.add(key)
-    
