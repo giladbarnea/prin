@@ -36,16 +36,10 @@ class Writer(Protocol):
 class SourceAdapter(Protocol):
     """
     Filesystem-style adapter for various sources.
-    Keeps a single anchor path used as the base for displaying file-like paths.
-    Responsibilities:
-    - List directories.
-    - Read files.
-    - Check if files are empty.
-    - Traverse tree.
-    - Providing a display path string to the printer for a given path.
+    Now owns traversal, filtering, emptiness and I/O.
 
-    Non-responsibilities:
-    - Interpreting patterns.
+    - Responsibilities: configure, walk, should_print, read_body_text, resolve/exists.
+    - Non-responsibilities: printing, budgeting, formatting selection.
     """
 
     anchor: Path
@@ -178,6 +172,10 @@ class FileBudget:
 
 
 class DepthFirstPrinter:
+    """
+    Printer with strict responsibilities: printing, budget, formatter.
+    Delegates traversal, filtering, and I/O to the source adapter.
+    """
     source: SourceAdapter
     formatter: Formatter
     exclusions: list
