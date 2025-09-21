@@ -176,6 +176,7 @@ class DepthFirstPrinter:
     Printer with strict responsibilities: printing, budget, formatter.
     Delegates traversal, filtering, and I/O to the source adapter.
     """
+
     source: SourceAdapter
     formatter: Formatter
     exclusions: list
