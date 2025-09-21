@@ -12,7 +12,8 @@ from urllib.parse import urljoin, urlparse
 
 import requests
 
-from ..core import Entry, NodeKind, SourceAdapter
+from ..core import Entry, NodeKind, SourceAdapter, _decode_text, _is_text_bytes
+from ..filters import extension_match, is_excluded
 
 
 def _ensure_trailing_slash(url: str) -> str:
@@ -138,6 +139,10 @@ class WebsiteSource(SourceAdapter):
         self._session = session or requests.Session()
         self._ctx: _Ctx | None = None
         self._base_url = base_url
+        # Adapter configuration (from Context)
+        self._exclusions: list[str] = []
+        self._extensions: list[str] = []
+        self._include_empty: bool = False
 
     def _ensure_ctx(self) -> _Ctx:
         if self._ctx is not None:
@@ -180,6 +185,41 @@ class WebsiteSource(SourceAdapter):
         # Treat the list as a virtual directory root
         self._ensure_ctx()
         return PurePosixPath()
+
+    # region --- Adapter SRP additions ---
+    def configure(self, ctx) -> None:
+        self._exclusions = ctx.exclusions
+        self._extensions = ctx.extensions
+        self._include_empty = ctx.include_empty
+
+    def walk(self, token: str) -> Iterable[Entry]:
+        ctx = self._ensure_ctx()
+        # Flat list; yield in case-insensitive order
+        for key in sorted(ctx.key_to_url.keys(), key=lambda s: s.casefold()):
+            yield Entry(
+                path=PurePosixPath(key),
+                name=key,
+                kind=NodeKind.FILE,
+                abs_path=PurePosixPath(key),
+            )
+
+    def should_print(self, entry: Entry) -> bool:
+        if entry.explicit:
+            return True
+        dummy = Entry(path=entry.path, name=entry.name, kind=entry.kind)
+        if is_excluded(dummy, exclude=self._exclusions):
+            return False
+        if not extension_match(dummy, extensions=self._extensions):
+            return False
+        # Website emptiness is determined after fetch; include_empty gate is enforced in printer via our return here only if is_empty()==True, but website is_empty returns False pre-fetch. So we don't exclude by emptiness here.
+        return True
+
+    def read_body_text(self, entry: Entry) -> tuple[str | None, bool]:
+        blob = self.read_file_bytes(entry.abs_path or entry.path)
+        if _is_text_bytes(blob):
+            return _decode_text(blob), False
+        return None, True
+    # endregion --- Adapter SRP additions ---
 
     def list_dir(self, dir_path: PurePosixPath) -> Iterable[Entry]:
         ctx = self._ensure_ctx()
