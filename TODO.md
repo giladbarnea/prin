@@ -5,6 +5,8 @@
 - [ ] README.md should have a website example.
 - [ ] `-t`, `--tag` is a bad name. It should be `--format` or `--output-format`, or something with 'seperator'.
 - [ ] Network requests cache TTL
+- [ ] BUG: `prin --no-docs -E 'tests' -E internal . -E '*.sh' README.md` fails arg parsing with `prin: error: unrecognized arguments: README.md` because of period+README.md+--no-docs.
+- [ ] add .rtf to docs format.
 
 ## PARITIES.md
 
@@ -17,3 +19,5 @@
 
 - [ ] Suppressions in PARITIES.md
   - [ ] Inline opt-outs with explicit tokens: `// noqa: <token[, token...]>`
+
+- [ ] Parse lines like `src/prin/core.py`: `DepthFirstPrinter._excluded`, `_extension_match`.
