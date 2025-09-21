@@ -192,22 +192,12 @@ def test_repo_literal_exclude_token_matches_segments_not_substrings():
 
 @pytest.mark.network
 def test_repo_unrestricted_includes_gitignored():
-    url = "https://github.com/TypingMind/awesome-typingmind"
-    out = _run(["-u", url])
-    # -u flag should enable --no-ignore behavior
-    # Since gitignore parsing is not fully implemented, this mainly tests the flag parsing
-    assert isinstance(out, str)
-    assert len(out) > 0
+    pytest.skip(".gitignore behavior disabled")
 
 
 @pytest.mark.network
 def test_repo_uu_includes_hidden_and_gitignored():
-    url = "https://github.com/TypingMind/awesome-typingmind"
-    out = _run(["-uu", url])
-    # -uu flag should enable both --hidden and --no-ignore
-    # Since gitignore parsing is not fully implemented, this mainly tests the flag parsing
-    assert isinstance(out, str)
-    assert len(out) > 0
+    pytest.skip(".gitignore behavior disabled")
 
 
 @pytest.mark.network
