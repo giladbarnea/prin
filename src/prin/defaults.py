@@ -29,6 +29,8 @@ DEFAULT_EXCLUSIONS: list[Pattern] = [
     re.compile("coverage"),
     # Additional common directories/files
     re.compile(r"(^|/)venv(/|$)"),
+    # Minified assets
+    Glob("*.min.*"),
     re.compile("DerivedData"),
     re.compile("Pods"),
     re.compile(r"Carthage/Build"),
