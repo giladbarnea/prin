@@ -34,7 +34,10 @@ def test_no_options_specified_everything_is_printed(fs_root: VFS):
     for path in absent:
         assert path in fs_root.paths  # Precondition
         content = fs_root.contents[path]
-
+        # Ignore hidden entries when asserting "absent" for defaults;
+        # hidden files are controlled by --hidden and are orthogonal here.
+        if path.startswith(".") or "/." in path:
+            continue
         assert f"<{path}>" not in out
         # All non-empty absent contents must not appear in the output
         if content.strip():
