@@ -97,6 +97,8 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 
 #### Contract
 - Filter flags exposed by the CLI in `cli_common.py` must have corresponding DEFAULT_* patterns and DEFAULT_* feature flags in `defaults.py`, `Context` fields, representation in `README.md` in specified sections, synced CLI help in `parse_common_args`, mocks in `conftest.fs_root` and a field in `conftest.VFS`.
+ - Hidden category in the FS fixture is represented by files under dot-directories (e.g., `.github/config`, `app/submodule/.git/config`); directories themselves are not printed.
+ - Build directory exclusion uses path-bounded regex `(^|/)build(/|$)`; minified assets are excluded by default via `*.min.*`; doc extensions include `*.1`.
 
 #### Triggers
 - Adding/removing/renaming a filter category; changing category semantics.
