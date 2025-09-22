@@ -18,7 +18,7 @@ import requests
 
 from ..core import Entry, NodeKind, SourceAdapter, _decode_text, _is_text_bytes
 from ..filters import extension_match, is_excluded
-from ..path_classifier import classify_pattern
+from ..path_classifier import classify_pattern, is_glob, is_regex
 
 API_BASE = "https://api.github.com"
 MAX_WAIT_SECONDS = 180
@@ -281,7 +281,57 @@ class GitHubRepoSource(SourceAdapter):
         except Exception:
             return path
 
+    def _split_base_and_pattern(self, subpath: str) -> tuple[PurePosixPath, str | None]:
+        """
+        Split a repo-relative path into a literal base and an optional pattern tail.
+
+        Example:
+        - "logos/^README\\.md$" -> (PurePosixPath("logos"), "^README\\.md$")
+        - "*.md" -> (PurePosixPath(""), "*.md")
+        - "docs/guide.rst" -> (PurePosixPath("docs/guide.rst"), None)
+        """
+        sub = (subpath or "").strip("/")
+        if not sub:
+            return PurePosixPath(""), None
+        parts = [p for p in sub.split("/") if p]
+        split_index: int | None = None
+        for i, seg in enumerate(parts):
+            if is_glob(seg) or is_regex(seg):
+                split_index = i
+                break
+        if split_index is None:
+            return PurePosixPath(sub), None
+        base = PurePosixPath("/".join(parts[:split_index])) if split_index > 0 else PurePosixPath("")
+        pattern = "/".join(parts[split_index:])
+        return base, pattern
+
     def walk(self, token: str) -> Iterable[Entry]:
+        # If token contains a pattern segment, split and match under that base
+        base_for_pattern, pattern = self._split_base_and_pattern(token)
+        if pattern:
+            anchor = base_for_pattern
+            kind = classify_pattern(pattern)
+            for e in self._walk_dfs(anchor):
+                f_abs = PurePosixPath(str(e.path))
+                rel = self._display_rel(f_abs, anchor)
+                path_str = rel.as_posix()
+                matched = False
+                if kind == "glob":
+                    matched = fnmatch(path_str, pattern)
+                else:
+                    try:
+                        matched = re.search(pattern, path_str) is not None
+                    except re.error:
+                        matched = False
+                if matched:
+                    yield Entry(
+                        path=rel,
+                        name=e.name,
+                        kind=e.kind,
+                        abs_path=f_abs,
+                    )
+            return
+
         base = self.resolve(token)
         # Detect explicit file root by probing list_dir
         try:
@@ -429,7 +479,13 @@ class GitHubRepoSource(SourceAdapter):
             if path
             else f"{API_BASE}/repos/{owner}/{repo}/contents"
         )
-        r = _get(self._session, url, params={"ref": ref})
+        try:
+            r = _get(self._session, url, params={"ref": ref})
+        except requests.HTTPError as e:  # type: ignore[attr-defined]
+            # Translate 404 to FileNotFoundError so callers can fall back to pattern matching
+            if getattr(e, "response", None) is not None and getattr(e.response, "status_code", None) == 404:
+                raise FileNotFoundError(path or ".")
+            raise
         items = r.json()
         # If the requested path is a file, emulate filesystem semantics and
         # raise NotADirectoryError so the engine treats it as an explicit file
