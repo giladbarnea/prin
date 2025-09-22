@@ -11,24 +11,25 @@ Whatever you do, try to align with the existing design philosophy (What knowledg
 
 ## Architecture
 
-Engine-driven depth-first traversal with source adapters; the engine is source-agnostic while implementations (filesystem, GitHub, website) provide listing/reading. Shared filters/formatters ensure identical behavior across sources.
+Adapters own traversal. The printer (engine) is source-agnostic and is limited to printing with a formatter and enforcing a file budget. Implementations (filesystem, GitHub, website) provide traversal and I/O, and may delegate filtering/emptiness to shared helpers.
 
 ## Core invariants
-- Engine owns traversal/filters/printing; Source adapters only list/read/is_empty.
-- Explicit file paths must print regardless of filters (engine handles by treating file paths as force-include).
-- Paths are printed relative to each provided root (single file path prints just its basename).
-- Source adapters must share as much behavior as possible and reuse common modules. Each adapter must implement as little as possible, only accounting for the thin differentiator of its domain and delegating the rest to common modules. This serves the tool's "Sources are interchangeable" design principle, which lets users forget about the type of source and have it simply printed instead.
+- Adapters own traversal and include/exclude/emptiness/I/O. Printer owns printing, budget, and formatter.
+- Printer delegates decisions via `SourceAdapter.should_print(entry)` and reading via `SourceAdapter.read_body_text(entry)`.
+- Explicit file roots must print regardless of filters (signaled via `Entry.explicit=True` and honored by adapter `should_print`).
+- Paths are printed relative to the adapter-chosen display base (typically anchor when under it; otherwise the root itself).
+- Adapters should share behavior where possible by delegating to common modules (filters, emptiness) while keeping a uniform interface.
 
 ## Source Adapters
-- File system: `is_empty` via AST; raises NotADirectoryError for files (implicit via scandir). Note: it's a hack, not something to be very proud of.
-- GitHub: list via Contents API; for file paths, raise NotADirectoryError so engine force-includes; ignore local .gitignore for repos.
+- File system: owns DFS via `walk(token)` and `walk_dfs(root)`, config via `configure(ctx)`, include/exclude via `should_print(entry)`, and body reads via `read_body_text(entry)` (may delegate to shared emptiness/text detection).
+- GitHub: should expose the same shape: `configure`, `walk`, `should_print`, `read_body_text`. `.gitignore` semantics are independent.
 - Website: // todo
 
 ## CLI and flags
-- One shared parser in `cli_common` used by both implementations; no interactive prompts; consistent flags (`-e`, `-E`, `--no-ignore`, `-l`, etc.).
+- One shared parser in `cli_common`; no interactive prompts; consistent flags.
 - `prin` dispatches: GitHub URL → repo implementation; otherwise filesystem. Keep URL detection minimal and robust. // todo: missing website
 - New CLI options' defaults should be defined and imported from defaults.py. When relevant, default consts should be reused consistently.
-- Some function signatures and class field lists should match CLI options, and updated accordingly when new options are added. These are the features of the tool as a whole as well as its main user interface. As of writing, these are src/prin/cli_common.Context, src/prin/core.DepthFirstPrinter.__init__, and src/prin/filters.resolve_exclusions, but there may be more — keep an eye for comments saying "{Parameter,Field} list should match CLI options."
+- Adapters consume config via `SourceAdapter.configure(Context)`; keep `Context` in sync with CLI options.
 
 ## Filtering semantics
 // missing; todo
@@ -51,6 +52,8 @@ All .sh scripts automatically install uv if missing, take care of PATH and execu
 1. Know your weaknesses: your eagerness to solve a problem can cause tunnel vision. You may fix the issue but unintentionally create code duplication, deviate from the existing design, or introduce a regression in other coupled parts of the project you didn’t consider. The solution is to literally look around beyond the immediate fix, be aware of (and account for) coupling around the codebase, integrate with the existing design, and periodically refactor.
 2. You do your best work when you can verify yourself. With self-verification, you can and should practice continuous trial and error instead of a single shot in the dark. See [Development Cycle (Tight TDD Loop)](AGENTS.md) for how to work, verify, and report progress.
 
+## Conventions
+- Use `Path.open()` instead of `open()`, and `Path.glob` instead of `glob`.
 ---
 
 ## Important: Development Cycle (Tight TDD Loop)

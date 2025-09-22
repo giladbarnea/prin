@@ -39,7 +39,7 @@ def test_text_query(prin_tmp_path: Path, in_out: dict[str, str]):
     file.parent.mkdir(parents=True, exist_ok=True)
     file.touch(exist_ok=True)
     file.write_text("hi baz.txt")
-    src = FileSystemSource(root_cwd=prin_tmp_path)
+    src = FileSystemSource(prin_tmp_path)
     printer = DepthFirstPrinter(
         src,
         HeaderFormatter(),
@@ -76,7 +76,7 @@ def test_glob_query(prin_tmp_path: Path, in_out: dict[str, str]):
     file.parent.mkdir(parents=True, exist_ok=True)
     file.touch(exist_ok=True)
     file.write_text("hi baz.txt")
-    src = FileSystemSource(root_cwd=prin_tmp_path)
+    src = FileSystemSource(prin_tmp_path)
     printer = DepthFirstPrinter(
         src,
         HeaderFormatter(),

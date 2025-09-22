@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 authors = [
-    { name = "Cursor Agent", email = "cursoragent@cursor.com" }
+    { name = "Gilad Barnea", email = "giladbrn@gmail.com" }
 ]
 requires-python = ">=3.13"
 dependencies = [
@@ -20,12 +20,15 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
-    "pudb>=2025.1",
     "pytest>=8.4.1",
     "coverage>=7.6.10",
     "ruff>=0.12.11",
     "symbex>=2.0",
     "ipython>=9.5.0",
+    "pytest-clarity>=1.0.1",
+    "pytest-sugar>=1.1.1",
+    "pudb>=2025.1",
+    "wrapt>=1.17.3",
 ]
 
 [tool.ruff]
@@ -118,6 +121,11 @@ markers = [
   "network: tests that require network access",
   "website: tests that target website adapter",
   "repo: tests that target repository adapter",
+]
+addopts = [
+  "--doctest-modules",
+  "--capture=no",
+  "--disable-pytest-warnings"
 ]
 
 [tool.coverage.run]

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 
 from . import cli_common, util
 from .adapters import github
@@ -20,26 +21,30 @@ def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None
     formatter = {"xml": XmlFormatter, "md": MarkdownFormatter}[ctx.tag]()
     out_writer = writer or StdoutWriter()
 
+    # To separate given cwd subdirs from external paths
+    cwd_filesystem_source = FileSystemSource(Path.cwd())
+
     # Split positional inputs into local paths and GitHub URLs
     # Treat empty-string tokens as no-ops for local paths to avoid unintended CWD traversal
     local_paths: list[str] = []
     repo_urls: list[str] = []
-    for tok in ctx.paths:
-        if util.is_github_url(tok):
-            repo_urls.append(tok)
+    for path in filter(bool, ctx.paths):
+        if util.is_github_url(path):
+            repo_urls.append(path)
         else:
-            if tok != "":
-                local_paths.append(tok)
+            cwd_filesystem_source.resolve(path)
+            local_paths.append(path)
 
     # Global print budget shared across sources
     budget = FileBudget(ctx.max_files)
 
     # Filesystem chunk (if any)
     if local_paths:
+        filesystem_ctx = ctx.replace(paths=local_paths)
         fs_printer = DepthFirstPrinter(
             FileSystemSource(),
             formatter,
-            ctx=ctx,
+            ctx=filesystem_ctx,
         )
         fs_printer.run(local_paths, out_writer, budget=budget)
 

@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-import os
 import sys
 from dataclasses import dataclass
 from enum import Enum, auto
-from pathlib import PurePosixPath
-from typing import TYPE_CHECKING, Iterable, Protocol
+from pathlib import Path, PurePosixPath
+from typing import TYPE_CHECKING, Iterable, Protocol, Self
 
-from prin import filters
 from prin.formatters import Formatter, HeaderFormatter
 
 if TYPE_CHECKING:
@@ -25,6 +23,10 @@ class Entry:
     path: PurePosixPath
     name: str
     kind: NodeKind
+    # Absolute path identifier for reading (when path is used for display/filtering)
+    abs_path: PurePosixPath | None = None
+    # True when explicitly provided as a root token (force-include semantics)
+    explicit: bool = False
 
 
 class Writer(Protocol):
@@ -32,10 +34,25 @@ class Writer(Protocol):
 
 
 class SourceAdapter(Protocol):
-    def resolve_root(self, root_spec: str) -> PurePosixPath: ...
-    def list_dir(self, dir_path: PurePosixPath) -> Iterable[Entry]: ...
-    def read_file_bytes(self, file_path: PurePosixPath) -> bytes: ...
-    def is_empty(self, file_path: PurePosixPath) -> bool: ...
+    """
+    Filesystem-style adapter for various sources.
+    Now owns traversal, filtering, emptiness and I/O.
+
+    - Responsibilities: configure, walk, should_print, read_body_text, resolve/exists.
+    - Non-responsibilities: printing, budgeting, formatting selection.
+    """
+
+    anchor: Path
+
+    def resolve(self: Self, path) -> PurePosixPath: ...
+    def list_dir(self: Self, dir_path) -> Iterable[Entry]: ...
+    def read_file_bytes(self: Self, file_path) -> bytes: ...
+    def is_empty(self: Self, file_path) -> bool: ...
+    def exists(self: Self, path) -> bool: ...
+    def configure(self: Self, ctx: "Context") -> None: ...
+    def walk(self: Self, token: str) -> Iterable[Entry]: ...
+    def should_print(self: Self, entry: Entry) -> bool: ...
+    def read_body_text(self: Self, entry: Entry) -> tuple[str | None, bool]: ...
 
 
 def _is_text_semantically_empty(text: str) -> bool:
@@ -155,6 +172,18 @@ class FileBudget:
 
 
 class DepthFirstPrinter:
+    """
+    Printer with strict responsibilities: printing, budget, formatter.
+    Delegates traversal, filtering, and I/O to the source adapter.
+    """
+
+    source: SourceAdapter
+    formatter: Formatter
+    exclusions: list
+    extensions: list
+    include_empty: bool
+    only_headers: bool
+
     def __init__(
         self,
         source: SourceAdapter,
@@ -173,6 +202,8 @@ class DepthFirstPrinter:
         self.formatter = formatter
 
         self._set_from_context(ctx)
+        # Delegate configuration to the source (filters, extensions, include_empty, etc.)
+        self.source.configure(ctx)
         self._printed_paths: set[str] = set()
 
     def _set_from_context(self, ctx: "Context") -> None:
@@ -181,108 +212,43 @@ class DepthFirstPrinter:
         self.include_empty = ctx.include_empty
         self.only_headers = ctx.only_headers
 
-    def run(self, roots: list[str], writer: Writer, budget: "FileBudget | None" = None) -> None:
-        roots = roots or ["."]
-        # Anchor base corresponds to the execution root (e.g., cwd for filesystem)
-        try:
-            anchor_base = self.source.resolve_root(".")
-        except Exception:
-            anchor_base = None  # Fallback: no anchor; each root is its own base
-
-        for root_spec in roots:
+    def run(self, patterns: list, writer: Writer, budget: "FileBudget | None" = None) -> None:
+        for token in patterns:
             if budget is not None and budget.spent():
                 return
-            root = self.source.resolve_root(root_spec)
-            # Decide display base: if root is under anchor_base, use anchor; otherwise the root itself
-            display_base = root
-            if anchor_base is not None:
-                try:
-                    _ = root.relative_to(anchor_base)
-                    display_base = anchor_base
-                except Exception:
-                    display_base = root
-            stack: list[PurePosixPath] = [root]
-            while stack:
+            for entry in self.source.walk(token):
                 if budget is not None and budget.spent():
                     return
-                current = stack.pop()
-                try:
-                    entries = list(self.source.list_dir(current))
-                except NotADirectoryError:
-                    # Treat the current path as a file
-                    file_entry = Entry(path=current, name=current.name, kind=NodeKind.FILE)
-                    self._handle_file(
-                        file_entry, writer, base=display_base, force=True, budget=budget
-                    )
-                    continue
-                except FileNotFoundError:
-                    # Skip missing paths. Smell: will cover-up a bug in list_dir.
-                    continue
-                # Sort directories then files, both case-insensitive
-                dirs = [e for e in entries if e.kind is NodeKind.DIRECTORY]
-                files = [e for e in entries if e.kind is NodeKind.FILE]
-                dirs.sort(key=lambda e: e.name.casefold())
-                files.sort(key=lambda e: e.name.casefold())
-
-                for entry in reversed(dirs):  # reversed for stack DFS order
-                    if not self._excluded(entry):
-                        stack.append(entry.path)
-
-                for entry in files:
-                    self._handle_file(entry, writer, base=display_base, budget=budget)
-
-    def _excluded(self, entry: Entry) -> bool:
-        # The reference implementation accepts strings/paths/globs/callables
-        return filters.is_excluded(entry, exclude=self.exclusions)
-
-    def _extension_match(self, entry: Entry) -> bool:
-        return filters.extension_match(entry, extensions=self.extensions)
+                self._handle_file(entry, writer, budget=budget)
 
     def _handle_file(
         self,
         entry: Entry,
         writer: Writer,
         *,
-        base: PurePosixPath,
         force: bool = False,
         budget: "FileBudget | None" = None,
     ) -> None:
         # Avoid duplicate prints when a file is both an explicit root and encountered during traversal
-        key = str(entry.path)
+        key = str(entry.abs_path or entry.path)
         if key in self._printed_paths:
             return
 
         if budget and budget.spent():
             return
 
-        if not force:
-            if self._excluded(entry):
-                return
-            if not self._extension_match(entry):
-                return
-            if not self.include_empty and self.source.is_empty(entry.path):
-                return
+        # Delegate include/exclude logic to the source
+        if not (force or self.source.should_print(entry)):
+            return
 
-        path_str = self._display_path(entry.path, base)
+        path_str = entry.path.as_posix()
         if self.only_headers:
             writer.write(self.formatter.format(path_str, ...))
         else:
-            blob = self.source.read_file_bytes(entry.path)
-            if _is_text_bytes(blob):
-                text = _decode_text(blob)
-                writer.write(self.formatter.format(path_str, text))
-            else:
+            body_text, is_binary = self.source.read_body_text(entry)
+            if is_binary:
                 writer.write(self.formatter.binary(path_str))
+            else:
+                writer.write(self.formatter.format(path_str, body_text or ""))
         budget and budget.consume()
         self._printed_paths.add(key)
-
-    def _display_path(self, path: PurePosixPath, base: PurePosixPath) -> str:
-        # If path is under base, return a relative POSIX path; otherwise absolute
-        try:
-            rel = os.path.relpath(str(path), start=str(base))
-            if rel == "." or rel == "":
-                return path.name
-            # Make sure we use POSIX separators in output
-            return rel.replace("\\", "/")
-        except Exception:
-            return str(path)

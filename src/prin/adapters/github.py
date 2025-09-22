@@ -14,7 +14,8 @@ from urllib.parse import parse_qs, urlparse
 
 import requests
 
-from ..core import Entry, NodeKind, SourceAdapter
+from ..core import Entry, NodeKind, SourceAdapter, _decode_text, _is_text_bytes
+from ..filters import extension_match, is_excluded
 
 API_BASE = "https://api.github.com"
 MAX_WAIT_SECONDS = 180
@@ -250,15 +251,108 @@ class GitHubRepoSource(SourceAdapter):
         # Prefer explicit ref from URL (commit sha, tag, branch). Fallback to default branch.
         ref = parsed_github_url["ref"] or self._fetch_default_branch(owner, repo)
         self._ctx = _Ctx(owner=owner, repo=repo, ref=ref)
+        # Adapter configuration (from Context)
+        self._exclusions: list[str] = []
+        self._extensions: list[str] = []
+        self._include_empty: bool = False
 
     @functools.lru_cache
     def _fetch_default_branch(self, owner: str, repo: str) -> str:
         r = _get(self._session, f"{API_BASE}/repos/{owner}/{repo}")
         return r.json()["default_branch"]
 
-    def resolve_root(self, root_spec: str) -> PurePosixPath:
+    def resolve(self, root_spec: str) -> PurePosixPath:
         # We treat the repo root as empty path
         return PurePosixPath(root_spec or "")
+
+    # region --- Adapter SRP additions ---
+    def configure(self, ctx) -> None:
+        self._exclusions = ctx.exclusions
+        self._extensions = ctx.extensions
+        self._include_empty = ctx.include_empty
+
+    def _display_rel(self, path: PurePosixPath, base: PurePosixPath) -> PurePosixPath:
+        try:
+            rel = path.relative_to(base)
+            return PurePosixPath(rel)
+        except Exception:
+            return path
+
+    def walk(self, token: str) -> Iterable[Entry]:
+        base = self.resolve(token)
+        # Detect explicit file root by probing list_dir
+        try:
+            _ = list(self.list_dir(base))
+        except NotADirectoryError:
+            name = base.name
+            yield Entry(
+                path=PurePosixPath(name),
+                name=name,
+                kind=NodeKind.FILE,
+                abs_path=base,
+                explicit=True,
+            )
+            return
+        except FileNotFoundError:
+            # No pattern fallback for now
+            return
+
+        stack: list[PurePosixPath] = [base]
+        while stack:
+            current = stack.pop()
+            try:
+                entries = list(self.list_dir(current))
+            except NotADirectoryError:
+                # Treat as file
+                name = current.name
+                yield Entry(
+                    path=self._display_rel(current, base),
+                    name=name,
+                    kind=NodeKind.FILE,
+                    abs_path=current,
+                )
+                continue
+            except FileNotFoundError:
+                continue
+
+            dirs: list[Entry] = []
+            files: list[Entry] = []
+            for e in entries:
+                if e.kind == NodeKind.DIRECTORY:
+                    dirs.append(e)
+                elif e.kind == NodeKind.FILE:
+                    files.append(e)
+            dirs.sort(key=lambda e: e.name.casefold())
+            files.sort(key=lambda e: e.name.casefold())
+
+            for d in reversed(dirs):
+                stack.append(PurePosixPath(d.path))
+            for f in files:
+                rel = self._display_rel(PurePosixPath(f.path), base)
+                yield Entry(
+                    path=rel,
+                    name=f.name,
+                    kind=NodeKind.FILE,
+                    abs_path=PurePosixPath(f.path),
+                )
+
+    def should_print(self, entry: Entry) -> bool:
+        if entry.explicit:
+            return True
+        dummy = Entry(path=entry.path, name=entry.name, kind=entry.kind)
+        if is_excluded(dummy, exclude=self._exclusions):
+            return False
+        if not extension_match(dummy, extensions=self._extensions):
+            return False
+        return not (not self._include_empty and self.is_empty(entry.abs_path or entry.path))
+
+    def read_body_text(self, entry: Entry) -> tuple[str | None, bool]:
+        blob = self.read_file_bytes(entry.abs_path or entry.path)
+        if _is_text_bytes(blob):
+            return _decode_text(blob), False
+        return None, True
+
+    # endregion --- Adapter SRP additions ---
 
     def list_dir(self, dir_path: PurePosixPath) -> Iterable[Entry]:
         path = str(dir_path)

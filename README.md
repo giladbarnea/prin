@@ -45,7 +45,7 @@ prin agents/graph github.com/pydantic/pydantic-ai/{docs,examples} | claude -p "C
 
 #### Attaching a library's documentation to your prompt
 ```sh
-prin . https://docs.framework.io | codex "Leverage framework's API better to remove custom implementations where possible"
+prin . https://docs.framework.io | codex "Leverage framework's API to remove custom implementations."
 ```
 
 See `prin --help` for the full list of options.
@@ -120,7 +120,7 @@ In both cases, the `prin` executable should be available in your shell.
 - Install `uv` if needed: `curl -LsSf https://astral.sh/uv/install.sh | sh`
 - Test: `./test.sh` [pytest options...]
 - Lint and format: `./lint.sh` and `./format.sh`.
- - To add or remove a dependency, use `uv add` or `uv remove`.
+- To add or remove a dependency, use `uv add` or `uv remove`.
 
 ##### Testing adapter-specific suites
 
@@ -163,15 +163,11 @@ You can focus or skip tests for specific adapters via pytest flags:
 
 See [Development Cycle (Tight TDD Loop)](AGENTS.md) for more details.
 
-## Planned (not implemented)
-
-#### CLI Options
+## CLI Options
 
 - [x] `-H`, `--hidden`: Include hidden files and directories in the search (dotfiles and dot-directories).
 
 - [x] `-I`, `--no-ignore` (aliases: `--no-gitignore`, `--no-ignore-dot`, `-u`, `--unrestricted`): Disable gitignore/VCS ignore processing.
-
-- [ ] `--ignore-file <path>`: Add an additional ignore-file in .gitignore format (lower precedence than command-line excludes).
 
 - [x] `-E`, `--exclude <glob or regex>` (repeatable; alias: `--ignore <glob>`): Exclude files or directories by shell-style glob or regex (identified automatically). Repeat to add multiple patterns (e.g., --exclude '*.log').
 
@@ -197,9 +193,13 @@ See [Development Cycle (Tight TDD Loop)](AGENTS.md) for more details.
 
 - [x] `-a`, `--text`, `--include-binary`, `--binary`: Include binary files in the output (e.g., *.pyc, images, archives). Binary files are emitted as headers only in some formats.
 
-- [ ] `-g`, `--glob`, `--force-glob`: Force the interpretation of the search pattern as a glob (instead of a regular expression). Examples: prin -g '*.py', prin -g 'src/**/test_*.rs'.
+## Planned (not implemented)
 
-- [ ] `-S`, `--size <constraint>`: Filter by file size. Format: <+|-><NUM><UNIT> (e.g., +10k, -2M, 500b). Units: b, k, m, g, t, ki, mi, gi, ti.
+- [ ] `--ignore-file <path>`: Add an additional ignore-file in .gitignore format (lower precedence than command-line excludes).
+
+- [ ] `-g`, `--glob`, `--force-glob`: Force the interpretation of the search pattern as a glob (instead of a regular expression). Examples: `prin -g '*.py'`, `prin -g 'src/**/test_*.rs'`.
+
+- [ ] `-S`, `--size <constraint>`: Filter by file size. Format: `<+|-><NUM><UNIT>` (e.g., `+10k`, `-2M`, `500b`). Units: `b`, `k`, `m`, `g`, `t`, `ki`, `mi`, `gi`, `ti`.
 
 - [ ] `-s`, `--case-sensitive`: Force case-sensitive matching of the search pattern. By default, case sensitivity is "smart".
 
@@ -222,10 +222,20 @@ See [Development Cycle (Tight TDD Loop)](AGENTS.md) for more details.
   - [ ] `--yaml` alias for `-o yaml`.
   - [ ] `--csv` alias for `-o csv`.
 
-- [ ] `--no-cache`: Do not cache results of GitHub API calls and HTTP requests.
+- [ ] `--no-cache`: Do not cache GET network requests.
+
+- [ ] `--no-scripts`: Exclude shell scripts and `scripts/` dir.
+
+- [ ] `--limit-output <n>`: Maximum number of accumulated lines in the output.
+
+- [ ] `--include-types`: Include generated type files and type sheds (e.g., `*.pyi`, `*.d.ts`, `typeshed/`)
+
+- [ ] `--exclude-config`: Exclude config files (e.g., `*.toml`, `*.ini`, `*.ini*`)
 
 #### Capabilities
 
 - [ ] Support regex-based matching.
 - [ ] Smart-case matching.
 - [ ] `prin /tmp/par` matches `/tmp/parts.md` and `/tmp/foo/non-partisan.md` (compat with 'fd')
+- [ ] Exclude generated type files and type sheds by default. Complement with `--include-types`.
+- [ ] Exclude config files opt-in. Complement with `--include-config`.
