@@ -17,8 +17,8 @@ Hidden = Glob(".*")
 
 DEFAULT_EXCLUSIONS: list[Pattern] = [
     Glob("*egg-info"),
-    re.compile("build"),
-    re.compile("bin"),
+    re.compile(r"(^|/)build(/|$)"),
+    re.compile(r"^bin(/|$)"),
     re.compile("dist"),
     re.compile("node_modules"),
     re.compile(r"cache", re.IGNORECASE),
@@ -28,7 +28,7 @@ DEFAULT_EXCLUSIONS: list[Pattern] = [
     re.compile("out"),
     re.compile("coverage"),
     # Additional common directories/files
-    re.compile("venv"),
+    re.compile(r"(^|/)venv(/|$)"),
     re.compile("DerivedData"),
     re.compile("Pods"),
     re.compile(r"Carthage/Build"),
@@ -52,7 +52,7 @@ DEFAULT_EXCLUSIONS: list[Pattern] = [
 ]
 
 
-DEFAULT_DOC_EXTENSIONS: list[Glob] = [Glob("*.md"), Glob("*.rst"), Glob("*.mdx")]
+DEFAULT_DOC_EXTENSIONS: list[Glob] = [Glob("*.md"), Glob("*.rst"), Glob("*.mdx"), Glob("*.1")]
 
 
 DEFAULT_TEST_EXCLUSIONS: list[Pattern] = [
