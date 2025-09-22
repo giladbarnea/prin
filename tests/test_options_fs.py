@@ -48,6 +48,9 @@ def test_no_options_specified_everything_is_printed(fs_root: VFS):
 def test_hidden_includes_dotfiles_and_dotdirs(fs_root: VFS):
     out = _run(["--hidden", str(fs_root.root)])
     for hidden_file, content in fs_root.hidden_files.items():
+        # Skip directory-only entries; printer emits files only
+        if content is None:
+            continue
         assert hidden_file in out
         assert content.strip() in out
 
