@@ -219,6 +219,7 @@ class WebsiteSource(SourceAdapter):
         if _is_text_bytes(blob):
             return _decode_text(blob), False
         return None, True
+
     # endregion --- Adapter SRP additions ---
 
     def list_dir(self, dir_path: PurePosixPath) -> Iterable[Entry]:

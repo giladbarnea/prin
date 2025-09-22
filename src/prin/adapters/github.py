@@ -344,15 +344,14 @@ class GitHubRepoSource(SourceAdapter):
             return False
         if not extension_match(dummy, extensions=self._extensions):
             return False
-        if not self._include_empty and self.is_empty(entry.abs_path or entry.path):
-            return False
-        return True
+        return not (not self._include_empty and self.is_empty(entry.abs_path or entry.path))
 
     def read_body_text(self, entry: Entry) -> tuple[str | None, bool]:
         blob = self.read_file_bytes(entry.abs_path or entry.path)
         if _is_text_bytes(blob):
             return _decode_text(blob), False
         return None, True
+
     # endregion --- Adapter SRP additions ---
 
     def list_dir(self, dir_path: PurePosixPath) -> Iterable[Entry]:

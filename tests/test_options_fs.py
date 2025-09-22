@@ -174,6 +174,7 @@ def test_tag_md_outputs_markdown_format(fs_root: VFS):
 
 def test_unrestricted_includes_gitignored(fs_root: VFS):
     import pytest
+
     pytest.skip(".gitignore behavior disabled")
     out = _run(["-u", str(fs_root.root)])
     # Gitignored file should be included due to --no-ignore
@@ -186,6 +187,7 @@ def test_unrestricted_includes_gitignored(fs_root: VFS):
 
 def test_uu_includes_hidden_and_gitignored(fs_root: VFS):
     import pytest
+
     pytest.skip(".gitignore behavior disabled")
     out = _run(["-uu", str(fs_root.root)])
     # Hidden file should be included
