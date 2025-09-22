@@ -6,10 +6,7 @@
 - [ ] `-t`, `--tag` is a bad name. It should be `--format` or `--output-format`, or something with 'seperator'.
 - [ ] Network requests cache TTL
 - [ ] BUG: `prin --no-docs -E 'tests' -E internal . -E '*.sh' README.md` fails arg parsing with `prin: error: unrecognized arguments: README.md` because of period+README.md+--no-docs.
-<<<<<<< HEAD
-=======
 - [ ] add .rtf to docs format.
->>>>>>> master
 
 ## PARITIES.md
 
@@ -23,8 +20,4 @@
 - [ ] Suppressions in PARITIES.md
   - [ ] Inline opt-outs with explicit tokens: `// noqa: <token[, token...]>`
 
-<<<<<<< HEAD
 - [ ] Parse lines like `src/prin/core.py`: `DepthFirstPrinter._excluded`, `_extension_match`.
-=======
-- [ ] Parse lines like `src/prin/core.py`: `DepthFirstPrinter._excluded`, `_extension_match`.
->>>>>>> master
