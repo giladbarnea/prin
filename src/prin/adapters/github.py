@@ -7,6 +7,8 @@ import json
 import os
 import time
 from contextlib import suppress
+import re
+from fnmatch import fnmatch
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any, Dict, Iterable, Optional, TypedDict
@@ -16,6 +18,7 @@ import requests
 
 from ..core import Entry, NodeKind, SourceAdapter, _decode_text, _is_text_bytes
 from ..filters import extension_match, is_excluded
+from ..path_classifier import classify_pattern
 
 API_BASE = "https://api.github.com"
 MAX_WAIT_SECONDS = 180
@@ -294,7 +297,28 @@ class GitHubRepoSource(SourceAdapter):
             )
             return
         except FileNotFoundError:
-            # No pattern fallback for now
+            # Pattern fallback: traverse from repository root and match against display-relative paths
+            anchor = PurePosixPath("")
+            kind = classify_pattern(token)
+            for e in self._walk_dfs(anchor):
+                f_abs = PurePosixPath(str(e.path))
+                rel = self._display_rel(f_abs, anchor)
+                path_str = rel.as_posix()
+                matched = False
+                if kind == "glob":
+                    matched = fnmatch(path_str, token)
+                else:
+                    try:
+                        matched = re.search(token, path_str) is not None
+                    except re.error:
+                        matched = False
+                if matched:
+                    yield Entry(
+                        path=rel,
+                        name=e.name,
+                        kind=e.kind,
+                        abs_path=f_abs,
+                    )
             return
 
         stack: list[PurePosixPath] = [base]
@@ -331,6 +355,49 @@ class GitHubRepoSource(SourceAdapter):
                 rel = self._display_rel(PurePosixPath(f.path), base)
                 yield Entry(
                     path=rel,
+                    name=f.name,
+                    kind=NodeKind.FILE,
+                    abs_path=PurePosixPath(f.path),
+                )
+
+    def _walk_dfs(self, root: PurePosixPath) -> Iterable[Entry]:
+        """
+        Depth-first traversal starting at the given repository path.
+        Yields files only in stable order (directories first, then files, both case-insensitive).
+        """
+        stack: list[PurePosixPath] = [root]
+        while stack:
+            current = stack.pop()
+            try:
+                entries = list(self.list_dir(current))
+            except NotADirectoryError:
+                # Treat as file
+                name = current.name
+                yield Entry(
+                    path=current,
+                    name=name,
+                    kind=NodeKind.FILE,
+                    abs_path=current,
+                )
+                continue
+            except FileNotFoundError:
+                continue
+
+            dirs: list[Entry] = []
+            files: list[Entry] = []
+            for e in entries:
+                if e.kind == NodeKind.DIRECTORY:
+                    dirs.append(e)
+                elif e.kind == NodeKind.FILE:
+                    files.append(e)
+            dirs.sort(key=lambda e: e.name.casefold())
+            files.sort(key=lambda e: e.name.casefold())
+
+            for d in reversed(dirs):
+                stack.append(PurePosixPath(d.path))
+            for f in files:
+                yield Entry(
+                    path=PurePosixPath(f.path),
                     name=f.name,
                     kind=NodeKind.FILE,
                     abs_path=PurePosixPath(f.path),
