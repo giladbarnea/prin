@@ -66,12 +66,13 @@ def fs_root() -> VFS:
         "src/data.json": '{"a":1}\n',
         "install.sh": "echo 'install'\n",
         "app/testing/assess_students.py": "def assess_students():\n    ...\n",  # Should be included.
+        # This is a regular code file under docs/, not a docs file by extension
+        "docs/build.py": "def build_docs():\n    ...\n",
         # "gitignored.txt": "should be ignored by default\n",
     }
     doc_files: dict[Path, str] = {
         "docs/readme.md": "# Docs\n",
         "docs/guide.rst": "RST content\n",
-        "docs/build.py": "def build_docs():\n    ...\n",  # Tricky for two reasons: should be ignored with --no-docs even though it's a regular file, and 'build' dirs are excluded by default.
         "CONTRIBUTING.md": "# Contributing\n",
         "foo/share/man/man1/foo.1": "foo(1)\n",
     }
@@ -93,9 +94,10 @@ def fs_root() -> VFS:
     hidden_files: dict[Path, str] = {
         ".env": "SECRET=1\n",
         # ".gitignore": "gitignored.txt\n",
-        ".venv/something": "SOMETHING\n",  # This makes the tests fail (it should work after regex is default)
-        ".github/": None,
-        "app/submodule/.git/": None,
+        ".venv/something": "SOMETHING\n",
+        # represent hidden directories via a file inside them (we print files only)
+        ".github/config": "GITHUB\n",
+        "app/submodule/.git/config": "GIT\n",
     }
     test_files: dict[Path, str] = {
         "tests/test_mod.py": "def test_x():\n    assert True\n",
