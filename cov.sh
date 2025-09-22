@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-set -uo pipefail
-source .common.sh
+set -o pipefail
 
 function main(){
-    ensure_uv_installed
+    source .common.sh
+    ensure_uv
     set -e
     set -x
-    uv run coverage run --source=. -m pytest "$@"
+    uv run coverage run --source=. -m pytest tests
     uv run coverage report --show-missing
     uv run coverage xml -o coverage.xml
     uv run coverage html --title "${@-coverage}"
