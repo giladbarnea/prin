@@ -32,7 +32,17 @@ Adapters own traversal. The printer (engine) is source-agnostic and is limited t
 - Adapters consume config via `SourceAdapter.configure(Context)`; keep `Context` in sync with CLI options.
 
 ## Filtering semantics
-// missing; todo
+
+prin matches tokens in two modes, uniformly across adapters:
+
+- Existing path mode: If a positional token resolves to an existing root (file or directory) in the adapter’s domain, traversal starts at that root and printed paths are relative to the chosen base (typically the adapter anchor/root). Explicit file roots are force-included regardless of filters.
+- Pattern mode: If a token does not resolve as a path, it is treated as a pattern:
+  - Classifier distinguishes `glob` vs `regex`.
+  - Matching is performed against the full display-relative path (not just the basename).
+  - Case sensitivity follows the underlying engine (Python `re` for regex, `fnmatch` for globs).
+  - Default filters (docs, binary, tests, hidden, etc.) still apply unless toggled.
+
+For GitHub URLs, subpaths may include literal segments and a trailing pattern segment. The literal base is traversed and the pattern matches the full display-relative path under that base.
 
 ## How to install, execute, test and lint
 
