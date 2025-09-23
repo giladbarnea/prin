@@ -251,8 +251,13 @@ class GitHubRepoSource(SourceAdapter):
         self._session.headers.update(_auth_headers())
         parsed_github_url: GitHubURL = parse_github_url(url)
         owner, repo = parsed_github_url["owner"], parsed_github_url["repo"]
-        # Prefer explicit ref from URL (commit sha, tag, branch). Fallback to default branch.
-        ref = parsed_github_url["ref"] or self._fetch_default_branch(owner, repo)
+        mock_root = os.getenv("PRIN_GH_MOCK_ROOT")
+        # Prefer explicit ref; in mock mode, avoid network and use a dummy ref
+        if mock_root:
+            ref = parsed_github_url["ref"] or "mock"
+        else:
+            # Fallback to default branch via API
+            ref = parsed_github_url["ref"] or self._fetch_default_branch(owner, repo)
         self._ctx = _Ctx(owner=owner, repo=repo, ref=ref)
         # Adapter configuration (from Context)
         self._exclusions: list[str] = []
@@ -473,6 +478,25 @@ class GitHubRepoSource(SourceAdapter):
 
     def list_dir(self, dir_path: PurePosixPath) -> Iterable[Entry]:
         path = str(dir_path)
+        mock_root = os.getenv("PRIN_GH_MOCK_ROOT")
+        if mock_root:
+            local = (Path(mock_root) / path).resolve()
+            if local.is_file():
+                raise NotADirectoryError(path or ".")
+            if not local.exists():
+                raise FileNotFoundError(path or ".")
+            entries: list[Entry] = []
+            with os.scandir(local) as it:
+                for entry in it:
+                    kind = NodeKind.OTHER
+                    if entry.is_dir(follow_symlinks=False):
+                        kind = NodeKind.DIRECTORY
+                    elif entry.is_file(follow_symlinks=False):
+                        kind = NodeKind.FILE
+                    rel_path = (PurePosixPath(path) / entry.name) if path else PurePosixPath(entry.name)
+                    entries.append(Entry(path=rel_path, name=entry.name, kind=kind))
+            return entries
+
         owner, repo, ref = self._ctx.owner, self._ctx.repo, self._ctx.ref
         url = (
             f"{API_BASE}/repos/{owner}/{repo}/contents/{path}"
