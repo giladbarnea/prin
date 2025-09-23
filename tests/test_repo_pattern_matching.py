@@ -13,6 +13,9 @@ pytestmark = [pytest.mark.repo, pytest.mark.network]
 
 def _run_headers_single_arg(arg: str) -> str:
     buf = StringWriter()
+    import os
+    mock_root = os.path.join("tests", "data", "repo_mocks", "TypingMind", "awesome-typingmind")
+    os.environ.setdefault("PRIN_GH_MOCK_ROOT", mock_root)
     prin_main(argv=["--only-headers", arg], writer=buf)
     return buf.text()
 

@@ -507,6 +507,16 @@ class GitHubRepoSource(SourceAdapter):
         return entries
 
     def read_file_bytes(self, file_path: PurePosixPath) -> bytes:
+        # Optional local mock for tests: if PRIN_GH_MOCK_ROOT is set, read from there
+        mock_root = os.getenv("PRIN_GH_MOCK_ROOT")
+        if mock_root:
+            local_path = Path(mock_root) / str(file_path)
+            if local_path.exists():
+                try:
+                    return local_path.read_bytes()
+                except Exception:
+                    pass
+
         owner, repo, ref = self._ctx.owner, self._ctx.repo, self._ctx.ref
         # Try contents API first
         file_contents_response = _get(
