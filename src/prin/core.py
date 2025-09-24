@@ -221,8 +221,14 @@ class DepthFirstPrinter:
                 if budget is not None and budget.spent():
                     return
                 self._handle_file(entry, writer, budget=budget)
-    
-    def run_pattern(self, pattern: str, search_path: str | None, writer: Writer, budget: "FileBudget | None" = None) -> None:
+
+    def run_pattern(
+        self,
+        pattern: str,
+        search_path: str | None,
+        writer: Writer,
+        budget: "FileBudget | None" = None,
+    ) -> None:
         """New interface: run with pattern and search path."""
         if budget is not None and budget.spent():
             return

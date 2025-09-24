@@ -9,16 +9,25 @@ Print the contents of full directories, remote GitHub repositories and websites 
 
 ## Basic Usage
 
-`prin` accepts one or more paths to directories, files, remote repositories or websites, and prints the paths and contents of the files in them, in a way that is easy for LLMs to understand.
+`prin` follows a "what-then-where" pattern similar to `fd`: the first argument is a pattern (glob or regex) and the second is where to search.
 
 ```sh
-# Print the contents of the codebase you're in
-prin .
+# Search for Python files in the src directory
+prin "*.py" src/
 
-# Print the contents of the `docs` directory alongside the contents of the `rust-lang/book` remote repository
-prin docs github.com/rust-lang/book
+# Find all markdown files in the current directory
+prin "*.md"
 
-# Print specific files
+# Use regex to find test files
+prin "test_.*\.py$" .
+
+# Print all files in the docs directory
+prin "" docs/
+
+# Search in GitHub repositories
+prin "*.rs" github.com/rust-lang/book
+
+# Multiple paths (backwards compatible)
 prin AGENTS.md src/**/*.py
 ```
 
@@ -38,9 +47,9 @@ Each can be included in the output by specifying its corresponding `--include-..
 
 `prin` can easily be used together with other tools, such as terminal code agents and the clipboard for a powerful combination.
 
-#### Piping a local module and code examples from a remote repository to `claude`
+#### Finding specific patterns and piping to `claude`
 ```sh
-prin agents/graph github.com/pydantic/pydantic-ai/{docs,examples} | claude -p "ConversationManager errors when invoking CoderAgent. Fix it."
+prin "*.py" agents/graph | claude -p "ConversationManager errors when invoking CoderAgent. Fix it."
 ```
 
 #### Attaching a library's documentation to your prompt
@@ -86,16 +95,25 @@ def main(): ...
 
 ## Matching
 
-`prin` treats given arguments as glob:
+The first positional argument is a pattern that can be either a glob or regex:
+
 ```sh
-# Print all markdown files in the current dir
-prin '*.md'
+# Glob pattern - matches all markdown files
+prin '*.md' .
+
+# Regex pattern - matches files starting with "test_"
+prin '^test_.*\.py$' src/
+
+# Empty pattern - lists all files
+prin '' docs/
 ```
 
-You can specify file extensions:
+Patterns are matched against the full relative path from the search location.
+
+You can also filter by file extensions using the `-e` flag:
 ```sh
 # Print all markdown and rst files in the project: .md, .mdx, .mdc, .rst
-prin -e md -e rst -e 'md*'
+prin '' . -e md -e rst -e 'md*'
 ```
 
 ## Including paths that are excluded by default

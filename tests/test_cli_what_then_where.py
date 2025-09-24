@@ -4,12 +4,9 @@ Test the CLI interface for the new what-then-where design.
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
-from prin.cli_common import Context, parse_common_args
-from tests.utils import write_file
+from prin.cli_common import parse_common_args
 
 
 def test_cli_pattern_then_path():
@@ -46,7 +43,7 @@ def test_cli_explicit_file():
 
 
 def test_cli_regex_pattern():
-    """Test CLI parsing with regex pattern: 'prin "^test_.*\.py$" .'"""
+    r"""Test CLI parsing with regex pattern: 'prin "^test_.*\.py$" .'"""
     args = parse_common_args(["^test_.*\\.py$", "."])
     assert args.pattern == "^test_.*\\.py$"
     assert args.search_path == "."

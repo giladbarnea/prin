@@ -7,13 +7,13 @@ import pytest
 from prin.core import StringWriter
 from prin.prin import main as prin_main
 
-
 pytestmark = [pytest.mark.repo, pytest.mark.network]
 
 
 def _run_headers_single_arg(arg: str) -> str:
     buf = StringWriter()
     import os
+
     mock_root = os.path.join("tests", "data", "repo_mocks", "TypingMind", "awesome-typingmind")
     os.environ.setdefault("PRIN_GH_MOCK_ROOT", mock_root)
     prin_main(argv=["--only-headers", arg], writer=buf)
@@ -21,7 +21,7 @@ def _run_headers_single_arg(arg: str) -> str:
 
 
 def test_repo_regex_root_matches_readme_headers_only():
-    arg = "github.com/TypingMind/awesome-typingmind/^README\.md$"
+    arg = r"github.com/TypingMind/awesome-typingmind/^README\.md$"
     out = _run_headers_single_arg(arg)
     assert re.search(r"^README\.md$", out, re.MULTILINE)
 
@@ -88,4 +88,3 @@ def test_repo_extensions_with_pattern_filters():
     prin_main(argv=["--only-headers", "-e", "md", arg], writer=buf)
     out = buf.text()
     assert re.search(r"^README\.md$", out, re.MULTILINE)
-

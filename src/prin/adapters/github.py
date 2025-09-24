@@ -5,11 +5,11 @@ import functools
 import hashlib
 import json
 import os
+import re
 import time
 from contextlib import suppress
-import re
-from fnmatch import fnmatch
 from dataclasses import dataclass
+from fnmatch import fnmatch
 from pathlib import Path, PurePosixPath
 from typing import Any, Dict, Iterable, Optional, TypedDict
 from urllib.parse import parse_qs, urlparse
@@ -297,7 +297,7 @@ class GitHubRepoSource(SourceAdapter):
         """
         sub = (subpath or "").strip("/")
         if not sub:
-            return PurePosixPath(""), None
+            return PurePosixPath(), None
         parts = [p for p in sub.split("/") if p]
         split_index: int | None = None
         for i, seg in enumerate(parts):
@@ -306,7 +306,7 @@ class GitHubRepoSource(SourceAdapter):
                 break
         if split_index is None:
             return PurePosixPath(sub), None
-        base = PurePosixPath("/".join(parts[:split_index])) if split_index > 0 else PurePosixPath("")
+        base = PurePosixPath("/".join(parts[:split_index])) if split_index > 0 else PurePosixPath()
         pattern = "/".join(parts[split_index:])
         return base, pattern
 
@@ -353,7 +353,7 @@ class GitHubRepoSource(SourceAdapter):
             return
         except FileNotFoundError:
             # Pattern fallback: traverse from repository root and match against display-relative paths
-            anchor = PurePosixPath("")
+            anchor = PurePosixPath()
             kind = classify_pattern(token)
             for e in self._walk_dfs(anchor):
                 f_abs = PurePosixPath(str(e.path))
@@ -425,10 +425,10 @@ class GitHubRepoSource(SourceAdapter):
         if search_path:
             parsed = parse_github_url(search_path)
             subpath = parsed["subpath"].strip("/")
-            search_root = PurePosixPath(subpath) if subpath else PurePosixPath("")
+            search_root = PurePosixPath(subpath) if subpath else PurePosixPath()
         else:
-            search_root = PurePosixPath("")
-        
+            search_root = PurePosixPath()
+
         # If no pattern, list all files
         if not pattern:
             # Check if search_root is a file
@@ -452,14 +452,14 @@ class GitHubRepoSource(SourceAdapter):
                     explicit=True,
                 )
             return
-        
+
         # Pattern matching
         kind = classify_pattern(pattern)
-        
+
         for e in self._walk_dfs(search_root):
             f_abs = PurePosixPath(str(e.path))
             rel = self._display_rel(f_abs, search_root)
-            
+
             match = False
             if kind == "glob":
                 match = fnmatch(str(rel), pattern)
@@ -468,7 +468,7 @@ class GitHubRepoSource(SourceAdapter):
                     match = re.search(pattern, str(rel)) is not None
                 except re.error:
                     match = False
-            
+
             if match:
                 yield Entry(
                     path=rel,
@@ -555,7 +555,9 @@ class GitHubRepoSource(SourceAdapter):
                         kind = NodeKind.DIRECTORY
                     elif entry.is_file(follow_symlinks=False):
                         kind = NodeKind.FILE
-                    rel_path = (PurePosixPath(path) / entry.name) if path else PurePosixPath(entry.name)
+                    rel_path = (
+                        (PurePosixPath(path) / entry.name) if path else PurePosixPath(entry.name)
+                    )
                     entries.append(Entry(path=rel_path, name=entry.name, kind=kind))
             return entries
 
@@ -569,7 +571,10 @@ class GitHubRepoSource(SourceAdapter):
             r = _get(self._session, url, params={"ref": ref})
         except requests.HTTPError as e:  # type: ignore[attr-defined]
             # Translate 404 to FileNotFoundError so callers can fall back to pattern matching
-            if getattr(e, "response", None) is not None and getattr(e.response, "status_code", None) == 404:
+            if (
+                getattr(e, "response", None) is not None
+                and getattr(e.response, "status_code", None) == 404
+            ):
                 raise FileNotFoundError(path or ".")
             raise
         items = r.json()

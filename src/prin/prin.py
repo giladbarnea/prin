@@ -90,7 +90,7 @@ def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None
         # New style: pattern + search_path
         search_path = ctx.search_path
         pattern = ctx.pattern
-        
+
         # Determine source type based on search_path
         if search_path and util.is_github_url(search_path):
             # GitHub repository

@@ -310,10 +310,19 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
     # Expand known alias flags before parsing. If argv is None, use sys.argv[1:].
     effective_argv = _expand_cli_aliases(argv if argv is not None else sys.argv[1:])
     args = parser.parse_args(effective_argv)
+
+    # Handle backwards compatibility
+    # 1. If extra_args provided, it's definitely old style (3+ positional args)
+    # 2. If pattern is an existing path and no search_path, it's likely old style
+    import os
+    is_old_style = bool(args.extra_args)
+    if not is_old_style and args.pattern and not args.search_path:
+        # Check if pattern looks like an existing path
+        if os.path.exists(args.pattern) or os.path.sep in args.pattern:
+            is_old_style = True
     
-    # Handle backwards compatibility - if extra_args provided, fall back to old style
-    if args.extra_args:
-        # Old style: multiple paths
+    if is_old_style:
+        # Old style: treat all positional args as paths
         all_paths = [args.pattern] if args.pattern else []
         if args.search_path:
             all_paths.append(args.search_path)
@@ -336,7 +345,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
             tag=args.tag,
             max_files=args.max_files,
         )
-    
+
     # New style: pattern and search_path
     return Context(
         paths=[],  # Empty in new style

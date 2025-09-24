@@ -210,7 +210,7 @@ class WebsiteSource(SourceAdapter):
         search_path is ignored for websites (the base URL is already set).
         """
         ctx = self._ensure_ctx()
-        
+
         # If no pattern, list all URLs
         if not pattern:
             for key in sorted(ctx.key_to_url.keys(), key=lambda s: s.casefold()):
@@ -221,22 +221,24 @@ class WebsiteSource(SourceAdapter):
                     abs_path=PurePosixPath(key),
                 )
             return
-        
+
         # Pattern matching on URL keys
         from ..path_classifier import classify_pattern
+
         kind = classify_pattern(pattern)
-        
+
         for key in sorted(ctx.key_to_url.keys(), key=lambda s: s.casefold()):
             match = False
             if kind == "glob":
                 from fnmatch import fnmatch
+
                 match = fnmatch(key, pattern)
             else:
                 try:
                     match = re.search(pattern, key) is not None
                 except re.error:
                     match = False
-            
+
             if match:
                 yield Entry(
                     path=PurePosixPath(key),
