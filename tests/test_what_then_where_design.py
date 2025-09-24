@@ -15,7 +15,11 @@ from tests.utils import write_file
 
 
 def test_pattern_then_path_basic(prin_tmp_path: Path):
-    """Test basic pattern-then-path: 'prin "*.py" .' lists all py files"""
+    """
+    Test basic pattern-then-path: 'prin "*.py" .' lists all py files (excluding test_main.py because it's excluded by default).
+
+    Note: this test is failing because tests/test_main.py is for some reason included in actual_entries.
+    """
     # Setup files
     write_file(prin_tmp_path / "src" / "main.py", "print('main')")
     write_file(prin_tmp_path / "src" / "util.py", "print('util')")
@@ -34,7 +38,7 @@ def test_pattern_then_path_basic(prin_tmp_path: Path):
     # For now, test that we get the right files
     actual_entries = list(src.walk_pattern(pattern, search_path))
 
-    actual_paths = {str(e.path) for e in actual_entries}
+    actual_paths = {e.path.as_posix() for e in actual_entries}
     # Should not include test_main.py from tests/ or readme.md because they are excluded by default
     assert actual_paths == {"src/main.py", "src/util.py", "foo/foo_main.py"}
 
@@ -59,7 +63,7 @@ def test_pattern_then_path_basic_with_path(prin_tmp_path: Path):
     # For now, test that we get the right files
     actual_entries = list(src.walk_pattern(pattern, search_path))
 
-    actual_paths = {str(e.path) for e in actual_entries}
+    actual_paths = {e.path.as_posix() for e in actual_entries}
     # Should not include test_main.py from tests/ or readme.md because they are excluded by default
     assert actual_paths == {"src/main.py", "src/util.py"}
 
@@ -86,7 +90,7 @@ def test_regex_pattern_then_path(prin_tmp_path: Path):
     # Then, test that files are matched when include_tests is True
     src.configure(Context(include_tests=True))
     actual_entries = list(src.walk_pattern(pattern, search_path))
-    actual_paths = {str(e.path) for e in actual_entries}
+    actual_paths = {e.path.as_posix() for e in actual_entries}
 
     assert actual_paths == {"test_unit.py", "test_integration.py", "src/test_helper.py"}
 
@@ -102,7 +106,7 @@ def test_no_pattern_lists_all_in_path(prin_tmp_path: Path):
 
     # Empty pattern means all files
     entries = list(src.walk_pattern("", str(prin_tmp_path)))
-    actual_paths = {str(e.path) for e in entries}
+    actual_paths = {e.path.as_posix() for e in entries}
 
     assert actual_paths == {"a.txt", "b.py", "sub/c.md"}
 
@@ -125,7 +129,7 @@ def test_pattern_no_path_searches_cwd(prin_tmp_path: Path):
 
         # Pattern without path = search cwd
         entries = list(src.walk_pattern("*.md", None))
-        actual_paths = {str(e.path) for e in entries}
+        actual_paths = {e.path.as_posix() for e in entries}
 
         assert actual_paths == {"README.md", "docs/guide.md"}
     finally:
@@ -150,4 +154,4 @@ def test_explicit_file_path_overrides_defaults(prin_tmp_path: Path):
 
     assert actual_entries
     assert actual_entries[0].explicit is True
-    assert "tests/test_main.py" in str(actual_entries[0].path)
+    assert "tests/test_main.py" in actual_entries[0].path.as_posix()
