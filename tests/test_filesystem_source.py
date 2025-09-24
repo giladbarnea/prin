@@ -255,7 +255,7 @@ def test_walk_dir_under_anchor(prin_tmp_path: Path):
     src = FileSystemSource(prin_tmp_path)
     entries = list(src.walk_pattern(pattern="", search_path=None))
     # Filter for our files under anchor and ensure only files are yielded
-    actual_display_names = {e.name for e in entries}
+    actual_display_names = {e.path.as_posix() for e in entries}
     expected_display_names = {
         "dir/b.txt",
         "dir/A.py",
@@ -306,7 +306,7 @@ def test_walk_dfs_orders_dirs_then_files_case_insensitive(prin_tmp_path: Path):
     # Only files
     assert all(e.kind.name == "FILE" for e in entries)
     # Case-insensitive names at the same level and files yielded before descending into subdirs
-    paths = [Path(str(e.path)).name for e in entries]
+    paths = [e.path.as_posix() for e in entries]
     # Root files 'A.py' then 'b.txt' (case-insensitive) appear before subtree 'c.md'
     assert paths.index("A.py") < paths.index("b.txt")
     assert paths.index("b.txt") < paths.index("c.md")

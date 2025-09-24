@@ -5,12 +5,15 @@ import os
 import re
 from fnmatch import fnmatch
 from pathlib import Path, PurePosixPath
-from typing import Iterable
+from typing import TYPE_CHECKING, Iterable
 
 from prin import core
 from prin.core import Entry, NodeKind, SourceAdapter
 from prin.filters import extension_match, is_excluded
 from prin.path_classifier import classify_pattern
+
+if TYPE_CHECKING:
+    from prin.cli_common import Context
 
 
 def settrace_if_returns(value):
@@ -261,13 +264,13 @@ class FileSystemSource(SourceAdapter):
                 )
 
     # Configuration from Context
-    def configure(self, ctx) -> None:
+    def configure(self, ctx: "Context") -> None:
         self.exclusions = ctx.exclusions
         self.extensions = ctx.extensions
         self.include_empty = ctx.include_empty
 
-    # Source-owned filtering decision
     def should_print(self, entry: Entry) -> bool:
+        """Source-owned filtering decision"""
         if entry.explicit:
             return True
         # Exclusion rules

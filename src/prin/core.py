@@ -22,10 +22,13 @@ class NodeKind(Enum):
 class Entry:
     path: PurePosixPath
     name: str
+    """The display name."""
+
     kind: NodeKind
-    # Absolute path identifier for reading (when path is used for display/filtering)
+    """Absolute path identifier for reading (when path is used for display/filtering)"""
+
     abs_path: PurePosixPath | None = None
-    # True when explicitly provided as a root token (force-include semantics)
+    """True when explicitly provided as a root token (force-include semantics)"""
     explicit: bool = False
 
 
