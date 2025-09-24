@@ -24,7 +24,13 @@
       "titleBar.activeForeground": "#e7e7e7",
       "titleBar.inactiveBackground": "#4f4e9e99",
       "titleBar.inactiveForeground": "#e7e7e799"
-    }
+    },
+    "cursorpyright.analysis.diagnosticMode": "workspace",
+    "cursorpyright.analysis.disableWorkspaceSymbol": true,
+    "cursorpyright.analysis.typeCheckingMode": "basic",
+    "cursorpyright.analysis.include": [
+      "src"
+    ]
   },
   "tasks": {
     "version": "2.0.0",
