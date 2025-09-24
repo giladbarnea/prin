@@ -97,11 +97,6 @@ def _setup_tree(anchor: Path) -> _Tree:
     )
 
 
-@pytest.mark.skip("resolve_display removed; adapter computes display internally in walk()")
-def test_resolve_display():
-    pass
-
-
 @pytest.mark.parametrize(
     ("case_key", "expect"),
     [
@@ -262,10 +257,10 @@ def test_walk_dir_under_anchor(prin_tmp_path: Path):
     # Filter for our files under anchor and ensure only files are yielded
     actual_display_names = {e.name for e in entries}
     expected_display_names = {
+        "dir/b.txt",
         "dir/A.py",
         "dir/a.md",
         "dir/Z.json",
-        "dir/b.txt",
         "dir/sub/c.py",
     }
     assert actual_display_names == expected_display_names

@@ -124,12 +124,12 @@ class Context:
 def _normalize_extension_to_glob(val: TPath | Glob) -> Glob:
     """
     Ensures `val` is returned as a `Glob("*.ext")`.
-    >>> _normalize_extension_to_glob("ext")
-    Glob("*.ext")
-    >>> _normalize_extension_to_glob(".ext")
-    Glob("*.ext")
-    >>> _normalize_extension_to_glob("*.ext")
-    Glob("*.ext")
+    >>> _normalize_extension_to_glob("ext") == Glob("*.ext")
+    True
+    >>> _normalize_extension_to_glob(".ext") == Glob("*.ext")
+    True
+    >>> _normalize_extension_to_glob("*.ext") == Glob("*.ext")
+    True
     >>> _normalize_extension_to_glob("like/this.ext")
     ValueError: Extension cannot be empty or contain path separator 'like/this.ext'
     >>> _normalize_extension_to_glob("")
