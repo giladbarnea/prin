@@ -30,6 +30,8 @@ class Entry:
     abs_path: PurePosixPath | None = None
     """True when explicitly provided as a root token (force-include semantics)"""
     explicit: bool = False
+    # Optional raw display path string (preserves prefixes like './' or '../')
+    display_path: str | None = None
 
 
 class Writer(Protocol):
@@ -250,7 +252,7 @@ class DepthFirstPrinter:
         if not (force or self.source.should_print(entry)):
             return
 
-        path_str = entry.path.as_posix()
+        path_str = entry.display_path if entry.display_path is not None else entry.path.as_posix()
         if self.only_headers:
             writer.write(self.formatter.format(path_str, ...))
         else:

@@ -26,9 +26,10 @@ def test_no_options_specified_everything_is_printed(fs_root: VFS):
         assert path in fs_root.paths  # Precondition
         content = fs_root.contents[path]
         # import pudb; pudb.set_trace()
-        assert f"<{path}>" in out
+        # Absolute where → absolute printed paths
+        assert f"<{(fs_root.root / path).resolve()}>" in out
         assert content in out
-        assert f"</{path}>" in out
+        assert f"</{(fs_root.root / path).resolve()}>" in out
 
     absent = set(fs_root.paths) - set(present)
     for path in absent:
@@ -38,7 +39,7 @@ def test_no_options_specified_everything_is_printed(fs_root: VFS):
         # hidden files are controlled by --hidden and are orthogonal here.
         if path.startswith(".") or "/." in path:
             continue
-        assert f"<{path}>" not in out
+        assert f"<{(fs_root.root / path).resolve()}>" not in out
         # All non-empty absent contents must not appear in the output
         if content.strip():
             import re
@@ -92,9 +93,9 @@ def test_include_empty_includes_truly_empty_and_semantically_empty(fs_root: VFS)
 def test_only_headers_prints_headers_only(fs_root: VFS):
     out = _run(["", str(fs_root.root), "--include-tests", "--only-headers"])
     # Expect no bodies, only paired headers; count a few known headers
-    assert re.search("^foo.py$", out, re.MULTILINE)
-    assert re.search("^src/app.py$", out, re.MULTILINE)
-    assert re.search("^tests/test_mod.py$", out, re.MULTILINE)
+    assert re.search(f"^{(fs_root.root / 'foo.py').resolve()}$", out, re.MULTILINE)
+    assert re.search(f"^{(fs_root.root / 'src' / 'app.py').resolve()}$", out, re.MULTILINE)
+    assert re.search(f"^{(fs_root.root / 'tests' / 'test_mod.py').resolve()}$", out, re.MULTILINE)
     # Ensure bodies are not present (no function source snippet). Remove the gitignored.txt patch once we support gitignore parsing.
     random_content = random.choice(
         list(filter(lambda x: bool(x.strip()), fs_root.contents.values()))
@@ -104,8 +105,8 @@ def test_only_headers_prints_headers_only(fs_root: VFS):
 
 def test_extension_filters_by_extension(fs_root: VFS):
     out = _run(["", str(fs_root.root), "--extension", "py"])
-    assert "<foo.py>" in out
-    assert "<src/app.py>" in out
+    assert f"<{(fs_root.root / 'foo.py').resolve()}>" in out
+    assert f"<{(fs_root.root / 'src' / 'app.py').resolve()}>" in out
     assert "readme.md" not in out
     assert "data.json" not in out
 
@@ -118,7 +119,7 @@ def test_module_named_locking_is_not_excluded(fs_root: VFS):
     write_file(mod_path, "print('locking module ok')\n")
 
     out = _run(["", str(fs_root.root)])
-    assert "<src/locking/main.py>" in out
+    assert f"<{(fs_root.root / 'src' / 'locking' / 'main.py').resolve()}>" in out
 
 
 def test_literal_exclude_token_excludes_substrings_with_regex_default(fs_root: VFS):
@@ -135,12 +136,12 @@ def test_literal_exclude_token_excludes_substrings_with_regex_default(fs_root: V
     out = _run(["", str(fs_root.root), "--exclude", "pizza"])
 
     # Excluded
-    assert "<src/pizza/main.py>" not in out
-    assert "<src/pizza.py>" not in out
+    assert f"<{(fs_root.root / 'src' / 'pizza' / 'main.py').resolve()}>" not in out
+    assert f"<{(fs_root.root / 'src' / 'pizza.py').resolve()}>" not in out
 
     # With regex-by-default, substring matches are excluded as well
-    assert "<src/nicepizzas/main.py>" not in out
-    assert "<src/nicepizzas.py>" not in out
+    assert f"<{(fs_root.root / 'src' / 'nicepizzas' / 'main.py').resolve()}>" not in out
+    assert f"<{(fs_root.root / 'src' / 'nicepizzas.py').resolve()}>" not in out
 
 
 def test_exclude_glob_and_literal(fs_root: VFS):
@@ -167,7 +168,7 @@ def test_no_ignore_respects_gitignore_unless_disabled(fs_root: VFS):
 def test_tag_md_outputs_markdown_format(fs_root: VFS):
     out = _run(["", str(fs_root.root), "--tag", "md"])
     for regular_file, content in fs_root.regular_files.items():
-        assert f"## FILE: {regular_file}" in out
+        assert f"## FILE: {(fs_root.root / regular_file).resolve()}" in out
         assert content in out
     assert "/>" not in out
 

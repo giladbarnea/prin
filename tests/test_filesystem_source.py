@@ -279,9 +279,9 @@ def test_walk_root_outside_anchor(prin_tmp_path: Path, tmp_path: Path):
     src = FileSystemSource(prin_tmp_path)
     entries = list(src.walk_pattern(pattern="", search_path=str(outside)))
     paths = [e.path.as_posix() for e in entries]
-    # Display paths should be relative to 'outside' root, not to anchor
-    assert "x/b.md" in paths
-    assert "x/a.py" in paths
+    # Display paths are absolute when where token is absolute
+    assert str((outside / "x" / "b.md").resolve()) in paths
+    assert str((outside / "x" / "a.py").resolve()) in paths
     for e in entries:
         p = e.path.as_posix()
         if p in {"x/b.md", "x/a.py"}:

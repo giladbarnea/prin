@@ -34,8 +34,8 @@ def test_filesystem_integration():
 
         print(f"Output: {output}")
 
-        assert "<main.py>" in output
-        assert "<util.py>" in output
+        assert f"<{(tmp_path / 'src' / 'main.py').resolve()}>" in output
+        assert f"<{(tmp_path / 'src' / 'util.py').resolve()}>" in output
         # Note: test files are excluded by default, so test_util.py won't appear
         assert "test_util.py" not in output
         assert "readme.md" not in output
@@ -45,8 +45,8 @@ def test_filesystem_integration():
         main(argv=[r"^(?!test_).*\.py$", str(tmp_path)], writer=writer)
         output = writer.text()
 
-        assert "main.py" in output
-        assert "util.py" in output
+        assert str((tmp_path / 'src' / 'main.py').resolve()) in output
+        assert str((tmp_path / 'src' / 'util.py').resolve()) in output
         assert "test_util.py" not in output
 
         # Test 3: All markdown files
@@ -54,8 +54,8 @@ def test_filesystem_integration():
         main(argv=["*.md", str(tmp_path)], writer=writer)
         output = writer.text()
 
-        assert "readme.md" in output
-        assert "guide.md" in output
+        assert str((tmp_path / 'docs' / 'readme.md').resolve()) in output
+        assert str((tmp_path / 'docs' / 'guide.md').resolve()) in output
         assert ".py" not in output
 
 
@@ -121,7 +121,7 @@ def test_exact_file_pattern():
         main(argv=["exact_file.py", str(tmp_path)], writer=writer)
         output = writer.text()
 
-        assert "<exact_file.py>" in output
+        assert f"<{(tmp_path / 'exact_file.py').resolve()}>" in output
         assert "print('exact content')" in output
         assert "other_file.py" not in output
 

@@ -41,11 +41,13 @@ def test_cli_engine_happy_path(tmp_path):
     printer.run_pattern("", str(tmp_path), buf)
     out = buf.text()
 
-    # Included-by-default must appear
-    assert "<src/main.py>" in out
-    assert "<docs/readme.md>" in out
-    assert "<src/config.json>" in out
-    assert "<src/pkg/module.py>" in out
+    # Included-by-default must appear (absolute paths since search_path is absolute)
+    assert str((tmp_path / 'docs' / 'readme.md').resolve()) in out
+    assert str((tmp_path / 'src' / 'config.json').resolve()) in out
+    # Ensure main.py, module.py and data.jsonl all appear (ignore tag wrappers)
+    assert str((tmp_path / 'src' / 'main.py').resolve()) in out
+    assert str((tmp_path / 'src' / 'pkg' / 'module.py').resolve()) in out
+    assert str((tmp_path / 'src' / 'pkg' / 'data.jsonl').resolve()) in out
     # Cover default glob-ish like json* by ensuring jsonl also counted if implied
     # If not included by default in implementation, this assertion can be relaxed to explicit extension list in args.
     # For current defaults it should be included via json* pattern.
@@ -73,6 +75,6 @@ def test_cli_engine_isolation(tmp_path):
     # Explicitly pass the tmp_path root to run_pattern
     printer.run_pattern("", str(tmp_path), buf)
     out = buf.text()
-    assert "<dir/a.py>" in out
-    assert "<dir/sub/b.md>" in out
+    assert str((tmp_path / 'dir' / 'a.py').resolve()) in out
+    assert str((tmp_path / 'dir' / 'sub' / 'b.md').resolve()) in out
     assert "__pycache__/c.pyc" not in out
