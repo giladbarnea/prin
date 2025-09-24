@@ -202,15 +202,17 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - FS: `tests/test_options_fs.py::test_uu_includes_hidden_and_gitignored`, `::test_unrestricted_includes_gitignored` (note: `.gitignore` behavior is currently stubbed; see Set 16).
 
 ## Set 11 [TEST-COVERAGE-PARITY]: Feature coverage mirrored per source
-// todo: this set needs to add the adapters and their baseclass to Members
-
 #### Members
+- `src/prin/core.py`: `SourceAdapter` protocol.
+- `src/prin/adapters/filesystem.py`: `FileSystemSource` implementation.
+- `src/prin/adapters/github.py`: `GitHubRepoSource` implementation.
+- `src/prin/adapters/website.py`: `WebsiteSource` implementation.
 - `tests/test_options_fs.py`, `tests/test_options_repo.py`: cover each CLI flag end-to-end per source.
 - `tests/test_cli_engine_*.py`: traversal and path display behavior.
 - `tests/test_max_files_*.py`: `--max-files` semantics.
 - `tests/test_website_adapter_*.py`: website parsing and rendering.
- - `tests/conftest.py`: adapter-specific pytest markers and selection flags (`--website`, `--repo`, `--no-website`, `--no-repo`).
- - `pyproject.toml` `[tool.pytest.ini_options].markers`: `website`, `repo` declarations.
+- `tests/conftest.py`: adapter-specific pytest markers and selection flags (`--website`, `--repo`, `--no-website`, `--no-repo`).
+- `pyproject.toml` `[tool.pytest.ini_options].markers`: `website`, `repo` declarations.
 
 #### Contract
 - For each implemented feature/flag, maintain parallel coverage for filesystem and GitHub (and website where applicable). Adding a feature implies adding/adapting tests in all relevant suites.
@@ -246,7 +248,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Contract
 - Routing logic and helper predicates must align:
 - Tokens classified as GitHub are handled by the GitHub adapter; HTTP non-GitHub goes to the Website adapter; everything else is treated as local filesystem.
-- Repo subpaths are extracted consistently and reflected in traversal roots.
+- Repo subpaths are extracted consistently and reflected in traversal roots. Subpaths may include a trailing pattern segment (glob/regex). The adapter must traverse the literal base and match the pattern against full display-relative paths under that base.
 - Adapters provide a clear domain “matches” check that `prin.py` relies on.
 
 #### Triggers
