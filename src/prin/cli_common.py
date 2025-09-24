@@ -64,6 +64,9 @@ def _expand_cli_aliases(argv: list[str] | None) -> list[str]:
 class Context:
     # Field list should match CLI options.
     paths: list[str] = field(default_factory=lambda: [DEFAULT_RUN_PATH])
+    # New what-then-where fields
+    pattern: str = ""
+    search_path: str | None = None
     include_tests: bool = DEFAULT_INCLUDE_TESTS
     include_lock: bool = DEFAULT_INCLUDE_LOCK
     include_binary: bool = DEFAULT_INCLUDE_BINARY
@@ -168,12 +171,28 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         epilog=epilog,
     )
 
+    # New what-then-where positional arguments
     parser.add_argument(
-        "paths",
+        "pattern",
+        type=str,
+        nargs="?",
+        help="Pattern to search for (glob or regex). If omitted, lists all files.",
+        default="",
+    )
+    parser.add_argument(
+        "search_path",
+        type=str,
+        nargs="?",
+        help="Path to search in. Defaults to current directory if not specified.",
+        default=None,
+    )
+    # Keep old paths for backwards compatibility detection
+    parser.add_argument(
+        "extra_args",
         type=str,
         nargs="*",
-        help="Path(s) or roots. Defaults to current directory if none specified.",
-        default=[DEFAULT_RUN_PATH],
+        help=argparse.SUPPRESS,  # Hidden - used to detect old-style invocations
+        default=[],
     )
 
     # Uppercase short flags are boolean "include" flags.
@@ -291,8 +310,38 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
     # Expand known alias flags before parsing. If argv is None, use sys.argv[1:].
     effective_argv = _expand_cli_aliases(argv if argv is not None else sys.argv[1:])
     args = parser.parse_args(effective_argv)
+    
+    # Handle backwards compatibility - if extra_args provided, fall back to old style
+    if args.extra_args:
+        # Old style: multiple paths
+        all_paths = [args.pattern] if args.pattern else []
+        if args.search_path:
+            all_paths.append(args.search_path)
+        all_paths.extend(args.extra_args)
+        return Context(
+            paths=all_paths or [DEFAULT_RUN_PATH],
+            pattern="",
+            search_path=None,
+            include_tests=bool(args.include_tests),
+            include_lock=bool(args.include_lock),
+            include_binary=bool(args.include_binary),
+            no_docs=bool(args.no_docs),
+            include_empty=bool(args.include_empty),
+            only_headers=bool(args.only_headers),
+            extensions=list(args.extension or []),
+            exclusions=list(args.exclude or []),
+            no_exclude=bool(args.no_exclude),
+            no_ignore=bool(args.no_ignore),
+            include_hidden=bool(args.include_hidden),
+            tag=args.tag,
+            max_files=args.max_files,
+        )
+    
+    # New style: pattern and search_path
     return Context(
-        paths=list(args.paths),
+        paths=[],  # Empty in new style
+        pattern=args.pattern,
+        search_path=args.search_path,
         include_tests=bool(args.include_tests),
         include_lock=bool(args.include_lock),
         include_binary=bool(args.include_binary),

@@ -415,6 +415,68 @@ class GitHubRepoSource(SourceAdapter):
                     abs_path=PurePosixPath(f.path),
                 )
 
+    def walk_pattern(self, pattern: str, search_path: str | None) -> Iterable[Entry]:
+        """
+        New interface: search for pattern in the given path.
+        If search_path is None, use repository root.
+        If pattern is empty, list all files in the path.
+        """
+        # Parse the search_path to get the subpath within the repo
+        if search_path:
+            parsed = parse_github_url(search_path)
+            subpath = parsed["subpath"].strip("/")
+            search_root = PurePosixPath(subpath) if subpath else PurePosixPath("")
+        else:
+            search_root = PurePosixPath("")
+        
+        # If no pattern, list all files
+        if not pattern:
+            # Check if search_root is a file
+            try:
+                _ = list(self.list_dir(search_root))
+                # It's a directory
+                for e in self._walk_dfs(search_root):
+                    yield Entry(
+                        path=self._display_rel(PurePosixPath(str(e.path)), search_root),
+                        name=e.name,
+                        kind=e.kind,
+                        abs_path=PurePosixPath(str(e.path)),
+                    )
+            except NotADirectoryError:
+                # It's a file
+                yield Entry(
+                    path=PurePosixPath(search_root.name),
+                    name=search_root.name,
+                    kind=NodeKind.FILE,
+                    abs_path=search_root,
+                    explicit=True,
+                )
+            return
+        
+        # Pattern matching
+        kind = classify_pattern(pattern)
+        
+        for e in self._walk_dfs(search_root):
+            f_abs = PurePosixPath(str(e.path))
+            rel = self._display_rel(f_abs, search_root)
+            
+            match = False
+            if kind == "glob":
+                match = fnmatch(str(rel), pattern)
+            else:
+                try:
+                    match = re.search(pattern, str(rel)) is not None
+                except re.error:
+                    match = False
+            
+            if match:
+                yield Entry(
+                    path=rel,
+                    name=e.name,
+                    kind=e.kind,
+                    abs_path=f_abs,
+                )
+
     def _walk_dfs(self, root: PurePosixPath) -> Iterable[Entry]:
         """
         Depth-first traversal starting at the given repository path.

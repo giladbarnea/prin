@@ -248,6 +248,89 @@ class FileSystemSource(SourceAdapter):
                     abs_path=PurePosixPath(str(f_abs)),
                 )
 
+    def walk_pattern(self, pattern: str, search_path: str | None) -> Iterable[Entry]:
+        """
+        New interface: search for pattern in the given path.
+        If search_path is None, use current working directory.
+        If pattern is empty, list all files in the path.
+        """
+        # Determine the search root
+        if search_path is None:
+            search_root = self.anchor
+        else:
+            search_root = self.resolve(search_path)
+        
+        # Special case: if pattern is an exact existing file path, treat it as explicit
+        if pattern and not search_path:
+            try:
+                pattern_as_path = self.resolve(pattern)
+                if pattern_as_path.exists() and pattern_as_path.is_file():
+                    # This is an explicit file reference
+                    base = self.anchor if str(pattern_as_path).startswith(str(self.anchor) + os.sep) or pattern_as_path == self.anchor else pattern_as_path.parent
+                    rel = self._display_rel(pattern_as_path, base)
+                    yield Entry(
+                        path=PurePosixPath(rel),
+                        name=pattern_as_path.name,
+                        kind=NodeKind.FILE,
+                        abs_path=PurePosixPath(str(pattern_as_path)),
+                        explicit=True,
+                    )
+                    return
+            except:
+                pass
+        
+        # If no pattern or empty pattern, list all files
+        if not pattern:
+            if search_root.is_file():
+                # Single file
+                base = self.anchor if str(search_root).startswith(str(self.anchor) + os.sep) or search_root == self.anchor else search_root.parent
+                rel = self._display_rel(search_root, base)
+                yield Entry(
+                    path=PurePosixPath(rel),
+                    name=search_root.name,
+                    kind=NodeKind.FILE,
+                    abs_path=PurePosixPath(str(search_root)),
+                    explicit=True,
+                )
+            else:
+                # Directory - traverse all files
+                for e in self.walk_dfs(search_root):
+                    f_abs = Path(str(e.path))
+                    base = self.anchor if str(search_root).startswith(str(self.anchor) + os.sep) or search_root == self.anchor else search_root
+                    rel = self._display_rel(f_abs, base)
+                    yield Entry(
+                        path=PurePosixPath(rel),
+                        name=e.name,
+                        kind=e.kind,
+                        abs_path=PurePosixPath(str(f_abs)),
+                    )
+            return
+        
+        # Pattern matching
+        kind = classify_pattern(pattern)
+        base = self.anchor if str(search_root).startswith(str(self.anchor) + os.sep) or search_root == self.anchor else search_root
+        
+        for e in self.walk_dfs(search_root):
+            f_abs = Path(str(e.path))
+            rel = self._display_rel(f_abs, base)
+            
+            match = False
+            if kind == "glob":
+                match = fnmatch(rel, pattern)
+            else:
+                try:
+                    match = re.search(pattern, rel) is not None
+                except re.error:
+                    match = False
+            
+            if match:
+                yield Entry(
+                    path=PurePosixPath(rel),
+                    name=e.name,
+                    kind=e.kind,
+                    abs_path=PurePosixPath(str(f_abs)),
+                )
+
     # Configuration from Context
     def configure(self, ctx) -> None:
         self.exclusions = ctx.exclusions
