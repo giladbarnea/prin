@@ -25,8 +25,8 @@ def _ensure_github_token():
 
 class VFS(NamedTuple):
     root: Path
-    paths: list[Path]
-    contents: dict[Path, str]
+    paths: list[str]
+    contents: dict[str, str]
     regular_files: dict[str, str]
     doc_files: dict[str, str]
     empty_files: dict[str, str]
@@ -57,7 +57,7 @@ def fs_root() -> VFS:
     root = Path(tempfile.mkdtemp(prefix="prinfs_"))
 
     # Regular files are included by default, regardless of whether they fit one of the (non-exclusion) categories.
-    regular_files: dict[Path, str] = {
+    regular_files: dict[str, str] = {
         "README.md": "# Root readme\n",
         "notes.rst": "Doc rst\n",
         "foo.py": "def foo():\n    return 1\n",
@@ -70,14 +70,14 @@ def fs_root() -> VFS:
         "docs/build.py": "def build_docs():\n    ...\n",
         # "gitignored.txt": "should be ignored by default\n",
     }
-    doc_files: dict[Path, str] = {
+    doc_files: dict[str, str] = {
         "docs/readme.md": "# Docs\n",
         "docs/guide.rst": "RST content\n",
         "CONTRIBUTING.md": "# Contributing\n",
         "foo/share/man/man1/foo.1": "foo(1)\n",
     }
 
-    empty_files: dict[Path, str] = {
+    empty_files: dict[str, str] = {
         "empty.txt": "",
         "empty.py": "",
         "semantically_empty.py": '"""Module docstring"""\n# a comment line\nimport os\nfrom sys import version as _v\n__all__ = ["x"]\n',
@@ -86,12 +86,12 @@ def fs_root() -> VFS:
         "regular_dirname/semantically_empty.py": '"""Module docstring2"""\n# a comment line\nimport os\nfrom sys import version as _v\n__all__ = ["x"]\n',
     }
 
-    binary_files: dict[Path, str] = {
+    binary_files: dict[str, str] = {
         "image.png": "PNG",
         "something/bin/python": "PYTHON\n",  # Should be excluded because of the bin/ dir.
     }
 
-    hidden_files: dict[Path, str] = {
+    hidden_files: dict[str, str] = {
         ".env": "SECRET=1\n",
         # ".gitignore": "gitignored.txt\n",
         ".venv/something": "SOMETHING\n",
@@ -99,37 +99,37 @@ def fs_root() -> VFS:
         ".github/config": "GITHUB\n",
         "app/submodule/.git/config": "GIT\n",
     }
-    test_files: dict[Path, str] = {
+    test_files: dict[str, str] = {
         "tests/test_mod.py": "def test_x():\n    assert True\n",
         "tests/spec.ts": "it('should pass', () => { expect(1).toBe(1); });\n",
         "app/test_mod.py": "def test_mod():\n    assert True\n",
         "app/mod.test.py": "def mod_test():\n    assert True\n",
         "tests/howto.txt": "How to run tests\n",  # Should be excluded because the tests/ dir.
     }
-    dependency_files: dict[Path, str] = {
+    dependency_files: dict[str, str] = {
         "node_modules/pkg/index.js": "console.log('x');\n",
         ".venv/lib/python3.13/site-packages/decorator.py": "POS = inspect.Parameter.POSITIONAL_OR_KEYWORD\n",
     }
-    artifact_files: dict[Path, str] = {
+    artifact_files: dict[str, str] = {
         "build/artifact.o": "OBJ\n",
         "dist/regular.js": "console.log('dist/regular.js');\n",  # Should be excluded because of the dist/ dir.
         "regular_dirname/foo.min.js": "console.log('regular_dirname/foo.min.js');\n",  # Should be excluded because of *.min.js extension.
         "vendor/vendorlib.py": "def vendorlib():\n    pass\n",
     }
-    cache_files: dict[Path, str] = {
+    cache_files: dict[str, str] = {
         "__pycache__/DIR.TAG": "Signature: 8a477f597d28d172799f06886806bc55\n",
         ".ruff_cache/DIR.TAG": "Signature: 8a477f597d28d172899f06886806bc55\n",
         "regular_dirname/cached.txt": "cache file\n",
     }
-    log_files: dict[Path, str] = {
+    log_files: dict[str, str] = {
         "debug/app.log": "log entry\n",
         "logs/app.txt": "log entry2\n",
     }
-    secret_files: dict[Path, str] = {
+    secret_files: dict[str, str] = {
         "secrets/key.pem": "KEY1\n",
         "key.pem": "KEY2\n",
     }
-    lock_files: dict[Path, str] = {
+    lock_files: dict[str, str] = {
         "poetry.lock": "poetry-lock-content-unique\n",
         "package-lock.json": '{\n  "name": "unique-package-lock"\n}\n',
         "uv.lock": "uv-lock-content-unique\n",
@@ -226,7 +226,7 @@ def fs_root() -> VFS:
         shutil.rmtree(root, ignore_errors=True)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def prin_tmp_path():
     """Create a temporary directory with 'prin' prefix, avoiding test-related substrings."""
     import shutil

@@ -15,12 +15,38 @@ from tests.utils import write_file
 
 
 def test_pattern_then_path_basic(prin_tmp_path: Path):
-    """Test basic pattern-then-path: 'prin "*.py" src/'"""
+    """Test basic pattern-then-path: 'prin "*.py" .' lists all py files"""
     # Setup files
     write_file(prin_tmp_path / "src" / "main.py", "print('main')")
     write_file(prin_tmp_path / "src" / "util.py", "print('util')")
     write_file(prin_tmp_path / "src" / "readme.md", "# Readme")
-    write_file(prin_tmp_path / "tests" / "test_main.py", "# test")
+    write_file(prin_tmp_path / "foo" / "foo_main.py", "print('foo')")
+    write_file(prin_tmp_path / "tests" / "test_main.py", "print('test')")
+
+    # The new design: pattern first, path second
+    pattern = "*.py"
+    search_path = str(prin_tmp_path)
+
+    src = FileSystemSource(prin_tmp_path)
+    src.configure(Context())
+
+    # New interface: walk takes pattern and path separately
+    # For now, test that we get the right files
+    actual_entries = list(src.walk_pattern(pattern, search_path))
+
+    actual_paths = {str(e.path) for e in actual_entries}
+    # Should not include test_main.py from tests/ or readme.md because they are excluded by default
+    assert actual_paths == {"src/main.py", "src/util.py", "foo/foo_main.py"}
+
+
+def test_pattern_then_path_basic_with_path(prin_tmp_path: Path):
+    """Test basic pattern-then-path: 'prin "*.py" src/' limits search to src/"""
+    # Setup files
+    write_file(prin_tmp_path / "src" / "main.py", "print('main')")
+    write_file(prin_tmp_path / "src" / "util.py", "print('util')")
+    write_file(prin_tmp_path / "src" / "readme.md", "# Readme")
+    write_file(prin_tmp_path / "foo" / "foo_main.py", "print('foo')")
+    write_file(prin_tmp_path / "tests" / "test_main.py", "print('test')")
 
     # The new design: pattern first, path second
     pattern = "*.py"
@@ -31,36 +57,38 @@ def test_pattern_then_path_basic(prin_tmp_path: Path):
 
     # New interface: walk takes pattern and path separately
     # For now, test that we get the right files
-    entries = list(src.walk_pattern(pattern, search_path))
+    actual_entries = list(src.walk_pattern(pattern, search_path))
 
-    paths = [str(e.path) for e in entries]
-    assert len(paths) == 2
-    assert "src/main.py" in paths[0]
-    assert "src/util.py" in paths[1]
-    # Should not include test_main.py from tests/ or readme.md
+    actual_paths = {str(e.path) for e in actual_entries}
+    # Should not include test_main.py from tests/ or readme.md because they are excluded by default
+    assert actual_paths == {"src/main.py", "src/util.py"}
 
 
 def test_regex_pattern_then_path(prin_tmp_path: Path):
-    r"""Test regex pattern: 'prin "test_.*\.py$" .'"""
-    write_file(prin_tmp_path / "test_unit.py", "# unit test")
-    write_file(prin_tmp_path / "test_integration.py", "# integration test")
-    write_file(prin_tmp_path / "main_test.py", "# not matched")
-    write_file(prin_tmp_path / "src" / "test_helper.py", "# helper")
+    r"""Test regex pattern: 'prin "foo_.*\.py$" .'"""
+    write_file(prin_tmp_path / "test_unit.py", "print('unit test')")
+    write_file(prin_tmp_path / "test_integration.py", "print('integration test')")
+    write_file(prin_tmp_path / "main_test.py", "print('not matched')")
+    write_file(prin_tmp_path / "src" / "test_helper.py", "print('helper')")
+    write_file(prin_tmp_path / "src" / "foo_helper.py", "print('foo helper')")
+    write_file(prin_tmp_path / "foo" / "foo_main.py", "print('foo')")
 
     pattern = r"test_.*\.py$"
     search_path = str(prin_tmp_path)
 
+    # First, test that no files are matched by default
     src = FileSystemSource(prin_tmp_path)
     src.configure(Context())
 
-    entries = list(src.walk_pattern(pattern, search_path))
-    paths = [str(e.path) for e in entries]
+    actual_entries = list(src.walk_pattern(pattern, search_path))
+    assert not actual_entries  # all test files are excluded by default
 
-    assert len(paths) == 3
-    assert "test_unit.py" in " ".join(paths)
-    assert "test_integration.py" in " ".join(paths)
-    assert "src/test_helper.py" in " ".join(paths)
-    assert "main_test.py" not in " ".join(paths)
+    # Then, test that files are matched when include_tests is True
+    src.configure(Context(include_tests=True))
+    actual_entries = list(src.walk_pattern(pattern, search_path))
+    actual_paths = {str(e.path) for e in actual_entries}
+
+    assert actual_paths == {"test_unit.py", "test_integration.py", "src/test_helper.py"}
 
 
 def test_no_pattern_lists_all_in_path(prin_tmp_path: Path):
@@ -74,12 +102,9 @@ def test_no_pattern_lists_all_in_path(prin_tmp_path: Path):
 
     # Empty pattern means all files
     entries = list(src.walk_pattern("", str(prin_tmp_path)))
-    paths = [str(e.path) for e in entries]
+    actual_paths = {str(e.path) for e in entries}
 
-    assert len(paths) == 3
-    assert any("a.txt" in p for p in paths)
-    assert any("b.py" in p for p in paths)
-    assert any("sub/c.md" in p for p in paths)
+    assert actual_paths == {"a.txt", "b.py", "sub/c.md"}
 
 
 def test_pattern_no_path_searches_cwd(prin_tmp_path: Path):
@@ -91,21 +116,18 @@ def test_pattern_no_path_searches_cwd(prin_tmp_path: Path):
     os.chdir(prin_tmp_path)
 
     try:
-        write_file(prin_tmp_path / "readme.md", "# Readme")
+        write_file(prin_tmp_path / "README.md", "# Readme")
         write_file(prin_tmp_path / "docs" / "guide.md", "# Guide")
-        write_file(prin_tmp_path / "src" / "code.py", "# Code")
+        write_file(prin_tmp_path / "src" / "code.py", "print('Code')")
 
         src = FileSystemSource()  # No anchor = cwd
         src.configure(Context())
 
         # Pattern without path = search cwd
         entries = list(src.walk_pattern("*.md", None))
-        paths = [str(e.path) for e in entries]
+        actual_paths = {str(e.path) for e in entries}
 
-        assert len(paths) == 2
-        assert any("readme.md" in p for p in paths)
-        assert any("docs/guide.md" in p for p in paths)
-        assert not any("code.py" in p for p in paths)
+        assert actual_paths == {"README.md", "docs/guide.md"}
     finally:
         os.chdir(old_cwd)
 
@@ -116,17 +138,16 @@ def test_github_pattern_then_path():
     pytest.skip("GitHub adapter update pending")
 
 
-def test_explicit_file_path_still_works(prin_tmp_path: Path):
-    """Explicit file paths should still work: 'prin exact_file.py'"""
-    write_file(prin_tmp_path / "exact_file.py", "# exact")
-    write_file(prin_tmp_path / "other.py", "# other")
+def test_explicit_file_path_overrides_defaults(prin_tmp_path: Path):
+    """Explicit file paths should override default exclusions: 'prin tests/test_main.py' prints tests/test_main.py"""
+    write_file(prin_tmp_path / "tests" / "test_main.py", "print('test')")
 
     src = FileSystemSource(prin_tmp_path)
-    src.configure(Context())
+    src.configure(Context(include_tests=False))
 
     # When given an exact existing file, it should be treated as explicit
-    entries = list(src.walk_pattern(str(prin_tmp_path / "exact_file.py"), None))
+    actual_entries = list(src.walk_pattern(str(prin_tmp_path / "tests" / "test_main.py"), None))
 
-    assert len(entries) == 1
-    assert entries[0].explicit is True
-    assert "exact_file.py" in str(entries[0].path)
+    assert actual_entries
+    assert actual_entries[0].explicit is True
+    assert "tests/test_main.py" in str(actual_entries[0].path)
