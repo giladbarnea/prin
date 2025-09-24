@@ -16,6 +16,8 @@ from urllib.parse import parse_qs, urlparse
 
 import requests
 
+from prin.types import Pattern
+
 from ..core import Entry, NodeKind, SourceAdapter, _decode_text, _is_text_bytes
 from ..filters import extension_match, is_excluded
 from ..path_classifier import classify_pattern
@@ -260,8 +262,8 @@ class GitHubRepoSource(SourceAdapter):
             ref = parsed_github_url["ref"] or self._fetch_default_branch(owner, repo)
         self._ctx = _Ctx(owner=owner, repo=repo, ref=ref)
         # Adapter configuration (from Context)
-        self._exclusions: list[str] = []
-        self._extensions: list[str] = []
+        self._exclusions: list[Pattern] = []
+        self._extensions: list[Pattern] = []
         self._include_empty: bool = False
 
     @functools.lru_cache
@@ -285,8 +287,6 @@ class GitHubRepoSource(SourceAdapter):
             return PurePosixPath(rel)
         except Exception:
             return path
-
-
 
     def walk_pattern(self, pattern: str, search_path: str | None) -> Iterable[Entry]:
         """
@@ -420,7 +420,7 @@ class GitHubRepoSource(SourceAdapter):
                 raise NotADirectoryError(path or ".")
             if not local.exists():
                 raise FileNotFoundError(path or ".")
-            entries: list[Entry] = []
+            entries: list[Entry] = []  # pyright: ignore[reportRedeclaration]
             with os.scandir(local) as it:
                 for entry in it:
                     kind = NodeKind.OTHER

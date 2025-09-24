@@ -5,7 +5,7 @@ import os
 import re
 from fnmatch import fnmatch
 from pathlib import Path, PurePosixPath
-from typing import Iterable, Self
+from typing import Iterable
 
 from prin import core
 from prin.core import Entry, NodeKind, SourceAdapter
@@ -63,18 +63,6 @@ class FileSystemSource(SourceAdapter):
     def __repr__(self) -> str:
         return f"FileSystemSource(anchor={self.anchor!r})"
 
-    def _ensure_exists(func):
-        # @functools.wraps(func)
-        def wrapper(self: Self, *args, **kwargs):
-            if not args:
-                raise FileNotFoundError("No positional path provided")
-            path = args[0]
-            if not self.exists(path):
-                raise FileNotFoundError(f"{path!r} does not exist. Anchor: {self.anchor!r}")
-            return func(self, *args, **kwargs)
-
-        return wrapper
-
     # Removed: display is computed internally by walk(); keep no public API.
 
     def resolve(self, path) -> Path:
@@ -85,7 +73,6 @@ class FileSystemSource(SourceAdapter):
         """
         return Path(os.path.normpath((self.anchor / path).absolute()))
 
-    @_ensure_exists
     def list_dir(self, dir_path) -> Iterable[Entry]:
         entries: list[Entry] = []
         with os.scandir(Path(str(dir_path))) as dir_iterator:
@@ -105,7 +92,6 @@ class FileSystemSource(SourceAdapter):
                 )
         return entries
 
-    @_ensure_exists
     def read_file_bytes(self, file_path) -> bytes:
         return self.resolve(file_path).read_bytes()
 
@@ -113,7 +99,6 @@ class FileSystemSource(SourceAdapter):
         # Path.exists() does not support follow_symlinks, and resolve() already normalizes.
         return self.resolve(path).exists()
 
-    @_ensure_exists
     def is_empty(self, file_path) -> bool:
         # Read bytes and use shared semantic emptiness check
         blob = self.read_file_bytes(file_path)
@@ -123,7 +108,7 @@ class FileSystemSource(SourceAdapter):
         return core.is_blob_semantically_empty(blob, path)
 
     # Depth-first traversal delegated to the adapter. Yields files only, in stable order.
-    def walk_dfs(self, root) -> Iterable[Entry]:
+    def _walk_dfs(self, root) -> Iterable[Entry]:
         """
         Yield Entry objects for files under the given root in depth-first order.
 
@@ -192,11 +177,10 @@ class FileSystemSource(SourceAdapter):
         except Exception:
             return str(path)
 
-
     def walk_pattern(self, pattern: str, search_path: str | None) -> Iterable[Entry]:
         """
         Search for pattern in the given path.
-        If search_path is None, use current working directory.
+        If search_path is None, use anchor.
         If pattern is empty, list all files in the path.
         """
         # Determine the search root
@@ -239,7 +223,7 @@ class FileSystemSource(SourceAdapter):
                 )
             else:
                 # Directory - traverse all files
-                for e in self.walk_dfs(search_root):
+                for e in self._walk_dfs(search_root):
                     f_abs = Path(str(e.path))
                     base = search_root
                     rel = self._display_rel(f_abs, base)
@@ -255,7 +239,7 @@ class FileSystemSource(SourceAdapter):
         kind = classify_pattern(pattern)
         base = search_root
 
-        for e in self.walk_dfs(search_root):
+        for e in self._walk_dfs(search_root):
             f_abs = Path(str(e.path))
             rel = self._display_rel(f_abs, base)
 

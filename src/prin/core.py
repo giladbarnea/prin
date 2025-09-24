@@ -4,7 +4,7 @@ import sys
 from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path, PurePosixPath
-from typing import TYPE_CHECKING, Iterable, Protocol, Self
+from typing import TYPE_CHECKING, ClassVar, Iterable, Protocol, Self
 
 from prin.formatters import Formatter, HeaderFormatter
 
@@ -42,7 +42,7 @@ class SourceAdapter(Protocol):
     - Non-responsibilities: printing, budgeting, formatting selection.
     """
 
-    anchor: Path
+    anchor: ClassVar[Path]
 
     def resolve(self: Self, path) -> PurePosixPath: ...
     def list_dir(self: Self, dir_path) -> Iterable[Entry]: ...
@@ -256,5 +256,5 @@ class DepthFirstPrinter:
                 writer.write(self.formatter.binary(path_str))
             else:
                 writer.write(self.formatter.format(path_str, body_text or ""))
-        budget and budget.consume()
+        budget and budget.consume()  # pyright: ignore[reportUnusedExpression]
         self._printed_paths.add(key)
