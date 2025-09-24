@@ -24,7 +24,6 @@ from prin.defaults import (
     DEFAULT_NO_EXCLUDE,
     DEFAULT_NO_IGNORE,
     DEFAULT_ONLY_HEADERS,
-    DEFAULT_RUN_PATH,
     DEFAULT_TAG,
     DEFAULT_TAG_CHOICES,
     DEFAULT_TEST_EXCLUSIONS,
@@ -63,8 +62,6 @@ def _expand_cli_aliases(argv: list[str] | None) -> list[str]:
 @dataclass(slots=True)
 class Context:
     # Field list should match CLI options.
-    paths: list[str] = field(default_factory=lambda: [DEFAULT_RUN_PATH])
-    # New what-then-where fields
     pattern: str = ""
     search_path: str | None = None
     include_tests: bool = DEFAULT_INCLUDE_TESTS
@@ -111,7 +108,8 @@ class Context:
             exclusions.extend(DEFAULT_BINARY_EXCLUSIONS)
 
         if not self.no_ignore:
-            exclusions.extend(get_gitignore_exclusions(self.paths))
+            # For now, gitignore exclusions are empty (see filters.py)
+            exclusions.extend(get_gitignore_exclusions([]))
 
         if self.no_docs:
             exclusions.extend(DEFAULT_DOC_EXTENSIONS)
@@ -171,7 +169,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         epilog=epilog,
     )
 
-    # New what-then-where positional arguments
+    # What-then-where positional arguments
     parser.add_argument(
         "pattern",
         type=str,
@@ -185,14 +183,6 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         nargs="?",
         help="Path to search in. Defaults to current directory if not specified.",
         default=None,
-    )
-    # Keep old paths for backwards compatibility detection
-    parser.add_argument(
-        "extra_args",
-        type=str,
-        nargs="*",
-        help=argparse.SUPPRESS,  # Hidden - used to detect old-style invocations
-        default=[],
     )
 
     # Uppercase short flags are boolean "include" flags.
@@ -310,45 +300,8 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
     # Expand known alias flags before parsing. If argv is None, use sys.argv[1:].
     effective_argv = _expand_cli_aliases(argv if argv is not None else sys.argv[1:])
     args = parser.parse_args(effective_argv)
-
-    # Handle backwards compatibility
-    # 1. If extra_args provided, it's definitely old style (3+ positional args)
-    # 2. If pattern is an existing path and no search_path, it's likely old style
-    import os
-    is_old_style = bool(args.extra_args)
-    if not is_old_style and args.pattern and not args.search_path:
-        # Check if pattern looks like an existing path
-        if os.path.exists(args.pattern) or os.path.sep in args.pattern:
-            is_old_style = True
     
-    if is_old_style:
-        # Old style: treat all positional args as paths
-        all_paths = [args.pattern] if args.pattern else []
-        if args.search_path:
-            all_paths.append(args.search_path)
-        all_paths.extend(args.extra_args)
-        return Context(
-            paths=all_paths or [DEFAULT_RUN_PATH],
-            pattern="",
-            search_path=None,
-            include_tests=bool(args.include_tests),
-            include_lock=bool(args.include_lock),
-            include_binary=bool(args.include_binary),
-            no_docs=bool(args.no_docs),
-            include_empty=bool(args.include_empty),
-            only_headers=bool(args.only_headers),
-            extensions=list(args.extension or []),
-            exclusions=list(args.exclude or []),
-            no_exclude=bool(args.no_exclude),
-            no_ignore=bool(args.no_ignore),
-            include_hidden=bool(args.include_hidden),
-            tag=args.tag,
-            max_files=args.max_files,
-        )
-
-    # New style: pattern and search_path
     return Context(
-        paths=[],  # Empty in new style
         pattern=args.pattern,
         search_path=args.search_path,
         include_tests=bool(args.include_tests),

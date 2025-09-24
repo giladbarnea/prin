@@ -50,7 +50,6 @@ class SourceAdapter(Protocol):
     def is_empty(self: Self, file_path) -> bool: ...
     def exists(self: Self, path) -> bool: ...
     def configure(self: Self, ctx: "Context") -> None: ...
-    def walk(self: Self, token: str) -> Iterable[Entry]: ...
     def walk_pattern(self: Self, pattern: str, search_path: str | None) -> Iterable[Entry]: ...
     def should_print(self: Self, entry: Entry) -> bool: ...
     def read_body_text(self: Self, entry: Entry) -> tuple[str | None, bool]: ...
@@ -213,15 +212,6 @@ class DepthFirstPrinter:
         self.include_empty = ctx.include_empty
         self.only_headers = ctx.only_headers
 
-    def run(self, patterns: list, writer: Writer, budget: "FileBudget | None" = None) -> None:
-        for token in patterns:
-            if budget is not None and budget.spent():
-                return
-            for entry in self.source.walk(token):
-                if budget is not None and budget.spent():
-                    return
-                self._handle_file(entry, writer, budget=budget)
-
     def run_pattern(
         self,
         pattern: str,
@@ -229,7 +219,7 @@ class DepthFirstPrinter:
         writer: Writer,
         budget: "FileBudget | None" = None,
     ) -> None:
-        """New interface: run with pattern and search path."""
+        """Run with pattern and search path."""
         if budget is not None and budget.spent():
             return
         for entry in self.source.walk_pattern(pattern, search_path):

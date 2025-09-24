@@ -38,7 +38,7 @@ def test_cli_engine_happy_path(tmp_path):
     )
 
     buf = StringWriter()
-    printer.run([str(tmp_path)], buf)
+    printer.run_pattern("", str(tmp_path), buf)
     out = buf.text()
 
     # Included-by-default must appear
@@ -70,8 +70,8 @@ def test_cli_engine_isolation(tmp_path):
     )
 
     buf = StringWriter()
-    # Explicitly pass the tmp_path root to run
-    printer.run([str(tmp_path)], buf)
+    # Explicitly pass the tmp_path root to run_pattern
+    printer.run_pattern("", str(tmp_path), buf)
     out = buf.text()
     assert "<dir/a.py>" in out
     assert "<dir/sub/b.md>" in out

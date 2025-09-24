@@ -26,9 +26,6 @@ prin "" docs/
 
 # Search in GitHub repositories
 prin "*.rs" github.com/rust-lang/book
-
-# Multiple paths (backwards compatible)
-prin AGENTS.md src/**/*.py
 ```
 
 ## Sane Defaults with LLM performance in mind

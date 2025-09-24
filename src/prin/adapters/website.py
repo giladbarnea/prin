@@ -192,20 +192,10 @@ class WebsiteSource(SourceAdapter):
         self._extensions = ctx.extensions
         self._include_empty = ctx.include_empty
 
-    def walk(self, token: str) -> Iterable[Entry]:
-        ctx = self._ensure_ctx()
-        # Flat list; yield in case-insensitive order
-        for key in sorted(ctx.key_to_url.keys(), key=lambda s: s.casefold()):
-            yield Entry(
-                path=PurePosixPath(key),
-                name=key,
-                kind=NodeKind.FILE,
-                abs_path=PurePosixPath(key),
-            )
 
     def walk_pattern(self, pattern: str, search_path: str | None) -> Iterable[Entry]:
         """
-        New interface: search for pattern in the website URLs.
+        Search for pattern in the website URLs.
         Pattern matching is applied to the URL keys.
         search_path is ignored for websites (the base URL is already set).
         """

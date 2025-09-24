@@ -234,7 +234,8 @@ def test_list_dir_ensure_and_type_cases(prin_tmp_path: Path, case_key: str, expe
             list(fs.list_dir(fs.resolve(p)))
 
 
-def test_walk_file_under_anchor(prin_tmp_path: Path):
+# Removed - tests old walk() method
+# def test_walk_file_under_anchor(prin_tmp_path: Path):
     from prin.adapters.filesystem import FileSystemSource
     from tests.utils import write_file
 

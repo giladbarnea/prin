@@ -110,17 +110,17 @@ def test_pattern_without_path_uses_cwd():
 
 
 def test_exact_file_pattern():
-    """Test that exact file paths still work"""
+    """Test searching for an exact filename pattern"""
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp_path = Path(tmpdir)
-
+        
         write_file(tmp_path / "exact_file.py", "print('exact content')")
         write_file(tmp_path / "other_file.py", "print('other content')")
-
+        
         writer = StringWriter()
-        main(argv=[str(tmp_path / "exact_file.py")], writer=writer)
+        main(argv=["exact_file.py", str(tmp_path)], writer=writer)
         output = writer.text()
-
+        
         assert "<exact_file.py>" in output
         assert "print('exact content')" in output
         assert "other_file.py" not in output

@@ -44,7 +44,6 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 
 #### Contract
 - CLI accepts two positional arguments: pattern (optional, defaults to "") and search_path (optional, defaults to None/cwd).
-- Backwards compatibility: more than 2 positional args triggers old-style multi-path mode via `extra_args` detection.
 - One-to-one mapping between CLI flags and `Context` fields, including default values from `defaults.py` and documented behavior in `README.md`.
 - If a flag affects traversal, filtering, or output, the adapter must consume it via `configure(Context)`; printer only consumes printing-related flags (e.g., `only_headers`, `tag`, `max_files`).
 - `README.md` must document only implemented flags with correct semantics (no "planned" flags presented as implemented).
@@ -138,14 +137,13 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 ## Set 6 [SOURCE-ADAPTER-INTERFACE]: Protocol and uniform adapter semantics
 
 #### Members
-- Protocol: `src/prin/core.py`: `SourceAdapter` with `configure`, `walk`, `walk_pattern`, `should_print`, `read_body_text`, `resolve`, `exists` (and `Entry`/`NodeKind` shapes). `resolve_display` removed.
+- Protocol: `src/prin/core.py`: `SourceAdapter` with `configure`, `walk_pattern`, `should_print`, `read_body_text`, `resolve`, `exists` (and `Entry`/`NodeKind` shapes).
 - Implementations: `src/prin/adapters/filesystem.py`, `src/prin/adapters/github.py`, `src/prin/adapters/website.py`.
 
 #### Contract
 - Adapters implement a uniform interface:
   - `configure(Context)` consumes CLI-derived config.
-  - `walk(token)` yields display-ready file `Entry` objects in DFS order (old interface).
-  - `walk_pattern(pattern, search_path)` yields files matching pattern in search_path (new interface).
+  - `walk_pattern(pattern, search_path)` yields files matching pattern in search_path.
   - `should_print(entry)` applies exclusions/extensions/emptiness (`Entry.explicit` forces include).
   - `read_body_text(entry)` returns (text, is_binary) for the printer.
 - `resolve`/`exists` keep lexical resolution rules; `is_empty` should adhere to shared definition (see Set 7).
@@ -308,28 +306,27 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Tests
 - FS: `tests/test_options_fs.py::test_unrestricted_includes_gitignored` (and any currently skipped tests around `.gitignore` or `no-ignore`).
 
-## Set 17 [PATTERN-THEN-PATH]: Pattern-then-path interface ↔ walk_pattern
+## Set 17 [PATTERN-THEN-PATH]: Pattern-then-path interface
 
 #### Members
-- `src/prin/cli_common.py`: positional args parsing (pattern, search_path, extra_args).
+- `src/prin/cli_common.py`: positional args parsing (pattern, search_path).
 - `src/prin/core.py`: `DepthFirstPrinter.run_pattern` method.
-- `src/prin/prin.py`: main dispatcher logic for new vs old style.
+- `src/prin/prin.py`: main dispatcher logic.
 - `src/prin/adapters/*`: `walk_pattern(pattern, search_path)` implementations.
 - `README.md`: what-then-where usage examples.
 
 #### Contract
-- New style: first arg is pattern (glob/regex), second is search path (optional, defaults to cwd).
-- Old style: detected via extra_args; maintains backwards compatibility for multiple paths.
+- First arg is pattern (glob/regex), second is search path (optional, defaults to cwd).
 - Pattern matching happens against full relative paths from search location.
 - Empty pattern means list all files in the path.
+- Paths are displayed relative to search location.
 
 #### Triggers
-- Changing pattern matching semantics; modifying backwards compatibility logic.
+- Changing pattern matching semantics; modifying path display logic.
 
 #### Tests
 - Integration: `tests/test_integration_what_then_where.py`
-- CLI parsing: `tests/test_cli_what_then_where.py`  
-- Main dispatcher: `tests/test_main_what_then_where.py`
+- Pattern search: `tests/test_pattern_search.py`
 
 ---
 
