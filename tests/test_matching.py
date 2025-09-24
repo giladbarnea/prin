@@ -43,7 +43,7 @@ def test_text_query(prin_tmp_path: Path, in_out: dict[str, str]):
     printer = DepthFirstPrinter(
         src,
         HeaderFormatter(),
-        ctx=Context(paths=[str(prin_tmp_path)]),
+        ctx=Context(search_path=str(prin_tmp_path)),
     )
     buf = StringWriter()
     query, expected_match = list(in_out.items())[0]
@@ -80,7 +80,7 @@ def test_glob_query(prin_tmp_path: Path, in_out: dict[str, str]):
     printer = DepthFirstPrinter(
         src,
         HeaderFormatter(),
-        ctx=Context(paths=[str(prin_tmp_path)]),
+        ctx=Context(search_path=str(prin_tmp_path)),
     )
     buf = StringWriter()
     query, expected_match = list(in_out.items())[0]
@@ -90,3 +90,6 @@ def test_glob_query(prin_tmp_path: Path, in_out: dict[str, str]):
         assert expected_match in out, f"Expected match for {query!r}, but got {out!r}"
     else:
         assert not out, f"Expected no match for {query!r}, but got {out!r}"
+
+
+# TODO: missing regex test
