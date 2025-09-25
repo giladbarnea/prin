@@ -28,7 +28,7 @@ dev = [
     "pytest-clarity>=1.0.1",
     "pytest-sugar>=1.1.1",
     "pudb>=2025.1",
-    "wrapt>=1.17.3",
+    "pyright>=1.1.405",
 ]
 
 [tool.ruff]

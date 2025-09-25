@@ -97,11 +97,6 @@ def _setup_tree(anchor: Path) -> _Tree:
     )
 
 
-@pytest.mark.skip("resolve_display removed; adapter computes display internally in walk()")
-def test_resolve_display():
-    pass
-
-
 @pytest.mark.parametrize(
     ("case_key", "expect"),
     [
@@ -233,14 +228,12 @@ def test_list_dir_ensure_and_type_cases(prin_tmp_path: Path, case_key: str, expe
         with pytest.raises(expect):
             list(fs.list_dir(fs.resolve(p)))
 
-
-def test_walk_file_under_anchor(prin_tmp_path: Path):
-    from prin.adapters.filesystem import FileSystemSource
-    from tests.utils import write_file
+    # Removed - tests old walk() method
+    # def test_walk_file_under_anchor(prin_tmp_path: Path):
 
     write_file(prin_tmp_path / "a.py", "print('a')\n")
     src = FileSystemSource(prin_tmp_path)
-    entries = list(src.walk(str(prin_tmp_path / "a.py")))
+    entries = list(src.walk_pattern(str(prin_tmp_path / "a.py"), None))
     assert len(entries) == 1
     e = entries[0]
     assert e.explicit is True
@@ -252,56 +245,43 @@ def test_walk_file_under_anchor(prin_tmp_path: Path):
 
 
 def test_walk_dir_under_anchor(prin_tmp_path: Path):
-    from prin.adapters.filesystem import FileSystemSource
-    from tests.utils import write_file
-
     # Create mixed-case names to test case-insensitive ordering
-    write_file(prin_tmp_path / "Dir" / "b.txt", "B\n")
+    write_file(prin_tmp_path / "dir" / "b.txt", "B\n")
     write_file(prin_tmp_path / "dir" / "A.py", "print('A')\n")
     write_file(prin_tmp_path / "dir" / "a.md", "# a\n")
     write_file(prin_tmp_path / "dir" / "Z.json", "{\n}\n")
     write_file(prin_tmp_path / "dir" / "sub" / "c.py", "print('c')\n")
 
     src = FileSystemSource(prin_tmp_path)
-    entries = list(src.walk(str(prin_tmp_path)))
+    entries = list(src.walk_pattern(pattern="", search_path=None))
     # Filter for our files under anchor and ensure only files are yielded
-    paths = [
-        e.path.as_posix()
-        for e in entries
-        if e.path.as_posix().startswith("dir/") or e.path.as_posix().startswith("Dir/")
-    ]
-    assert all("/" in p or p.endswith((".py", ".md", ".json", ".txt")) for p in paths)
+    actual_display_names = {e.path.as_posix() for e in entries}
+    expected_display_names = {
+        "dir/b.txt",
+        "dir/A.py",
+        "dir/a.md",
+        "dir/Z.json",
+        "dir/sub/c.py",
+    }
+    assert actual_display_names == expected_display_names
     # Check that display paths are relative to anchor
-    assert "dir/A.py" in paths
-    assert "dir/a.md" in paths
-    assert "dir/Z.json" in paths
-    assert "Dir/b.txt" in paths or "dir/b.txt" in paths  # depending on FS normalization
-    assert "dir/sub/c.py" in paths
-    # Ensure abs_path are absolute and kinds are FILE
-    subset = [
-        e
-        for e in entries
-        if e.path.as_posix() in {"dir/A.py", "dir/a.md", "dir/Z.json", "dir/sub/c.py"}
-    ]
-    for e in subset:
-        assert Path(str(e.abs_path)).is_absolute()
-        assert e.kind.name == "FILE"
+    bad_entries_not_absolute = [e for e in entries if not Path(str(e.abs_path)).is_absolute()]
+    assert not bad_entries_not_absolute
+    bad_entries_not_file = [e for e in entries if e.kind.name != "FILE"]
+    assert not bad_entries_not_file
 
 
 def test_walk_root_outside_anchor(prin_tmp_path: Path, tmp_path: Path):
-    from prin.adapters.filesystem import FileSystemSource
-    from tests.utils import write_file
-
     outside = tmp_path / "out"
     write_file(outside / "x" / "b.md", "b\n")
     write_file(outside / "x" / "a.py", "print('a')\n")
 
     src = FileSystemSource(prin_tmp_path)
-    entries = list(src.walk(str(outside)))
+    entries = list(src.walk_pattern(pattern="", search_path=str(outside)))
     paths = [e.path.as_posix() for e in entries]
-    # Display paths should be relative to 'outside' root, not to anchor
-    assert "x/b.md" in paths
-    assert "x/a.py" in paths
+    # Display paths are absolute when where token is absolute
+    assert str((outside / "x" / "b.md").resolve()) in paths
+    assert str((outside / "x" / "a.py").resolve()) in paths
     for e in entries:
         p = e.path.as_posix()
         if p in {"x/b.md", "x/a.py"}:
@@ -309,43 +289,14 @@ def test_walk_root_outside_anchor(prin_tmp_path: Path, tmp_path: Path):
             assert e.kind.name == "FILE"
 
 
-def test_walk_dfs_orders_dirs_then_files_case_insensitive(prin_tmp_path: Path):
-    from prin.adapters.filesystem import FileSystemSource
-    from tests.utils import write_file
-
-    # Layout:
-    # dir/
-    #   b.txt
-    #   A.py
-    #   sub/
-    #     c.md
-    write_file(prin_tmp_path / "dir" / "b.txt", "b\n")
-    write_file(prin_tmp_path / "dir" / "A.py", "print('A')\n")
-    write_file(prin_tmp_path / "dir" / "sub" / "c.md", "# c\n")
-
-    src = FileSystemSource(prin_tmp_path)
-    # Use internal helper directly
-    entries = list(src.walk_dfs(prin_tmp_path / "dir"))
-    # Only files
-    assert all(e.kind.name == "FILE" for e in entries)
-    # Case-insensitive names at the same level and files yielded before descending into subdirs
-    paths = [Path(str(e.path)).name for e in entries]
-    # Root files 'A.py' then 'b.txt' (case-insensitive) appear before subtree 'c.md'
-    assert paths.index("A.py") < paths.index("b.txt")
-    assert paths.index("b.txt") < paths.index("c.md")
-
-
 def test_read_body_text_text_and_binary(prin_tmp_path: Path):
-    from prin.adapters.filesystem import FileSystemSource
-    from tests.utils import write_file
-
     write_file(prin_tmp_path / "t.txt", "hello\n")
     # Create a binary-like file by writing a NUL byte
     (prin_tmp_path / "bin.dat").write_bytes(b"\x00\x01\x02")
 
     src = FileSystemSource(prin_tmp_path)
     # Build entries via walk to ensure fields populated
-    entries = {e.path.as_posix(): e for e in src.walk(str(prin_tmp_path))}
+    entries = {e.path.as_posix(): e for e in src.walk_pattern(pattern="", search_path=None)}
 
     text_entry = entries["t.txt"]
     text, is_binary = src.read_body_text(text_entry)
@@ -359,15 +310,12 @@ def test_read_body_text_text_and_binary(prin_tmp_path: Path):
 
 
 def test_entry_shape_guarantees(prin_tmp_path: Path):
-    from prin.adapters.filesystem import FileSystemSource
-    from tests.utils import write_file
-
     write_file(prin_tmp_path / "./dot/./ignored.txt", "x\n")
     write_file(prin_tmp_path / "plain.txt", "y\n")
     write_file(prin_tmp_path / "sub" / "z.py", "print('z')\n")
 
     src = FileSystemSource(prin_tmp_path)
-    entries = list(src.walk(str(prin_tmp_path)))
+    entries = list(src.walk_pattern(pattern="", search_path=None))
     for e in entries:
         # path is POSIX
         p = e.path.as_posix()

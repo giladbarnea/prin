@@ -36,15 +36,17 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 ## Set 1 [CLI-CTX-DEFAULTs-README]: CLI options ↔ Context fields ↔ Defaults ↔ README
 
 #### Members
-- `README.md`: Options documented under “Options”/usage.
-- `src/prin/cli_common.py`: `parse_common_args(...)` flags and help; `Context` dataclass fields; `_expand_cli_aliases`.
+- `README.md`: Options documented under "Options"/usage; pattern-then-path syntax examples.
+- `src/prin/cli_common.py`: `parse_common_args(...)` flags and help; `Context` dataclass fields with `pattern` and `search_path`; `_expand_cli_aliases`.
 - `src/prin/defaults.py`: `DEFAULT_*` used by CLI defaults and choices.
 - `src/prin/core.py`: `DepthFirstPrinter._set_from_context` minimal consumption for printing behavior.
 - `src/prin/adapters/*`: `SourceAdapter.configure(Context)` consumes CLI-derived configuration.
 
+#### Contract
+- CLI accepts two positional arguments: pattern (optional, defaults to "") and search_path (optional, defaults to None/cwd).
 - One-to-one mapping between CLI flags and `Context` fields, including default values from `defaults.py` and documented behavior in `README.md`.
 - If a flag affects traversal, filtering, or output, the adapter must consume it via `configure(Context)`; printer only consumes printing-related flags (e.g., `only_headers`, `tag`, `max_files`).
-- `README.md` must document only implemented flags with correct semantics (no “planned” flags presented as implemented).
+- `README.md` must document only implemented flags with correct semantics (no "planned" flags presented as implemented).
 
 #### Triggers
 - Adding/removing/renaming a flag; changing a default; changing flag semantics.
@@ -135,13 +137,13 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 ## Set 6 [SOURCE-ADAPTER-INTERFACE]: Protocol and uniform adapter semantics
 
 #### Members
-- Protocol: `src/prin/core.py`: `SourceAdapter` with `configure`, `walk`, `should_print`, `read_body_text`, `resolve`, `exists` (and `Entry`/`NodeKind` shapes). `resolve_display` removed.
+- Protocol: `src/prin/core.py`: `SourceAdapter` with `configure`, `walk_pattern`, `should_print`, `read_body_text`, `resolve`, `exists` (and `Entry`/`NodeKind` shapes).
 - Implementations: `src/prin/adapters/filesystem.py`, `src/prin/adapters/github.py`, `src/prin/adapters/website.py`.
 
 #### Contract
 - Adapters implement a uniform interface:
   - `configure(Context)` consumes CLI-derived config.
-  - `walk(token)` yields display-ready file `Entry` objects in DFS order.
+  - `walk_pattern(pattern, search_path)` yields files matching pattern in search_path.
   - `should_print(entry)` applies exclusions/extensions/emptiness (`Entry.explicit` forces include).
   - `read_body_text(entry)` returns (text, is_binary) for the printer.
 - `resolve`/`exists` keep lexical resolution rules; `is_empty` should adhere to shared definition (see Set 7).
@@ -303,6 +305,28 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 
 #### Tests
 - FS: `tests/test_options_fs.py::test_unrestricted_includes_gitignored` (and any currently skipped tests around `.gitignore` or `no-ignore`).
+
+## Set 17 [PATTERN-THEN-PATH]: Pattern-then-path interface
+
+#### Members
+- `src/prin/cli_common.py`: positional args parsing (pattern, search_path).
+- `src/prin/core.py`: `DepthFirstPrinter.run_pattern` method.
+- `src/prin/prin.py`: main dispatcher logic.
+- `src/prin/adapters/*`: `walk_pattern(pattern, search_path)` implementations.
+- `README.md`: what-then-where usage examples.
+
+#### Contract
+- First arg is pattern (glob/regex), second is search path (optional, defaults to cwd).
+- Pattern matching happens against full relative paths from search location.
+- Empty pattern means list all files in the path.
+- Paths are displayed relative to search location.
+
+#### Triggers
+- Changing pattern matching semantics; modifying path display logic.
+
+#### Tests
+- Integration: `tests/test_integration_what_then_where.py`
+- Pattern search: `tests/test_pattern_search.py`
 
 ---
 

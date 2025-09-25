@@ -5,20 +5,22 @@ import functools
 import hashlib
 import json
 import os
+import re
 import time
 from contextlib import suppress
-import re
-from fnmatch import fnmatch
 from dataclasses import dataclass
+from fnmatch import fnmatch
 from pathlib import Path, PurePosixPath
 from typing import Any, Dict, Iterable, Optional, TypedDict
 from urllib.parse import parse_qs, urlparse
 
 import requests
 
+from prin.types import Pattern
+
 from ..core import Entry, NodeKind, SourceAdapter, _decode_text, _is_text_bytes
 from ..filters import extension_match, is_excluded
-from ..path_classifier import classify_pattern, is_glob, is_regex
+from ..path_classifier import classify_pattern
 
 API_BASE = "https://api.github.com"
 MAX_WAIT_SECONDS = 180
@@ -260,8 +262,8 @@ class GitHubRepoSource(SourceAdapter):
             ref = parsed_github_url["ref"] or self._fetch_default_branch(owner, repo)
         self._ctx = _Ctx(owner=owner, repo=repo, ref=ref)
         # Adapter configuration (from Context)
-        self._exclusions: list[str] = []
-        self._extensions: list[str] = []
+        self._exclusions: list[Pattern] = []
+        self._extensions: list[Pattern] = []
         self._include_empty: bool = False
 
     @functools.lru_cache
@@ -286,133 +288,66 @@ class GitHubRepoSource(SourceAdapter):
         except Exception:
             return path
 
-    def _split_base_and_pattern(self, subpath: str) -> tuple[PurePosixPath, str | None]:
+    def walk_pattern(self, pattern: str, search_path: str | None) -> Iterable[Entry]:
         """
-        Split a repo-relative path into a literal base and an optional pattern tail.
-
-        Example:
-        - "logos/^README\\.md$" -> (PurePosixPath("logos"), "^README\\.md$")
-        - "*.md" -> (PurePosixPath(""), "*.md")
-        - "docs/guide.rst" -> (PurePosixPath("docs/guide.rst"), None)
+        Search for pattern in the given path.
+        If search_path is None, use repository root.
+        If pattern is empty, list all files in the path.
         """
-        sub = (subpath or "").strip("/")
-        if not sub:
-            return PurePosixPath(""), None
-        parts = [p for p in sub.split("/") if p]
-        split_index: int | None = None
-        for i, seg in enumerate(parts):
-            if is_glob(seg) or is_regex(seg):
-                split_index = i
-                break
-        if split_index is None:
-            return PurePosixPath(sub), None
-        base = PurePosixPath("/".join(parts[:split_index])) if split_index > 0 else PurePosixPath("")
-        pattern = "/".join(parts[split_index:])
-        return base, pattern
+        # Parse the search_path to get the subpath within the repo
+        if search_path:
+            parsed = parse_github_url(search_path)
+            subpath = parsed["subpath"].strip("/")
+            search_root = PurePosixPath(subpath) if subpath else PurePosixPath()
+        else:
+            search_root = PurePosixPath()
 
-    def walk(self, token: str) -> Iterable[Entry]:
-        # If token contains a pattern segment, split and match under that base
-        base_for_pattern, pattern = self._split_base_and_pattern(token)
-        if pattern:
-            anchor = base_for_pattern
-            kind = classify_pattern(pattern)
-            for e in self._walk_dfs(anchor):
-                f_abs = PurePosixPath(str(e.path))
-                rel = self._display_rel(f_abs, anchor)
-                path_str = rel.as_posix()
-                matched = False
-                if kind == "glob":
-                    matched = fnmatch(path_str, pattern)
-                else:
-                    try:
-                        matched = re.search(pattern, path_str) is not None
-                    except re.error:
-                        matched = False
-                if matched:
-                    yield Entry(
-                        path=rel,
-                        name=e.name,
-                        kind=e.kind,
-                        abs_path=f_abs,
-                    )
-            return
-
-        base = self.resolve(token)
-        # Detect explicit file root by probing list_dir
-        try:
-            _ = list(self.list_dir(base))
-        except NotADirectoryError:
-            name = base.name
-            yield Entry(
-                path=PurePosixPath(name),
-                name=name,
-                kind=NodeKind.FILE,
-                abs_path=base,
-                explicit=True,
-            )
-            return
-        except FileNotFoundError:
-            # Pattern fallback: traverse from repository root and match against display-relative paths
-            anchor = PurePosixPath("")
-            kind = classify_pattern(token)
-            for e in self._walk_dfs(anchor):
-                f_abs = PurePosixPath(str(e.path))
-                rel = self._display_rel(f_abs, anchor)
-                path_str = rel.as_posix()
-                matched = False
-                if kind == "glob":
-                    matched = fnmatch(path_str, token)
-                else:
-                    try:
-                        matched = re.search(token, path_str) is not None
-                    except re.error:
-                        matched = False
-                if matched:
-                    yield Entry(
-                        path=rel,
-                        name=e.name,
-                        kind=e.kind,
-                        abs_path=f_abs,
-                    )
-            return
-
-        stack: list[PurePosixPath] = [base]
-        while stack:
-            current = stack.pop()
+        # If no pattern, list all files
+        if not pattern:
+            # Check if search_root is a file
             try:
-                entries = list(self.list_dir(current))
+                _ = list(self.list_dir(search_root))
+                # It's a directory
+                for e in self._walk_dfs(search_root):
+                    yield Entry(
+                        path=self._display_rel(PurePosixPath(str(e.path)), search_root),
+                        name=e.name,
+                        kind=e.kind,
+                        abs_path=PurePosixPath(str(e.path)),
+                    )
             except NotADirectoryError:
-                # Treat as file
-                name = current.name
+                # It's a file
                 yield Entry(
-                    path=self._display_rel(current, base),
-                    name=name,
+                    path=PurePosixPath(search_root.name),
+                    name=search_root.name,
                     kind=NodeKind.FILE,
-                    abs_path=current,
+                    abs_path=search_root,
+                    explicit=True,
                 )
-                continue
-            except FileNotFoundError:
-                continue
+            return
 
-            dirs: list[Entry] = []
-            files: list[Entry] = []
-            for e in entries:
-                if e.kind == NodeKind.DIRECTORY:
-                    dirs.append(e)
-                elif e.kind == NodeKind.FILE:
-                    files.append(e)
-            dirs.sort(key=lambda e: e.name.casefold())
-            files.sort(key=lambda e: e.name.casefold())
+        # Pattern matching
+        kind = classify_pattern(pattern)
 
-            for d in reversed(dirs):
-                stack.append(PurePosixPath(d.path))
-            for f in files:
-                rel = self._display_rel(PurePosixPath(f.path), base)
+        for e in self._walk_dfs(search_root):
+            f_abs = PurePosixPath(str(e.path))
+            rel = self._display_rel(f_abs, search_root)
+
+            match = False
+            if kind == "glob":
+                match = fnmatch(str(rel), pattern)
+            else:
+                try:
+                    match = re.search(pattern, str(rel)) is not None
+                except re.error:
+                    match = False
+
+            if match:
                 yield Entry(
                     path=rel,
-                    name=f.name,
-                    kind=NodeKind.FILE,
-                    abs_path=PurePosixPath(f.path),
+                    name=e.name,
+                    kind=e.kind,
+                    abs_path=f_abs,
                 )
 
     def _walk_dfs(self, root: PurePosixPath) -> Iterable[Entry]:
@@ -485,7 +420,7 @@ class GitHubRepoSource(SourceAdapter):
                 raise NotADirectoryError(path or ".")
             if not local.exists():
                 raise FileNotFoundError(path or ".")
-            entries: list[Entry] = []
+            entries: list[Entry] = []  # pyright: ignore[reportRedeclaration]
             with os.scandir(local) as it:
                 for entry in it:
                     kind = NodeKind.OTHER
@@ -493,7 +428,9 @@ class GitHubRepoSource(SourceAdapter):
                         kind = NodeKind.DIRECTORY
                     elif entry.is_file(follow_symlinks=False):
                         kind = NodeKind.FILE
-                    rel_path = (PurePosixPath(path) / entry.name) if path else PurePosixPath(entry.name)
+                    rel_path = (
+                        (PurePosixPath(path) / entry.name) if path else PurePosixPath(entry.name)
+                    )
                     entries.append(Entry(path=rel_path, name=entry.name, kind=kind))
             return entries
 
@@ -507,7 +444,10 @@ class GitHubRepoSource(SourceAdapter):
             r = _get(self._session, url, params={"ref": ref})
         except requests.HTTPError as e:  # type: ignore[attr-defined]
             # Translate 404 to FileNotFoundError so callers can fall back to pattern matching
-            if getattr(e, "response", None) is not None and getattr(e.response, "status_code", None) == 404:
+            if (
+                getattr(e, "response", None) is not None
+                and getattr(e.response, "status_code", None) == 404
+            ):
                 raise FileNotFoundError(path or ".")
             raise
         items = r.json()

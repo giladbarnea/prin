@@ -7,10 +7,13 @@ import re
 from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
-from typing import Any, Iterable, List
+from typing import Any, Iterable
 from urllib.parse import urljoin, urlparse
 
 import requests
+
+from prin.cli_common import Context
+from prin.types import Pattern
 
 from ..core import Entry, NodeKind, SourceAdapter, _decode_text, _is_text_bytes
 from ..filters import extension_match, is_excluded
@@ -91,8 +94,8 @@ def _get(
     return resp
 
 
-def _parse_llms_txt(text: str) -> List[str]:
-    urls: List[str] = []
+def _parse_llms_txt(text: str) -> list[str]:
+    urls: list[str] = []
     md_link_re = re.compile(r"\[[^\]]+\]\(([^)\s]+)\)")
     raw_url_re = re.compile(r"https?://[^\s)]+")
 
@@ -122,7 +125,7 @@ def _parse_llms_txt(text: str) -> List[str]:
 @dataclass
 class _Ctx:
     base_url: str
-    urls: List[str]
+    urls: list[str]
     key_to_url: dict[str, str]
 
 
@@ -140,8 +143,8 @@ class WebsiteSource(SourceAdapter):
         self._ctx: _Ctx | None = None
         self._base_url = base_url
         # Adapter configuration (from Context)
-        self._exclusions: list[str] = []
-        self._extensions: list[str] = []
+        self._exclusions: list[Pattern] = []
+        self._extensions: list[Pattern] = []
         self._include_empty: bool = False
 
     def _ensure_ctx(self) -> _Ctx:
@@ -161,7 +164,7 @@ class WebsiteSource(SourceAdapter):
         text = r.text
         urls = _parse_llms_txt(text)
         # Normalize to absolute URLs; if any entry is relative, resolve against base
-        resolved: List[str] = []
+        resolved: list[str] = []
         key_to_url: dict[str, str] = {}
 
         for u in urls:
@@ -187,21 +190,54 @@ class WebsiteSource(SourceAdapter):
         return PurePosixPath()
 
     # region --- Adapter SRP additions ---
-    def configure(self, ctx) -> None:
+    def configure(self, ctx: Context) -> None:
         self._exclusions = ctx.exclusions
         self._extensions = ctx.extensions
         self._include_empty = ctx.include_empty
 
-    def walk(self, token: str) -> Iterable[Entry]:
+    def walk_pattern(self, pattern: str, search_path: str | None) -> Iterable[Entry]:
+        """
+        Search for pattern in the website URLs.
+        Pattern matching is applied to the URL keys.
+        search_path is ignored for websites (the base URL is already set).
+        """
         ctx = self._ensure_ctx()
-        # Flat list; yield in case-insensitive order
+
+        # If no pattern, list all URLs
+        if not pattern:
+            for key in sorted(ctx.key_to_url.keys(), key=lambda s: s.casefold()):
+                yield Entry(
+                    path=PurePosixPath(key),
+                    name=key,
+                    kind=NodeKind.FILE,
+                    abs_path=PurePosixPath(key),
+                )
+            return
+
+        # Pattern matching on URL keys
+        from ..path_classifier import classify_pattern
+
+        kind = classify_pattern(pattern)
+
         for key in sorted(ctx.key_to_url.keys(), key=lambda s: s.casefold()):
-            yield Entry(
-                path=PurePosixPath(key),
-                name=key,
-                kind=NodeKind.FILE,
-                abs_path=PurePosixPath(key),
-            )
+            match = False
+            if kind == "glob":
+                from fnmatch import fnmatch
+
+                match = fnmatch(key, pattern)
+            else:
+                try:
+                    match = re.search(pattern, key) is not None
+                except re.error:
+                    match = False
+
+            if match:
+                yield Entry(
+                    path=PurePosixPath(key),
+                    name=key,
+                    kind=NodeKind.FILE,
+                    abs_path=PurePosixPath(key),
+                )
 
     def should_print(self, entry: Entry) -> bool:
         if entry.explicit:

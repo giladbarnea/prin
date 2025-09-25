@@ -1,0 +1,130 @@
+"""
+Integration tests for the new what-then-where design.
+Tests the complete flow from CLI to output.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+
+from prin.core import StringWriter
+from prin.prin import main
+from tests.utils import write_file
+
+
+def test_filesystem_integration(prin_tmp_path):
+    """Test filesystem pattern search end-to-end"""
+
+    # Create test files
+    write_file(prin_tmp_path / "src" / "main.py", "print('main')")
+    write_file(prin_tmp_path / "src" / "util.py", "print('util')")
+    write_file(prin_tmp_path / "src" / "test_util.py", "# test util")
+    write_file(prin_tmp_path / "docs" / "readme.md", "# Readme")
+    write_file(prin_tmp_path / "docs" / "guide.md", "# Guide")
+
+    # Test 1: Pattern search in specific directory
+    writer = StringWriter()
+    main(argv=["*.py", str(prin_tmp_path / "src")], writer=writer)
+    output = writer.text()
+
+    print(f"Output: {output}")
+
+    assert f"<{(prin_tmp_path / 'src' / 'main.py').resolve()}>" in output
+    assert f"<{(prin_tmp_path / 'src' / 'util.py').resolve()}>" in output
+    # Note: test files are excluded by default, so test_util.py won't appear
+    assert "test_util.py" not in output
+    assert "readme.md" not in output
+
+    # Test 2: Regex pattern that matches non-test files
+    writer = StringWriter()
+    main(argv=[r"^(?!test_).*\.py$", str(prin_tmp_path)], writer=writer)
+    output = writer.text()
+
+    assert str((prin_tmp_path / "src" / "main.py").resolve()) in output
+    assert str((prin_tmp_path / "src" / "util.py").resolve()) in output
+    assert "test_util.py" not in output
+
+    # Test 3: All markdown files
+    writer = StringWriter()
+    main(argv=["*.md", str(prin_tmp_path)], writer=writer)
+    output = writer.text()
+
+    assert str((prin_tmp_path / "docs" / "readme.md").resolve()) in output
+    assert str((prin_tmp_path / "docs" / "guide.md").resolve()) in output
+    assert ".py" not in output
+
+
+def test_no_pattern_lists_all(prin_tmp_path):
+    """Test that no pattern lists all files"""
+
+    write_file(prin_tmp_path / "a.txt", "content a")
+    write_file(prin_tmp_path / "b.py", "content b")
+    write_file(prin_tmp_path / "sub" / "c.md", "content c")
+
+    writer = StringWriter()
+    main(argv=["", str(prin_tmp_path), "-l"], writer=writer)
+    output = writer.text()
+
+    assert "a.txt" in output, output
+    assert "b.py" in output, output
+    assert "c.md" in output, output
+
+
+def test_pattern_without_path_uses_cwd(prin_tmp_path):
+    """Test that pattern without path searches current directory"""
+
+    # Create files in temp dir with actual code (not just comments)
+    write_file(prin_tmp_path / "file1.py", "print('file 1')")
+    write_file(prin_tmp_path / "file2.py", "print('file 2')")
+    write_file(prin_tmp_path / "main.py", "print('main')")
+
+    # Change to temp dir
+    import os
+
+    old_cwd = Path.cwd()
+    os.chdir(prin_tmp_path)
+
+    try:
+        writer = StringWriter()
+        print(f"CWD: {Path.cwd()}")
+        print(f"Files in CWD: {list(Path.cwd().glob('*.py'))}")
+        main(argv=["file*.py"], writer=writer)
+        output = writer.text()
+
+        print(f"Pattern without path output: {output}")
+
+        assert "<file1.py>" in output
+        assert "<file2.py>" in output
+        assert "main.py" not in output
+    finally:
+        os.chdir(old_cwd)
+
+
+def test_exact_file_pattern(prin_tmp_path):
+    """Test searching for an exact filename pattern"""
+
+    write_file(prin_tmp_path / "exact_file.py", "print('exact content')")
+    write_file(prin_tmp_path / "other_file.py", "print('other content')")
+
+    writer = StringWriter()
+    main(argv=["exact_file.py", str(prin_tmp_path)], writer=writer)
+    output = writer.text()
+
+    assert f"<{(prin_tmp_path / 'exact_file.py').resolve()}>" in output
+    assert "print('exact content')" in output
+    assert "other_file.py" not in output
+
+
+def test_github_pattern_integration():
+    """Test GitHub repository pattern search"""
+    # Skip if no network or GitHub mock not available
+    import os
+
+    if os.getenv("PRIN_NO_NETWORK") or not os.getenv("PRIN_GH_MOCK_ROOT"):
+        pytest.skip("Network disabled or GitHub mock not available")
+
+    # This would test something like:
+    # prin "*.md" github.com/owner/repo
+    pytest.skip("GitHub integration test pending mock setup")

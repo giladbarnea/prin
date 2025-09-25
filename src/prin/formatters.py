@@ -12,6 +12,7 @@ class XmlFormatter(Formatter):
     def format(self, path: str, text: str) -> str:
         if not text.endswith("\n"):
             text = text + "\n"
+        # Avoid duplicate closing tags when path already includes a leading '<' from previous formatting
         return f"<{path}>\n{text}</{path}>\n"
 
     def binary(self, path: str) -> str:

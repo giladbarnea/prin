@@ -5,12 +5,15 @@ import os
 import re
 from fnmatch import fnmatch
 from pathlib import Path, PurePosixPath
-from typing import Iterable, Self
+from typing import TYPE_CHECKING, Iterable
 
 from prin import core
 from prin.core import Entry, NodeKind, SourceAdapter
 from prin.filters import extension_match, is_excluded
 from prin.path_classifier import classify_pattern
+
+if TYPE_CHECKING:
+    from prin.cli_common import Context
 
 
 def settrace_if_returns(value):
@@ -63,29 +66,16 @@ class FileSystemSource(SourceAdapter):
     def __repr__(self) -> str:
         return f"FileSystemSource(anchor={self.anchor!r})"
 
-    def _ensure_exists(func):
-        # @functools.wraps(func)
-        def wrapper(self: Self, *args, **kwargs):
-            if not args:
-                raise FileNotFoundError("No positional path provided")
-            path = args[0]
-            if not self.exists(path):
-                raise FileNotFoundError(f"{path!r} does not exist. Anchor: {self.anchor!r}")
-            return func(self, *args, **kwargs)
-
-        return wrapper
-
     # Removed: display is computed internally by walk(); keep no public API.
 
     def resolve(self, path) -> Path:
         """
         Resolve the path relative to the anchor to its absolute form.
 
-        Implementation detail: resolve resolves symlinks, which is undesired, and absolute does not resolve '..' segments, which is desired, so we use normpath+absolute to resolve both.
+        Implementation detail: os.path.resolve() resolves symlinks, which is undesired, and .absolute() does not resolve '..' segments, which is desired, so we use normpath+absolute to resolve both.
         """
         return Path(os.path.normpath((self.anchor / path).absolute()))
 
-    @_ensure_exists
     def list_dir(self, dir_path) -> Iterable[Entry]:
         entries: list[Entry] = []
         with os.scandir(Path(str(dir_path))) as dir_iterator:
@@ -105,7 +95,6 @@ class FileSystemSource(SourceAdapter):
                 )
         return entries
 
-    @_ensure_exists
     def read_file_bytes(self, file_path) -> bytes:
         return self.resolve(file_path).read_bytes()
 
@@ -113,7 +102,6 @@ class FileSystemSource(SourceAdapter):
         # Path.exists() does not support follow_symlinks, and resolve() already normalizes.
         return self.resolve(path).exists()
 
-    @_ensure_exists
     def is_empty(self, file_path) -> bool:
         # Read bytes and use shared semantic emptiness check
         blob = self.read_file_bytes(file_path)
@@ -123,7 +111,7 @@ class FileSystemSource(SourceAdapter):
         return core.is_blob_semantically_empty(blob, path)
 
     # Depth-first traversal delegated to the adapter. Yields files only, in stable order.
-    def walk_dfs(self, root) -> Iterable[Entry]:
+    def _walk_dfs(self, root) -> Iterable[Entry]:
         """
         Yield Entry objects for files under the given root in depth-first order.
 
@@ -192,74 +180,153 @@ class FileSystemSource(SourceAdapter):
         except Exception:
             return str(path)
 
-    def walk(self, token: str) -> Iterable[Entry]:
+    def walk_pattern(self, pattern: str, search_path: str | None) -> Iterable[Entry]:
         """
-        Unified traversal entrypoint.
-        - If token resolves to an existing path: yield files depth-first relative to display base
-          (anchor if root under anchor; otherwise the root itself). Explicit file roots marked.
-        - If not existing: treat token as a pattern; traverse from anchor and yield only matching files.
+        Search for pattern in the given path.
+        If search_path is None, use anchor.
+        If pattern is empty, list all files in the path.
         """
-        root = self.resolve(token)
-        anchor = self.anchor
+        # Determine the search root (absolute path used for traversal)
+        if search_path is None:
+            search_root = self.anchor
+        else:
+            search_root = self.resolve(search_path)
 
-        if root.exists():
-            base = anchor if str(root).startswith(str(anchor) + os.sep) or root == anchor else root
-            # File root → single explicit entry
-            if root.is_file():
-                rel = self._display_rel(root, base)
+        # Determine display relativity rules based on the raw search_path token
+        # Rules (cwd == anchor):
+        # - None: display relative to cwd (bare, no leading './')
+        # - Absolute token: display absolute paths
+        # - Token == '.' or startswith './': display relative to cwd with leading './'
+        # - Token startswith '../': display relative to resolved(base) with the literal '../...' prefix
+        # - Other relative token (e.g., 'foo', 'foo/bar'): display relative to cwd (bare)
+        abs_display: bool = False
+        display_prefix: str = ""
+        if search_path is None:
+            display_base = self.anchor
+        else:
+            if Path(search_path).is_absolute():
+                abs_display = True
+                display_base = search_root
+            elif search_path == "." or search_path.startswith("./"):
+                display_base = self.anchor
+                display_prefix = "./"
+            elif search_path.startswith("../"):
+                display_base = search_root
+                # Keep the literal ../... prefix normalized
+                display_prefix = os.path.normpath(search_path)
+            else:
+                # Child path under cwd without explicit './' → bare paths relative to cwd
+                display_base = self.anchor
+
+        def make_display_path(abs_file: Path) -> tuple[str, str | None]:
+            if abs_display:
+                # For absolute display, preserve a double-leading tag-friendly path as-is without duplicate prefixes
+                return str(abs_file), None
+            rel = self._display_rel(abs_file, display_base)
+            if display_prefix:
+                # Avoid duplicate separators
+                return f"{display_prefix.rstrip('/')}/{rel}", f"{display_prefix.rstrip('/')}/{rel}"
+            return rel, None
+
+        # Special case: if pattern is an exact existing file path, treat it as explicit
+        if pattern and not search_path:
+            try:
+                pattern_as_path = self.resolve(pattern)
+                if pattern_as_path.exists() and pattern_as_path.is_file():
+                    # This is an explicit file reference
+                    # Display relative to anchor when under it; otherwise absolute
+                    if str(pattern_as_path).startswith(str(self.anchor) + os.sep):
+                        rel = self._display_rel(pattern_as_path, self.anchor)
+                        disp = rel
+                    else:
+                        disp = str(pattern_as_path)
+                    yield Entry(
+                        path=PurePosixPath(disp),
+                        name=pattern_as_path.name,
+                        kind=NodeKind.FILE,
+                        abs_path=PurePosixPath(str(pattern_as_path)),
+                        explicit=True,
+                    )
+                    return
+            except:
+                pass
+
+        # If no pattern or empty pattern, list all files
+        if not pattern:
+            if search_root.is_file():
+                # Single file
+                disp, disp_raw = make_display_path(search_root)
                 yield Entry(
-                    path=PurePosixPath(rel),
-                    name=root.name,
+                    path=PurePosixPath(disp),
+                    name=search_root.name,
                     kind=NodeKind.FILE,
-                    abs_path=PurePosixPath(str(root)),
+                    abs_path=PurePosixPath(str(search_root)),
                     explicit=True,
+                    display_path=disp_raw,
                 )
-                return
-            # Directory root → DFS
-            for e in self.walk_dfs(root):
-                f_abs = Path(str(e.path))
-                rel = self._display_rel(f_abs, base)
-                yield Entry(
-                    path=PurePosixPath(rel),
-                    name=e.name,
-                    kind=e.kind,
-                    abs_path=PurePosixPath(str(f_abs)),
-                )
+            else:
+                # Directory - traverse all files
+                for e in self._walk_dfs(search_root):
+                    f_abs = Path(str(e.path))
+                    disp, disp_raw = make_display_path(f_abs)
+                    cand = Entry(
+                        path=PurePosixPath(disp),
+                        name=e.name,
+                        kind=e.kind,
+                        abs_path=PurePosixPath(str(f_abs)),
+                        display_path=disp_raw,
+                    )
+                    if self.should_print(cand):
+                        yield cand
             return
 
-        # Pattern fallback: search from anchor, match against display-relative path
-        kind = classify_pattern(token)
-        for e in self.walk_dfs(anchor):
+        # Pattern matching
+        kind = classify_pattern(pattern)
+        # For pattern matching, use the same display rules
+
+        for e in self._walk_dfs(search_root):
             f_abs = Path(str(e.path))
-            rel = self._display_rel(f_abs, anchor)
+            rel = self._display_rel(f_abs, search_root)
+
             match = False
             if kind == "glob":
-                match = fnmatch(rel, token)
+                match = fnmatch(rel, pattern)
             else:
                 try:
-                    match = re.search(token, rel) is not None
+                    match = re.search(pattern, rel) is not None
                 except re.error:
                     match = False
+
             if match:
-                yield Entry(
-                    path=PurePosixPath(rel),
+                disp, disp_raw = make_display_path(f_abs)
+                cand = Entry(
+                    path=PurePosixPath(disp),
                     name=e.name,
                     kind=e.kind,
                     abs_path=PurePosixPath(str(f_abs)),
+                    display_path=disp_raw,
                 )
+                if self.should_print(cand):
+                    yield cand
 
     # Configuration from Context
-    def configure(self, ctx) -> None:
+    def configure(self, ctx: "Context") -> None:
         self.exclusions = ctx.exclusions
         self.extensions = ctx.extensions
         self.include_empty = ctx.include_empty
 
-    # Source-owned filtering decision
     def should_print(self, entry: Entry) -> bool:
+        """Source-owned filtering decision"""
         if entry.explicit:
             return True
         # Exclusion rules
-        dummy = Entry(path=PurePosixPath(entry.path), name=entry.name, kind=entry.kind)
+        # Normalize display path for filtering: strip leading './' or '../' segments used only for display
+        target = entry.path.as_posix()
+        if target.startswith("./"):
+            target = target[2:]
+        while target.startswith("../"):
+            target = target[3:]
+        dummy = Entry(path=PurePosixPath(target), name=entry.name, kind=entry.kind)
         if is_excluded(dummy, exclude=self.exclusions):
             return False
         if not extension_match(dummy, extensions=self.extensions):
