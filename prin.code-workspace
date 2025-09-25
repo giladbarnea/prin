@@ -29,7 +29,8 @@
     "cursorpyright.analysis.disableWorkspaceSymbol": true,
     "cursorpyright.analysis.typeCheckingMode": "basic",
     "cursorpyright.analysis.include": [
-      "src"
+      "src",
+      "tests"
     ]
   },
   "tasks": {

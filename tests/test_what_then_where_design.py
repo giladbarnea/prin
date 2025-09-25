@@ -39,8 +39,12 @@ def test_pattern_then_path_basic(prin_tmp_path: Path):
     actual_entries = list(src.walk_pattern(pattern, search_path))
 
     actual_paths = {e.path.as_posix() for e in actual_entries}
-    # Should not include test_main.py from tests/ or readme.md because they are excluded by default
-    assert actual_paths == {"src/main.py", "src/util.py", "foo/foo_main.py"}
+    # Absolute where token → displayed paths are absolute, tests excluded by default
+    assert actual_paths == {
+        str((prin_tmp_path / "src" / "main.py").resolve()),
+        str((prin_tmp_path / "src" / "util.py").resolve()),
+        str((prin_tmp_path / "foo" / "foo_main.py").resolve()),
+    }
 
 
 def test_pattern_then_path_basic_with_path(prin_tmp_path: Path):
@@ -64,8 +68,11 @@ def test_pattern_then_path_basic_with_path(prin_tmp_path: Path):
     actual_entries = list(src.walk_pattern(pattern, search_path))
 
     actual_paths = {e.path.as_posix() for e in actual_entries}
-    # Should not include test_main.py from tests/ or readme.md because they are excluded by default
-    assert actual_paths == {"src/main.py", "src/util.py"}
+    # Absolute where token pointing to child → displayed paths are absolute
+    assert actual_paths == {
+        str((prin_tmp_path / "src" / "main.py").resolve()),
+        str((prin_tmp_path / "src" / "util.py").resolve()),
+    }
 
 
 def test_regex_pattern_then_path(prin_tmp_path: Path):
@@ -92,11 +99,15 @@ def test_regex_pattern_then_path(prin_tmp_path: Path):
     actual_entries = list(src.walk_pattern(pattern, search_path))
     actual_paths = {e.path.as_posix() for e in actual_entries}
 
-    assert actual_paths == {"test_unit.py", "test_integration.py", "src/test_helper.py"}
+    assert actual_paths == {
+        str((prin_tmp_path / "test_unit.py").resolve()),
+        str((prin_tmp_path / "test_integration.py").resolve()),
+        str((prin_tmp_path / "src" / "test_helper.py").resolve()),
+    }
 
 
 def test_no_pattern_lists_all_in_path(prin_tmp_path: Path):
-    """When no pattern given, list all files in path: 'prin . ' or 'prin "" .'"""
+    """When no pattern given, list all files in the provided path."""
     write_file(prin_tmp_path / "a.txt", "a")
     write_file(prin_tmp_path / "b.py", "b")
     write_file(prin_tmp_path / "sub" / "c.md", "c")
@@ -108,7 +119,11 @@ def test_no_pattern_lists_all_in_path(prin_tmp_path: Path):
     entries = list(src.walk_pattern("", str(prin_tmp_path)))
     actual_paths = {e.path.as_posix() for e in entries}
 
-    assert actual_paths == {"a.txt", "b.py", "sub/c.md"}
+    assert actual_paths == {
+        str((prin_tmp_path / "a.txt").resolve()),
+        str((prin_tmp_path / "b.py").resolve()),
+        str((prin_tmp_path / "sub" / "c.md").resolve()),
+    }
 
 
 def test_pattern_no_path_searches_cwd(prin_tmp_path: Path):
@@ -155,3 +170,65 @@ def test_explicit_file_path_overrides_defaults(prin_tmp_path: Path):
     assert actual_entries
     assert actual_entries[0].explicit is True
     assert "tests/test_main.py" in actual_entries[0].path.as_posix()
+
+
+def test_display_paths_where_token_matrix(prin_tmp_path: Path):
+    """
+    Verify displayed paths per 'where' token shape when anchor is cwd.
+    Layout:
+    ./
+    ./foo/main.py
+    ./bar/main.py
+    """
+    anchor = prin_tmp_path
+    write_file(anchor / "foo" / "main.py", "print('foo')")
+    write_file(anchor / "bar" / "main.py", "print('bar')")
+
+    src = FileSystemSource(anchor)
+    src.configure(Context())
+
+    def paths_for(where: str | None):
+        return sorted(
+            (e.display_path or e.path.as_posix()) for e in src.walk_pattern("main", where)
+        )
+
+    # No 'where' → bare relative to cwd
+    assert paths_for(None) == ["bar/main.py", "foo/main.py"]
+
+    # '.' → relative to current dir with './'
+    assert paths_for(".") == ["./bar/main.py", "./foo/main.py"]
+
+    # 'foo' → narrowed search under anchor/foo; displayed bare relative to cwd
+    assert paths_for("foo") == ["foo/main.py"]
+
+    # './foo' → displayed relative to current dir (child) with './'
+    assert paths_for("./foo") == ["./foo/main.py"]
+
+    # '../' → single-level walk up: relative to that base with '../' prefix
+    # Allow additional files from the shared parent; assert our expected results are included
+    up_paths = set(paths_for("../"))
+    expected_up = {f"../{anchor.name}/bar/main.py", f"../{anchor.name}/foo/main.py"}
+    assert expected_up.issubset(up_paths)
+
+    # '../home' analog → walk up then back down explicitly
+    assert paths_for(f"../{anchor.name}") == [
+        f"../{anchor.name}/bar/main.py",
+        f"../{anchor.name}/foo/main.py",
+    ]
+
+    # Absolute parent (like '/') → absolute paths, may include others; assert our files are present
+    abs_parent_paths = set(paths_for(str(anchor.parent)))
+    expected_abs = {
+        str((anchor / "bar" / "main.py").resolve()),
+        str((anchor / "foo" / "main.py").resolve()),
+    }
+    assert expected_abs.issubset(abs_parent_paths)
+
+    # Absolute anchor → absolute paths
+    assert paths_for(str(anchor)) == [
+        str((anchor / "bar" / "main.py").resolve()),
+        str((anchor / "foo" / "main.py").resolve()),
+    ]
+
+    # Absolute child → absolute paths
+    assert paths_for(str(anchor / "foo")) == [str((anchor / "foo" / "main.py").resolve())]

@@ -4,7 +4,7 @@ from pathlib import Path
 
 from prin.core import StringWriter
 from prin.prin import main as prin_main
-from tests.utils import count_opening_xml_tags, write_file
+from tests.utils import write_file
 
 
 def test_max_files_limits_printed_files_all_included(prin_tmp_path: Path):
@@ -16,9 +16,11 @@ def test_max_files_limits_printed_files_all_included(prin_tmp_path: Path):
     write_file(prin_tmp_path / "dir" / "sub" / "e.py", "print('e')\n")
 
     buf = StringWriter()
-    prin_main(argv=["", str(prin_tmp_path), "--include-tests", "--max-files", "4"], writer=buf)
+    prin_main(
+        argv=["", str(prin_tmp_path), "--include-tests", "--max-files", "4", "-l"], writer=buf
+    )
     out = buf.text()
-    assert count_opening_xml_tags(out) == 4
+    assert len(out.splitlines()) == 4, out
 
 
 def test_max_files_skips_non_matching_and_still_prints_four(prin_tmp_path: Path):
@@ -30,6 +32,9 @@ def test_max_files_skips_non_matching_and_still_prints_four(prin_tmp_path: Path)
     write_file(prin_tmp_path / "dir" / "sub" / "d.py", "print('d')\n")
 
     buf = StringWriter()
-    prin_main(argv=["", str(prin_tmp_path), "--include-tests", "--max-files", "4"], writer=buf)
+    prin_main(
+        argv=["", str(prin_tmp_path), "--include-tests", "--max-files", "4", "-l"], writer=buf
+    )
     out = buf.text()
-    assert count_opening_xml_tags(out) == 4
+
+    assert len(out.splitlines()) == 4, out

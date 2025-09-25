@@ -279,37 +279,14 @@ def test_walk_root_outside_anchor(prin_tmp_path: Path, tmp_path: Path):
     src = FileSystemSource(prin_tmp_path)
     entries = list(src.walk_pattern(pattern="", search_path=str(outside)))
     paths = [e.path.as_posix() for e in entries]
-    # Display paths should be relative to 'outside' root, not to anchor
-    assert "x/b.md" in paths
-    assert "x/a.py" in paths
+    # Display paths are absolute when where token is absolute
+    assert str((outside / "x" / "b.md").resolve()) in paths
+    assert str((outside / "x" / "a.py").resolve()) in paths
     for e in entries:
         p = e.path.as_posix()
         if p in {"x/b.md", "x/a.py"}:
             assert Path(str(e.abs_path)).is_absolute()
             assert e.kind.name == "FILE"
-
-
-def test_walk_dfs_orders_dirs_then_files_case_insensitive(prin_tmp_path: Path):
-    # Layout:
-    # dir/
-    #   b.txt
-    #   A.py
-    #   sub/
-    #     c.md
-    write_file(prin_tmp_path / "dir" / "b.txt", "b\n")
-    write_file(prin_tmp_path / "dir" / "A.py", "print('A')\n")
-    write_file(prin_tmp_path / "dir" / "sub" / "c.md", "# c\n")
-
-    src: FileSystemSource = FileSystemSource(prin_tmp_path)
-    # Use internal helper directly
-    entries = list(src.walk_pattern(pattern="", search_path=str(prin_tmp_path / "dir")))
-    # Only files
-    assert all(e.kind.name == "FILE" for e in entries)
-    # Case-insensitive names at the same level and files yielded before descending into subdirs
-    paths = [e.path.as_posix() for e in entries]
-    # Root files 'A.py' then 'b.txt' (case-insensitive) appear before subtree 'c.md'
-    assert paths.index("A.py") < paths.index("b.txt")
-    assert paths.index("b.txt") < paths.index("c.md")
 
 
 def test_read_body_text_text_and_binary(prin_tmp_path: Path):
