@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 
@@ -14,6 +15,10 @@ def touch_file(path: Path) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.touch()
+
+
+def resolve_without_symlinks(path: Path) -> Path:
+    return Path(os.path.normpath((Path(path)).absolute()))
 
 
 def count_opening_xml_tags(text: str) -> int:

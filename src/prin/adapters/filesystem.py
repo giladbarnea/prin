@@ -72,7 +72,7 @@ class FileSystemSource(SourceAdapter):
         """
         Resolve the path relative to the anchor to its absolute form.
 
-        Implementation detail: resolve resolves symlinks, which is undesired, and absolute does not resolve '..' segments, which is desired, so we use normpath+absolute to resolve both.
+        Implementation detail: os.path.resolve() resolves symlinks, which is undesired, and .absolute() does not resolve '..' segments, which is desired, so we use normpath+absolute to resolve both.
         """
         return Path(os.path.normpath((self.anchor / path).absolute()))
 
