@@ -65,6 +65,7 @@ All .sh scripts automatically install uv if missing, take care of PATH and execu
 ## Development Conventions
 
 - Prefer `pathlib` to `os.path`. For example, use `Path.open()` instead of `open()`, and `Path.glob` instead of `glob`.
+- NEVER use Pytest's `tmp_path` fixture. Use the custom `prin_tmp_path` instead.
 
 ---
 

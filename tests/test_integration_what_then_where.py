@@ -45,8 +45,8 @@ def test_filesystem_integration():
         main(argv=[r"^(?!test_).*\.py$", str(tmp_path)], writer=writer)
         output = writer.text()
 
-        assert str((tmp_path / 'src' / 'main.py').resolve()) in output
-        assert str((tmp_path / 'src' / 'util.py').resolve()) in output
+        assert str((tmp_path / "src" / "main.py").resolve()) in output
+        assert str((tmp_path / "src" / "util.py").resolve()) in output
         assert "test_util.py" not in output
 
         # Test 3: All markdown files
@@ -54,8 +54,8 @@ def test_filesystem_integration():
         main(argv=["*.md", str(tmp_path)], writer=writer)
         output = writer.text()
 
-        assert str((tmp_path / 'docs' / 'readme.md').resolve()) in output
-        assert str((tmp_path / 'docs' / 'guide.md').resolve()) in output
+        assert str((tmp_path / "docs" / "readme.md").resolve()) in output
+        assert str((tmp_path / "docs" / "guide.md").resolve()) in output
         assert ".py" not in output
 
 

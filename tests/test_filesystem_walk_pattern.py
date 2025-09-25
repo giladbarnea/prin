@@ -30,7 +30,7 @@ def test_walk_pattern_glob(prin_tmp_path: Path):
     write_file(prin_tmp_path / "readme.md", "# Readme\n")
 
     src = FileSystemSource(prin_tmp_path)
-    src.configure(prin.cli_common.Context(include_empty=True))
+    src.configure(prin.cli_common.Context(include_tests=True))
 
     # Test glob for .py files
     entries = list(src.walk_pattern("**/*.py", str(prin_tmp_path)))

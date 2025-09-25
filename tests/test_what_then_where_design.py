@@ -188,7 +188,9 @@ def test_display_paths_where_token_matrix(prin_tmp_path: Path):
     src.configure(Context())
 
     def paths_for(where: str | None):
-        return sorted((e.display_path or e.path.as_posix()) for e in src.walk_pattern("main", where))
+        return sorted(
+            (e.display_path or e.path.as_posix()) for e in src.walk_pattern("main", where)
+        )
 
     # No 'where' → bare relative to cwd
     assert paths_for(None) == ["bar/main.py", "foo/main.py"]
@@ -209,7 +211,10 @@ def test_display_paths_where_token_matrix(prin_tmp_path: Path):
     assert expected_up.issubset(up_paths)
 
     # '../home' analog → walk up then back down explicitly
-    assert paths_for(f"../{anchor.name}") == [f"../{anchor.name}/bar/main.py", f"../{anchor.name}/foo/main.py"]
+    assert paths_for(f"../{anchor.name}") == [
+        f"../{anchor.name}/bar/main.py",
+        f"../{anchor.name}/foo/main.py",
+    ]
 
     # Absolute parent (like '/') → absolute paths, may include others; assert our files are present
     abs_parent_paths = set(paths_for(str(anchor.parent)))

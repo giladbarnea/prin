@@ -78,11 +78,16 @@ def test_regex_pattern_search(prin_tmp_path: Path):
     write_file(prin_tmp_path / "main.py", "print('main')")
 
     # Search for files starting with test_
-    out = _run(FileSystemSource(prin_tmp_path), r"^test_.*\.py$", str(prin_tmp_path))
-    assert f"<{(prin_tmp_path / 'test_unit.py').resolve()}>" in out
-    assert f"<{(prin_tmp_path / 'test_integration.py').resolve()}>" in out
-    assert "main_test.py" not in out
-    assert "main.py" not in out
+    out = _run(
+        FileSystemSource(prin_tmp_path),
+        r"test_.*\.py$",
+        str(prin_tmp_path),
+        ctx=Context(include_tests=False),
+    )
+    assert f"<{(prin_tmp_path / 'test_unit.py').resolve()}>" not in out
+    assert f"<{(prin_tmp_path / 'test_integration.py').resolve()}>" not in out
+    assert "main_test.py" in out
+    assert "main.py" in out
 
 
 def test_empty_pattern_lists_all(prin_tmp_path: Path):

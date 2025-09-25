@@ -7,30 +7,32 @@ from prin.formatters import XmlFormatter
 from tests.utils import touch_file, write_file
 
 
-def test_cli_engine_happy_path(tmp_path):
+def test_cli_engine_happy_path(prin_tmp_path):
     # Build a 2-3 level tree with interspersed files
-    (tmp_path / "src" / "pkg").mkdir(parents=True)
-    (tmp_path / "docs").mkdir()
+    (prin_tmp_path / "src" / "pkg").mkdir(parents=True)
+    (prin_tmp_path / "docs").mkdir()
 
     # Included-by-default extensions: pick a subset (py, md, json*)
-    write_file(tmp_path / "src" / "main.py", "print('hello')\nprint('world')\n")
-    write_file(tmp_path / "docs" / "readme.md", "# Title\n\nSome docs.\n")
-    write_file(tmp_path / "src" / "config.json", '{\n  "a": 1,\n  "b": 2\n}\n')
+    write_file(prin_tmp_path / "src" / "main.py", "print('hello')\nprint('world')\n")
+    write_file(prin_tmp_path / "docs" / "readme.md", "# Title\n\nSome docs.\n")
+    write_file(prin_tmp_path / "src" / "config.json", '{\n  "a": 1,\n  "b": 2\n}\n')
 
     # Nested level
-    write_file(tmp_path / "src" / "pkg" / "module.py", "def f():\n    return 1\n\nprint(f())\n")
-    write_file(tmp_path / "src" / "pkg" / "data.jsonl", '{"x":1}\n{"x":2}\n')
+    write_file(
+        prin_tmp_path / "src" / "pkg" / "module.py", "def f():\n    return 1\n\nprint(f())\n"
+    )
+    write_file(prin_tmp_path / "src" / "pkg" / "data.jsonl", '{"x":1}\n{"x":2}\n')
 
     # Default-ignored categories (lock/test/binary)
-    write_file(tmp_path / "poetry.lock", "dummy\n")
-    write_file(tmp_path / "package-lock.json", "{}\n")
-    touch_file(tmp_path / "build" / "artifact.o")
-    touch_file(tmp_path / "__pycache__" / "module.pyc")  # binary
-    (tmp_path / "tests").mkdir()
-    write_file(tmp_path / "tests" / "test_something.py", "def test_x():\n    assert True\n")
+    write_file(prin_tmp_path / "poetry.lock", "dummy\n")
+    write_file(prin_tmp_path / "package-lock.json", "{}\n")
+    touch_file(prin_tmp_path / "build" / "artifact.o")
+    touch_file(prin_tmp_path / "__pycache__" / "module.pyc")  # binary
+    (prin_tmp_path / "tests").mkdir()
+    write_file(prin_tmp_path / "tests" / "test_something.py", "def test_x():\n    assert True\n")
 
     # Use hardcoded filters to isolate traversal/printing happy path
-    src = FileSystemSource(tmp_path)
+    src = FileSystemSource(prin_tmp_path)
     printer = DepthFirstPrinter(
         src,
         XmlFormatter(),
@@ -38,16 +40,16 @@ def test_cli_engine_happy_path(tmp_path):
     )
 
     buf = StringWriter()
-    printer.run_pattern("", str(tmp_path), buf)
+    printer.run_pattern("", str(prin_tmp_path), buf)
     out = buf.text()
 
     # Included-by-default must appear (absolute paths since search_path is absolute)
-    assert str((tmp_path / 'docs' / 'readme.md').resolve()) in out
-    assert str((tmp_path / 'src' / 'config.json').resolve()) in out
+    assert str((prin_tmp_path / "docs" / "readme.md").resolve()) in out
+    assert str((prin_tmp_path / "src" / "config.json").resolve()) in out
     # Ensure main.py, module.py and data.jsonl all appear (ignore tag wrappers)
-    assert str((tmp_path / 'src' / 'main.py').resolve()) in out
-    assert str((tmp_path / 'src' / 'pkg' / 'module.py').resolve()) in out
-    assert str((tmp_path / 'src' / 'pkg' / 'data.jsonl').resolve()) in out
+    assert str((prin_tmp_path / "src" / "main.py").resolve()) in out
+    assert str((prin_tmp_path / "src" / "pkg" / "module.py").resolve()) in out
+    assert str((prin_tmp_path / "src" / "pkg" / "data.jsonl").resolve()) in out
     # Cover default glob-ish like json* by ensuring jsonl also counted if implied
     # If not included by default in implementation, this assertion can be relaxed to explicit extension list in args.
     # For current defaults it should be included via json* pattern.
@@ -57,14 +59,14 @@ def test_cli_engine_happy_path(tmp_path):
     # but don't assert on default-ignored categories here.
 
 
-def test_cli_engine_isolation(tmp_path):
-    (tmp_path / "dir" / "sub").mkdir(parents=True)
-    write_file(tmp_path / "dir" / "a.py", "print('a')\nprint('b')\n")
-    write_file(tmp_path / "dir" / "sub" / "b.md", "# b\n\ntext\n")
-    touch_file(tmp_path / "__pycache__" / "c.pyc")
+def test_cli_engine_isolation(prin_tmp_path):
+    (prin_tmp_path / "dir" / "sub").mkdir(parents=True)
+    write_file(prin_tmp_path / "dir" / "a.py", "print('a')\nprint('b')\n")
+    write_file(prin_tmp_path / "dir" / "sub" / "b.md", "# b\n\ntext\n")
+    touch_file(prin_tmp_path / "__pycache__" / "c.pyc")
 
     # Bypass parser-derived filters; hardcode simple includes/excludes
-    src = FileSystemSource(tmp_path)
+    src = FileSystemSource(prin_tmp_path)
     printer = DepthFirstPrinter(
         src,
         XmlFormatter(),
@@ -73,8 +75,8 @@ def test_cli_engine_isolation(tmp_path):
 
     buf = StringWriter()
     # Explicitly pass the tmp_path root to run_pattern
-    printer.run_pattern("", str(tmp_path), buf)
+    printer.run_pattern("", str(prin_tmp_path), buf)
     out = buf.text()
-    assert str((tmp_path / 'dir' / 'a.py').resolve()) in out
-    assert str((tmp_path / 'dir' / 'sub' / 'b.md').resolve()) in out
+    assert str((prin_tmp_path / "dir" / "a.py").resolve()) in out
+    assert str((prin_tmp_path / "dir" / "sub" / "b.md").resolve()) in out
     assert "__pycache__/c.pyc" not in out

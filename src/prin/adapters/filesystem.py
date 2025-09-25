@@ -204,7 +204,7 @@ class FileSystemSource(SourceAdapter):
         if search_path is None:
             display_base = self.anchor
         else:
-            if os.path.isabs(search_path):
+            if Path(search_path).is_absolute():
                 abs_display = True
                 display_base = search_root
             elif search_path == "." or search_path.startswith("./"):
