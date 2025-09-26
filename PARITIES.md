@@ -2,6 +2,7 @@
 audience: AI agents
 description: records the dependencies between elements in the codebase
 updated: after making changes in the code
+authority rank: ”eventual“ source of truth. code changes first, then locking-in a snapshot of the codebase in this file. absolute source of truth before first change.
 ---
 
 # PARITIES
