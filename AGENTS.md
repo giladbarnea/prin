@@ -63,6 +63,28 @@ All *.sh scripts automatically install uv if missing, take care of PATH and exec
 
 - To add or remove a dependency, use `uv add` or `uv remove`. Don't modify pyproject.toml directly.
 
+### `prin` Smoke Test Matrix
+
+```bash
+# Warm-up
+./run.sh --help | head -30
+
+# Period variants
+./run.sh . -l | head -30
+./run.sh . . -l | head -30
+./run.sh . $PWD -l | head -30
+
+# Glob asterisk variants
+./run.sh '*' -l | head -30
+./run.sh '*' . -l | head -30
+./run.sh '*' $PWD -l | head -30
+
+# Regex “everything” (quote to avoid shell expansion)
+./run.sh '.*' -l | head -30
+./run.sh '.*' . -l | head -30
+./run.sh '.*' $PWD -l | head -30
+```
+
 ## Gotchas
 - Make sure the environment in which the tests operate doesn't interfere with the test results. This can manifest as unplanned parsing of project's ignore files, inadvertedly honoring the tests directory of the project itself, temp files/dirs have disruptive paths with aspects 'prin' is sensitive to, and so on.
 
