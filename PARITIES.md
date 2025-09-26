@@ -1,7 +1,6 @@
 ---
 audience: AI agents
 description: records the dependencies between elements in the codebase
-maintained by: AI agents
 ---
 
 # PARITIES
