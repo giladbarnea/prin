@@ -161,7 +161,7 @@ You can focus or skip tests for specific adapters via pytest flags:
 #### Task Completion Checklist (create internal todo list)
 
 1. **Prep** (before any code)
-- [ ] Read AGENTS.md and PARITIES.md.
+- [ ] Read AGENTS.md, PARITIES.md, and SPEC.md.
 - [ ] Recognize sets in PARITIES.md relevant to your plan.
 - [ ] Run ./test.sh.
 - [ ] Write TDD tests.
