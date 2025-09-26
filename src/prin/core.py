@@ -4,7 +4,7 @@ import sys
 from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path, PurePosixPath
-from typing import TYPE_CHECKING, Iterable, Protocol, Self
+from typing import TYPE_CHECKING, ClassVar, Iterable, Protocol, Self
 
 from prin.formatters import Formatter, HeaderFormatter
 
@@ -22,11 +22,16 @@ class NodeKind(Enum):
 class Entry:
     path: PurePosixPath
     name: str
+    """The display name."""
+
     kind: NodeKind
-    # Absolute path identifier for reading (when path is used for display/filtering)
+    """Absolute path identifier for reading (when path is used for display/filtering)"""
+
     abs_path: PurePosixPath | None = None
-    # True when explicitly provided as a root token (force-include semantics)
+    """True when explicitly provided as a root token (force-include semantics)"""
     explicit: bool = False
+    # Optional raw display path string (preserves prefixes like './' or '../')
+    display_path: str | None = None
 
 
 class Writer(Protocol):
@@ -42,7 +47,7 @@ class SourceAdapter(Protocol):
     - Non-responsibilities: printing, budgeting, formatting selection.
     """
 
-    anchor: Path
+    anchor: ClassVar[Path]
 
     def resolve(self: Self, path) -> PurePosixPath: ...
     def list_dir(self: Self, dir_path) -> Iterable[Entry]: ...
@@ -50,7 +55,7 @@ class SourceAdapter(Protocol):
     def is_empty(self: Self, file_path) -> bool: ...
     def exists(self: Self, path) -> bool: ...
     def configure(self: Self, ctx: "Context") -> None: ...
-    def walk(self: Self, token: str) -> Iterable[Entry]: ...
+    def walk_pattern(self: Self, pattern: str, search_path: str | None) -> Iterable[Entry]: ...
     def should_print(self: Self, entry: Entry) -> bool: ...
     def read_body_text(self: Self, entry: Entry) -> tuple[str | None, bool]: ...
 
@@ -212,14 +217,20 @@ class DepthFirstPrinter:
         self.include_empty = ctx.include_empty
         self.only_headers = ctx.only_headers
 
-    def run(self, patterns: list, writer: Writer, budget: "FileBudget | None" = None) -> None:
-        for token in patterns:
+    def run_pattern(
+        self,
+        pattern: str,
+        search_path: str | None,
+        writer: Writer,
+        budget: "FileBudget | None" = None,
+    ) -> None:
+        """Run with pattern and search path."""
+        if budget is not None and budget.spent():
+            return
+        for entry in self.source.walk_pattern(pattern, search_path):
             if budget is not None and budget.spent():
                 return
-            for entry in self.source.walk(token):
-                if budget is not None and budget.spent():
-                    return
-                self._handle_file(entry, writer, budget=budget)
+            self._handle_file(entry, writer, budget=budget)
 
     def _handle_file(
         self,
@@ -241,7 +252,7 @@ class DepthFirstPrinter:
         if not (force or self.source.should_print(entry)):
             return
 
-        path_str = entry.path.as_posix()
+        path_str = entry.display_path if entry.display_path is not None else entry.path.as_posix()
         if self.only_headers:
             writer.write(self.formatter.format(path_str, ...))
         else:
@@ -250,5 +261,5 @@ class DepthFirstPrinter:
                 writer.write(self.formatter.binary(path_str))
             else:
                 writer.write(self.formatter.format(path_str, body_text or ""))
-        budget and budget.consume()
+        budget and budget.consume()  # pyright: ignore[reportUnusedExpression]
         self._printed_paths.add(key)

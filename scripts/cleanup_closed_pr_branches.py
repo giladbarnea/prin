@@ -1,14 +1,14 @@
 import argparse
 import os
+import pathlib
 import re
 import subprocess
-from datetime import datetime, timedelta, timezone
-from typing import Dict, Iterable, List, Optional, Tuple, Any
-from functools import lru_cache
 import sys
+from datetime import datetime, timedelta, timezone
+from functools import lru_cache
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import requests
-
 
 GITHUB_API = "https://api.github.com"
 API_VERSION = "2022-11-28"
@@ -24,8 +24,8 @@ def _get_env_token() -> Optional[str]:
             return value
     # Fallback: read from user file
     try:
-        p = os.path.expanduser("~/.github-token")
-        if os.path.isfile(p):
+        p = pathlib.Path("~/.github-token").expanduser()
+        if pathlib.Path(p).is_file():
             with open(p, "r", encoding="utf-8") as fh:
                 token = fh.read().strip()
                 return token or None
@@ -73,7 +73,9 @@ def _api_headers(token: Optional[str]) -> Dict[str, str]:
     return headers
 
 
-def _get_with_pagination(url: str, headers: Dict[str, str], params: Optional[Dict[str, str]] = None) -> Iterable[dict]:
+def _get_with_pagination(
+    url: str, headers: Dict[str, str], params: Optional[Dict[str, str]] = None
+) -> Iterable[dict]:
     session = requests.Session()
     while True:
         resp = session.get(url, headers=headers, params=params, timeout=HTTP_TIMEOUT_SECS)
@@ -136,7 +138,9 @@ def _fmt(dt: Optional[datetime], with_seconds: bool = False) -> str:
     return dt.strftime("%Y-%m-%d %H:%M:%S" if with_seconds else "%Y-%m-%d %H:%M")
 
 
-def discover_repo_owner_and_name(explicit_owner: Optional[str], explicit_repo: Optional[str]) -> Tuple[str, str]:
+def discover_repo_owner_and_name(
+    explicit_owner: Optional[str], explicit_repo: Optional[str]
+) -> Tuple[str, str]:
     if explicit_owner and explicit_repo:
         return explicit_owner, explicit_repo
     origin = _run(["git", "remote", "get-url", "origin"]).strip()
@@ -169,7 +173,9 @@ def list_branches(headers: Dict[str, str], owner: str, repo: str) -> List[dict]:
     return list(_get_with_pagination(url, headers, params))
 
 
-def get_branch_tip_commit_iso_datetime(headers: Dict[str, str], owner: str, repo: str, branch: str) -> Optional[str]:
+def get_branch_tip_commit_iso_datetime(
+    headers: Dict[str, str], owner: str, repo: str, branch: str
+) -> Optional[str]:
     # Use commits API to get the latest commit on the branch
     url = f"{GITHUB_API}/repos/{owner}/{repo}/commits"
     params = {"sha": branch, "per_page": "1"}
@@ -181,12 +187,14 @@ def get_branch_tip_commit_iso_datetime(headers: Dict[str, str], owner: str, repo
     if not isinstance(data, list) or not data:
         return None
     commit = data[0]
-    date_str = (((commit.get("commit") or {}).get("committer") or {}).get("date"))
+    date_str = ((commit.get("commit") or {}).get("committer") or {}).get("date")
     return _iso(date_str)
 
 
 @lru_cache(maxsize=1024)
-def get_ahead_behind_cached(owner: str, repo: str, default_branch: str, branch: str, auth_key: str) -> Tuple[int, int]:
+def get_ahead_behind_cached(
+    owner: str, repo: str, default_branch: str, branch: str, auth_key: str
+) -> Tuple[int, int]:
     # Compare base...head where base is default
     url = f"{GITHUB_API}/repos/{owner}/{repo}/compare/{default_branch}...{branch}"
     headers = _api_headers(auth_key or None)
@@ -246,7 +254,9 @@ def delete_branch(headers: Dict[str, str], owner: str, repo: str, branch: str) -
         resp.raise_for_status()
 
 
-def find_candidate_branches(headers: Dict[str, str], owner: str, repo: str, default_branch: str, auth_key: str) -> List[Tuple[str, dict, str]]:
+def find_candidate_branches(
+    headers: Dict[str, str], owner: str, repo: str, default_branch: str, auth_key: str
+) -> List[Tuple[str, dict, str]]:
     open_refs = get_open_pr_head_refs(headers, owner, repo)
     closed_prs = get_closed_prs_from_same_repo(headers, owner, repo)
 
@@ -287,21 +297,41 @@ def find_candidate_branches(headers: Dict[str, str], owner: str, repo: str, defa
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Delete remote branches that were heads of merged/closed PRs. Dry-run by default.")
+    parser = argparse.ArgumentParser(
+        description="Delete remote branches that were heads of merged/closed PRs. Dry-run by default."
+    )
     parser.add_argument("--owner", help="GitHub repo owner (optional; auto-detected if omitted)")
     parser.add_argument("--repo", help="GitHub repo name (optional; auto-detected if omitted)")
-    parser.add_argument("--execute", action="store_true", help="Actually delete branches (otherwise dry-run)")
+    parser.add_argument(
+        "--execute", action="store_true", help="Actually delete branches (otherwise dry-run)"
+    )
     # Stale detection
     parser.add_argument("--stale", action="store_true", help="List stale branches (no deletion)")
-    parser.add_argument("--behind", type=int, default=10, help="Minimum commits behind default to consider stale")
-    parser.add_argument("--days", type=int, default=7, help="Minimum days since last commit to consider stale")
-    parser.add_argument("-s", "--with-stale", action="store_true", help="Include stale branches (>= --behind behind and >= --days days old) in deletion candidates, regardless of PR association")
-    parser.add_argument("--delete-stale-with-open-prs", action="store_true", help="Allow deletion of stale branches that currently have an open PR")
+    parser.add_argument(
+        "--behind", type=int, default=10, help="Minimum commits behind default to consider stale"
+    )
+    parser.add_argument(
+        "--days", type=int, default=7, help="Minimum days since last commit to consider stale"
+    )
+    parser.add_argument(
+        "-s",
+        "--with-stale",
+        action="store_true",
+        help="Include stale branches (>= --behind behind and >= --days days old) in deletion candidates, regardless of PR association",
+    )
+    parser.add_argument(
+        "--delete-stale-with-open-prs",
+        action="store_true",
+        help="Allow deletion of stale branches that currently have an open PR",
+    )
     args = parser.parse_args()
 
     token = _get_token_with_fallback()
     if args.execute and not token:
-        print("GitHub token not found. Set one of: GITHUB_TOKEN, GITHUB_API_TOKEN, GH_TOKEN, GITHUB_PAT, GIT_TOKEN, or put a token in ~/.github-token", file=sys.stderr)
+        print(
+            "GitHub token not found. Set one of: GITHUB_TOKEN, GITHUB_API_TOKEN, GH_TOKEN, GITHUB_PAT, GIT_TOKEN, or put a token in ~/.github-token",
+            file=sys.stderr,
+        )
         return 1
 
     owner, repo = discover_repo_owner_and_name(args.owner, args.repo)
@@ -324,7 +354,9 @@ def main() -> int:
             if name in open_refs:
                 continue
             # Exclude protected branches from stale reporting? Keep them, but just report.
-            ahead, behind = get_ahead_behind_cached(owner, repo, default_branch, name, headers.get("Authorization", ""))
+            ahead, behind = get_ahead_behind_cached(
+                owner, repo, default_branch, name, headers.get("Authorization", "")
+            )
             # Last commit on branch
             tip_iso = get_branch_tip_commit_iso_datetime(headers, owner, repo, name)
             tip_dt = _parse_iso_to_dt(tip_iso)
@@ -335,9 +367,13 @@ def main() -> int:
         if not stale:
             print("No stale branches found.")
             return 0
-        print(f"Stale branches (>= {args.behind} behind and >= {args.days} days since last commit, no open PR): {len(stale)}")
+        print(
+            f"Stale branches (>= {args.behind} behind and >= {args.days} days since last commit, no open PR): {len(stale)}"
+        )
         for name, ahead, behind, tip_iso in sorted(stale, key=lambda x: (x[2], x[0]), reverse=True):
-            print(f"- {name} — {ahead} ahead, {behind} behind — last commit {_fmt(_parse_iso_to_dt(tip_iso))}")
+            print(
+                f"- {name} — {ahead} ahead, {behind} behind — last commit {_fmt(_parse_iso_to_dt(tip_iso))}"
+            )
         return 10
 
     # Standard behavior: list/delete PR-closed branches; optionally include stale branches
@@ -358,7 +394,9 @@ def main() -> int:
                 commits = data.get("commits") or []
                 if commits:
                     c0 = commits[0]
-                    first_iso = _iso((((c0.get("commit") or {}).get("committer") or {}).get("date")))
+                    first_iso = _iso(
+                        (((c0.get("commit") or {}).get("committer") or {}).get("date"))
+                    )
         except requests.HTTPError as e:
             if getattr(e, "response", None) is not None and e.response.status_code == 401 and token:
                 # retry unauthenticated
@@ -387,7 +425,11 @@ def main() -> int:
             last_dt = None
             if last_iso:
                 try:
-                    last_dt = datetime.fromisoformat(last_iso.replace("Z", "+00:00")).astimezone(tz=None).replace(tzinfo=None)
+                    last_dt = (
+                        datetime.fromisoformat(last_iso.replace("Z", "+00:00"))
+                        .astimezone(tz=None)
+                        .replace(tzinfo=None)
+                    )
                 except Exception:
                     last_dt = None
             is_old_enough = last_dt is None or last_dt <= cutoff
@@ -460,11 +502,17 @@ def main() -> int:
             first_iso = entry.get("first_iso") or ""
             last_iso = entry.get("last_iso") or ""
             flag = ""
-            if entry.get("kind") == "without_pr" and entry.get("has_open_pr") and not args.delete_stale_with_open_prs:
+            if (
+                entry.get("kind") == "without_pr"
+                and entry.get("has_open_pr")
+                and not args.delete_stale_with_open_prs
+            ):
                 flag = "[!] "
 
             if entry["kind"] == "without_pr":
-                print(f"{idx}. {flag}{branch} — {ahead} ahead, {behind} behind — first commit {_fmt(_parse_iso_to_dt(first_iso))} — last commit {_fmt(_parse_iso_to_dt(last_iso))}")
+                print(
+                    f"{idx}. {flag}{branch} — {ahead} ahead, {behind} behind — first commit {_fmt(_parse_iso_to_dt(first_iso))} — last commit {_fmt(_parse_iso_to_dt(last_iso))}"
+                )
             else:
                 pr = entry["pr"]
                 number = pr.get("number")
@@ -472,10 +520,14 @@ def main() -> int:
                 merged_at = _iso(pr.get("merged_at"))
                 closed_at = _iso(pr.get("closed_at"))
                 when = merged_at or closed_at or entry.get("recent_iso") or ""
-                print(f"{idx}. {branch} — PR #{number}: {title!s} — first commit {_fmt(_parse_iso_to_dt(first_iso))} — last commit {_fmt(_parse_iso_to_dt(last_iso))}")
+                print(
+                    f"{idx}. {branch} — PR #{number}: {title!s} — first commit {_fmt(_parse_iso_to_dt(first_iso))} — last commit {_fmt(_parse_iso_to_dt(last_iso))}"
+                )
                 print(f"— merged at {_fmt(_parse_iso_to_dt(when), with_seconds=True)}")
 
-        print("\nDRY-RUN: No branches were deleted. Re-run with --execute to delete the above branches.")
+        print(
+            "\nDRY-RUN: No branches were deleted. Re-run with --execute to delete the above branches."
+        )
         return 10
 
     # Execute deletion path
@@ -492,7 +544,11 @@ def main() -> int:
             continue
         if is_branch_protected_cached(owner, repo, branch, auth_key):
             continue
-        if entry.get("kind") == "without_pr" and entry.get("has_open_pr") and not args.delete_stale_with_open_prs:
+        if (
+            entry.get("kind") == "without_pr"
+            and entry.get("has_open_pr")
+            and not args.delete_stale_with_open_prs
+        ):
             not_deleted_open_pr.append(branch)
             continue
         branches_to_delete.append(branch)
@@ -509,7 +565,9 @@ def main() -> int:
         except requests.HTTPError as e:
             print(f"Failed to delete {branch}: {e}")
     if not_deleted_open_pr:
-        print("\nNot deleted due to having an open PR (use --delete-stale-with-open-prs to delete):")
+        print(
+            "\nNot deleted due to having an open PR (use --delete-stale-with-open-prs to delete):"
+        )
         for b in not_deleted_open_pr:
             print(f"- {b}")
     return 0
@@ -517,4 +575,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-

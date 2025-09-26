@@ -62,8 +62,11 @@ All .sh scripts automatically install uv if missing, take care of PATH and execu
 1. Know your weaknesses: your eagerness to solve a problem can cause tunnel vision. You may fix the issue but unintentionally create code duplication, deviate from the existing design, or introduce a regression in other coupled parts of the project you didn’t consider. The solution is to literally look around beyond the immediate fix, be aware of (and account for) coupling around the codebase, integrate with the existing design, and periodically refactor.
 2. You do your best work when you can verify yourself. With self-verification, you can and should practice continuous trial and error instead of a single shot in the dark. See [Development Cycle (Tight TDD Loop)](AGENTS.md) for how to work, verify, and report progress.
 
-## Conventions
-- Use `Path.open()` instead of `open()`, and `Path.glob` instead of `glob`.
+## Development Conventions
+
+- Prefer `pathlib` to `os.path`. For example, use `Path.open()` instead of `open()`, and `Path.glob` instead of `glob`.
+- NEVER use Pytest's `tmp_path` fixture. Use the custom `prin_tmp_path` instead.
+
 ---
 
 ## Important: Development Cycle (Tight TDD Loop)

@@ -24,14 +24,13 @@ from prin.defaults import (
     DEFAULT_NO_EXCLUDE,
     DEFAULT_NO_IGNORE,
     DEFAULT_ONLY_HEADERS,
-    DEFAULT_RUN_PATH,
     DEFAULT_TAG,
     DEFAULT_TAG_CHOICES,
     DEFAULT_TEST_EXCLUSIONS,
     Hidden,
 )
 from prin.filters import get_gitignore_exclusions
-from prin.types import Glob, TPath, _describe_predicate
+from prin.types import Glob, Pattern, TPath, _describe_predicate
 
 # Map shorthand/alias flags to their canonical expanded forms.
 # The expansion occurs before argparse parsing and preserves argument order.
@@ -63,15 +62,16 @@ def _expand_cli_aliases(argv: list[str] | None) -> list[str]:
 @dataclass(slots=True)
 class Context:
     # Field list should match CLI options.
-    paths: list[str] = field(default_factory=lambda: [DEFAULT_RUN_PATH])
+    pattern: str = ""
+    search_path: str | None = None
     include_tests: bool = DEFAULT_INCLUDE_TESTS
     include_lock: bool = DEFAULT_INCLUDE_LOCK
     include_binary: bool = DEFAULT_INCLUDE_BINARY
     no_docs: bool = DEFAULT_NO_DOCS
     include_empty: bool = DEFAULT_INCLUDE_EMPTY
     include_hidden: bool = DEFAULT_INCLUDE_HIDDEN
-    extensions: list[str] = field(default_factory=lambda: list(DEFAULT_EXTENSIONS_FILTER))
-    exclusions: list[str] = field(default_factory=lambda: list(DEFAULT_EXCLUDE_FILTER))
+    extensions: list[Pattern] = field(default_factory=lambda: list(DEFAULT_EXTENSIONS_FILTER))
+    exclusions: list[Pattern] = field(default_factory=lambda: list(DEFAULT_EXCLUDE_FILTER))
     no_exclude: bool = DEFAULT_NO_EXCLUDE
     no_ignore: bool = DEFAULT_NO_IGNORE
 
@@ -108,7 +108,8 @@ class Context:
             exclusions.extend(DEFAULT_BINARY_EXCLUSIONS)
 
         if not self.no_ignore:
-            exclusions.extend(get_gitignore_exclusions(self.paths))
+            # For now, gitignore exclusions are empty (see filters.py)
+            exclusions.extend(get_gitignore_exclusions([]))
 
         if self.no_docs:
             exclusions.extend(DEFAULT_DOC_EXTENSIONS)
@@ -123,12 +124,12 @@ class Context:
 def _normalize_extension_to_glob(val: TPath | Glob) -> Glob:
     """
     Ensures `val` is returned as a `Glob("*.ext")`.
-    >>> _normalize_extension_to_glob("ext")
-    Glob("*.ext")
-    >>> _normalize_extension_to_glob(".ext")
-    Glob("*.ext")
-    >>> _normalize_extension_to_glob("*.ext")
-    Glob("*.ext")
+    >>> _normalize_extension_to_glob("ext") == Glob("*.ext")
+    True
+    >>> _normalize_extension_to_glob(".ext") == Glob("*.ext")
+    True
+    >>> _normalize_extension_to_glob("*.ext") == Glob("*.ext")
+    True
     >>> _normalize_extension_to_glob("like/this.ext")
     ValueError: Extension cannot be empty or contain path separator 'like/this.ext'
     >>> _normalize_extension_to_glob("")
@@ -168,12 +169,20 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         epilog=epilog,
     )
 
+    # What-then-where positional arguments
     parser.add_argument(
-        "paths",
+        "pattern",
         type=str,
-        nargs="*",
-        help="Path(s) or roots. Defaults to current directory if none specified.",
-        default=[DEFAULT_RUN_PATH],
+        nargs="?",
+        help="Pattern to search for (glob or regex). If omitted, lists all files.",
+        default="",
+    )
+    parser.add_argument(
+        "search_path",
+        type=str,
+        nargs="?",
+        help="Path to search in. Defaults to current directory if not specified.",
+        default=None,
     )
 
     # Uppercase short flags are boolean "include" flags.
@@ -226,7 +235,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
     parser.add_argument(
         "-e",
         "--extension",
-        type=_normalize_extension_to_glob,
+        type=_normalize_extension_to_glob,  # pyright: ignore[reportArgumentType]
         default=DEFAULT_EXTENSIONS_FILTER,
         action="append",
         help="Only include files with the given extension (repeatable). Overrides exclusions.",
@@ -291,8 +300,10 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
     # Expand known alias flags before parsing. If argv is None, use sys.argv[1:].
     effective_argv = _expand_cli_aliases(argv if argv is not None else sys.argv[1:])
     args = parser.parse_args(effective_argv)
+
     return Context(
-        paths=list(args.paths),
+        pattern=args.pattern,
+        search_path=args.search_path,
         include_tests=bool(args.include_tests),
         include_lock=bool(args.include_lock),
         include_binary=bool(args.include_binary),

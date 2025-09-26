@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import re
+import typing as t
 from fnmatch import fnmatch
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, Sequence
 
 from .path_classifier import classify_pattern, is_glob
-from .types import Glob, Pattern
+from .types import Pattern
 
 if TYPE_CHECKING:
     from prin.core import Entry
@@ -50,14 +51,14 @@ def get_gitignore_exclusions(paths: list[str]) -> list[Pattern]:
     return exclusions
 
 
-def is_excluded(entry: "Entry", *, exclude: list[Pattern]) -> bool:
+def is_excluded(entry: "Entry", *, exclude: Sequence[Pattern]) -> bool:
     path = entry.path
     # Match against full POSIX path only (relative to traversal base)
     target = path.as_posix()
     for _exclude in exclude:
         kind: Literal["regex", "glob"] = classify_pattern(_exclude)
         if kind == "glob":
-            if fnmatch(target, _exclude.strip()):
+            if fnmatch(target, t.cast(str, _exclude).strip()):
                 return True
             continue
 
@@ -80,7 +81,7 @@ def is_excluded(entry: "Entry", *, exclude: list[Pattern]) -> bool:
     return False
 
 
-def extension_match(entry: "Entry", *, extensions: list[Glob]) -> bool:
+def extension_match(entry: "Entry", *, extensions: Sequence[Pattern]) -> bool:
     if not extensions:
         return True
     filename = entry.name
@@ -95,6 +96,6 @@ def extension_match(entry: "Entry", *, extensions: list[Glob]) -> bool:
             logging.getLogger(__name__).warning(
                 "[WARNING][filters.extension_match] 'pattern' is not a glob: {pattern!r}.This shouldn't happen. 'extensions' should only contain globs by now. CLI normalizes user values and defaults.py also has no bare string extensions."
             )
-            if filename.endswith("." + pattern.removeprefix(".")):
+            if filename.endswith("." + t.cast(str, pattern).removeprefix(".")):
                 return True
     return False
