@@ -1,3 +1,9 @@
+---
+audience: humans
+description: introduces 'prin' to newcomers in a clear and simple manner, with approachable examples
+updated: after making changes in the code
+---
+
 # `prin`
 
 [![build](https://github.com/giladbarnea/prin/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/giladbarnea/prin/actions/workflows/build.yml)
