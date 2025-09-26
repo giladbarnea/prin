@@ -1,3 +1,9 @@
+---
+audience: AI agents
+description: records the dependencies between elements in the codebase
+maintained by: AI agents
+---
+
 # PARITIES
 ### Purpose
 Define deliberate couplings in the codebase—places, or _members_, that must remain equivalent in meaning and behavior. This doc is designed to be:
