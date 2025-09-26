@@ -2,6 +2,7 @@
 audience: humans
 description: introduces 'prin' to newcomers in a clear and simple manner, with approachable examples
 updated: after making changes in the code
+authority rank: not a source of truth. should be derived from SPEC.md and AGENTS.md.
 ---
 
 # `prin`
