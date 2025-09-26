@@ -89,3 +89,19 @@ $ prin main /home/foo
 ### Notes
 - The display form (absolute vs relative; presence of `./` or `../`) is driven solely by the “where” token’s shape, not by where it resolves to.
 - Pattern matching is performed against the full path relative to the traversal base; specifying a pattern does not override default exclusions.
+
+## CLI Options
+
+### Exclusions
+- `-E`, `--exclude <glob|regex>` (repeatable): exclude paths matching the pattern; matches full display-relative path.
+- `-d`, `--no-docs`: exclude documentation files (e.g., `*.md`, `*.rst`, `*.txt`).
+
+### Inclusions
+- `-H`, `--hidden`: include dot-files and dot-directories.
+- `-T`, `--include-tests`: include `test`/`tests` directories and related test files (e.g., `*.spec.*`).
+- `-K`, `--include-lock`: include lock files.
+- `-M`, `--include-empty`: include empty files (and semantically-empty Python files).
+- `-a`, `--binary`, `--include-binary` (alias: `--text`): include binary files.
+- `-I`, `--no-ignore` (aliases: `--no-gitignore`, `-u`, `--unrestricted`): do not honor VCS ignore files (currently no-op; `.gitignore` parsing not implemented).
+- `--no-exclude`, `-uuu`, `--include-all`: include everything (disable all default exclusions).
+- `-uu`: shorthand for `--hidden --no-ignore`.
