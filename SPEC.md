@@ -2,6 +2,7 @@
 audience: AI agents and humans
 description: a precise and complete source of truth for how 'prin' behaves. Code deviating from the spec is considered a bug.
 updated: before making changes in the code — like in TDD (think Spec Driven Development)
+authority rank: absolute source of truth. implementation and other docs derive from this file.
 ---
 
 ## What–Then–Where: Filesystem Path Display Spec
