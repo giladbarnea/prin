@@ -1,0 +1,1 @@
+# minimal restored conftest placeholder
