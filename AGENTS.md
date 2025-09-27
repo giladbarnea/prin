@@ -53,15 +53,17 @@ prin matches tokens in two modes, uniformly across adapters:
 
 For GitHub URLs, subpaths may include literal segments and a trailing pattern segment. The literal base is traversed and the pattern matches the full display-relative path under that base.
 
-## How to install, execute, and lint
+## How to install, execute, test and lint
 
-### Use run.sh and format.sh for running `prin` and formatting
+### Use test.sh, run.sh and format.sh for testing, running `prin` and formatting
 
 All *.sh scripts automatically install uv if missing, take care of PATH and execute with the right venv to spare you from doing that yourself.
 
+- **Important: eagerly run tests frequently, even if the user didn't ask for it.**
+
 - To add or remove a dependency, use `uv add` or `uv remove`. Don't modify pyproject.toml directly.
 
-### `prin` Smoke Run Matrix
+### `prin` Smoke Test Matrix
 
 ```bash
 # Warm-up (prints CLI help)
@@ -90,7 +92,7 @@ All *.sh scripts automatically install uv if missing, take care of PATH and exec
 ```
 
 ## Gotchas
-- Ensure your environment doesn't interfere with CLI behavior. This can manifest as unplanned parsing of project's ignore files, temp files/dirs have disruptive paths with aspects 'prin' is sensitive to, and so on.
+- Make sure the environment in which the tests operate doesn't interfere with the test results. This can manifest as unplanned parsing of project's ignore files, inadvertedly honoring the tests directory of the project itself, temp files/dirs have disruptive paths with aspects 'prin' is sensitive to, and so on.
 
 ## Important: Being an Effective AI Agent
 
@@ -104,31 +106,32 @@ All *.sh scripts automatically install uv if missing, take care of PATH and exec
 
 ---
 
-## Important: Development Cycle
+## Important: Development Cycle (Tight TDD Loop)
 
 #### Prep (before any code)
 1. Read first: README.md, AGENTS.md (which you are reading now), SPEC.md and PARITIES.md.
 2. Recognize elements in PARITIES.md relevant to your plan. You'll then know what your changes will affect around the project.
-3. Establish a baseline by running relevant commands.
-4. Validate desired behavior with minimal, surgical checks using the CLI.
+3. Baseline: Run the full suite via ./test.sh to establish current behavior.
+4. Targeted tests: Add minimal, surgical tests that express the new desired behavior. Because this project centers on filtering/formatting, write negative tests complementing the positive tests (e.g., “filter includes all type-A“ and ”filter excludes all non-A”). This has the additional benefit of forcing you to understand the bounds of the new behavior — ”goals“ and ”non-goals“..
 
 #### The Development Loop
-Repeat the following:
-1.	Smallest viable change: Implement the minimal change required.
-2.	Verify: Run relevant commands to validate behavior.
+Repeat the following until all new tests pass:
+1.	Smallest viable change: Implement the minimal change required to pass the next failing test.
+2.	Verify: Run that test and the pre-existing suite to catch regressions (against baseline).
 3.	Report (each iteration): Post a short update: what you tried, current result, and your next step.
 4.	Branch:
-	- If passing: Move to the next item.
+	- If passing: Move to the next failing test.
 	- If stuck: Assume an “unknown unknown.” Form a hypothesis, try a focused fix. After a few failed attempts, stop and tell the user: what’s failing, what you tried, and your current hypothesis.
 
-#### Wrapping up after development task is completed and before committing
-1. Suggest the user to update SPEC.md if core behavior has changed.
+#### Wrapping up after development task is completed and before comitting
+1. Full verification: Run the entire suite again with ./test.sh.
+2. Suggest the user to update SPEC.md if core behavior has changed.
 2. Update PARITIES.md as instructed in [Important: Working Against and Updating PARITIES.md](AGENTS.md) and in [Maintaining PARITIES.md](PARITIES.md).
 3. Run `uv run src/internal/parities_check.py`.
 4. Run ./format.sh to fix any fixable issues and print remaining, usually insignificant issues.
-5. Final update to user: Summarize what changed, and what still remains to be done (if anything).
+5. Final update to user: Summarize what passed, what changed, and what still remains to be done (if anything).
 
-**Always add an item to every to-do list you create throughout the entire session saying 'ensure I remember the instructions about maintaining and updating PARITIES.md'.**
+**Always add an item to every to-do list you create throughout the entire session saying 'ensure I remember the instructions about maintaining and updating PARITIES.md and the instructions about the TDD dev cycle'.**
 
 ## Important: Work Against and Update PARITIES.md
 

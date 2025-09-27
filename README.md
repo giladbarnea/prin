@@ -140,10 +140,50 @@ In both cases, the `prin` executable should be available in your shell.
 
 ### Development
 - Install `uv` if needed: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- Test: `./test.sh` [pytest options...]
 - Lint and format: `./lint.sh` and `./format.sh`.
 - To add or remove a dependency, use `uv add` or `uv remove`.
 
+##### Testing adapter-specific suites
 
+You can focus or skip tests for specific adapters via pytest flags:
+
+```sh
+# Run only website adapter tests
+./test.sh --website
+
+# Run only GitHub repo adapter tests
+./test.sh --repo
+
+# Skip website adapter tests
+./test.sh --no-website
+
+# Skip GitHub repo adapter tests
+./test.sh --no-repo
+
+# Combine with network control
+./test.sh --website --no-network
+```
+
+#### Task Completion Checklist (create internal todo list)
+
+1. **Prep** (before any code)
+- [ ] Read AGENTS.md, PARITIES.md, and SPEC.md.
+- [ ] Recognize sets in PARITIES.md relevant to your plan.
+- [ ] Run ./test.sh.
+- [ ] Write TDD tests.
+
+2. **The loop**
+- [ ] Iterate until tests pass
+
+3. **After the loop**
+- [ ] Run ./test.sh.
+- [ ] Update PARITIES.md as instructed in [Important: Working Against and Updating PARITIES.md](AGENTS.md) and in [Maintaining PARITIES.md](PARITIES.md).
+- [ ] Run `uv run src/internal/parities_check.py`.
+- [ ] Run ./format.sh
+- [ ] Status update user.
+
+See [Development Cycle (Tight TDD Loop)](AGENTS.md) for more details.
 
 ## CLI Options
 

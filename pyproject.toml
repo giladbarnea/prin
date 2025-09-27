@@ -30,34 +30,6 @@ dev = [
     "pudb>=2025.1",
     "pyright>=1.1.405",
 ]
-[tool.pytest.ini_options]
-markers = [
-  "network: tests that require network access",
-  "website: tests that target website adapter",
-  "repo: tests that target repository adapter",
-]
-addopts = [
-  "--doctest-modules",
-  "--capture=no",
-  "--disable-pytest-warnings"
-]
-
-[tool.coverage.run]
-branch = true
-source = ["src/prin"]
-omit = [
-  "tests/*",
-  "**/__init__.py",
-]
-
-[tool.coverage.report]
-show_missing = true
-skip_covered = true
-fail_under = 0
-
-[tool.coverage.html]
-directory = "htmlcov"
-title = "prin coverage"
 
 [tool.ruff]
 indent-width = 4
@@ -144,4 +116,31 @@ line-ending = "auto"
 quote-style = "double"
 skip-magic-trailing-comma = false
 
+[tool.pytest.ini_options]
+markers = [
+  "network: tests that require network access",
+  "website: tests that target website adapter",
+  "repo: tests that target repository adapter",
+]
+addopts = [
+  "--doctest-modules",
+  "--capture=no",
+  "--disable-pytest-warnings"
+]
 
+[tool.coverage.run]
+branch = true
+source = ["src/prin"]
+omit = [
+  "tests/*",
+  "**/__init__.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 0
+
+[tool.coverage.html]
+directory = "htmlcov"
+title = "prin coverage"
