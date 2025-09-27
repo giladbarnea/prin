@@ -317,12 +317,9 @@ class FileSystemSource(SourceAdapter):
         self.extensions = ctx.extensions
         self.include_empty = ctx.include_empty
         # Initialize ignore engine unless --no-ignore or --no-exclude
-        try:
-            if not ctx.no_exclude and not ctx.no_ignore:
-                self._ignore_engine = GitIgnoreEngine(self.anchor)
-            else:
-                self._ignore_engine = None
-        except Exception:
+        if not ctx.no_exclude and not ctx.no_ignore:
+            self._ignore_engine = GitIgnoreEngine(self.anchor)
+        else:
             self._ignore_engine = None
 
     def should_print(self, entry: Entry) -> bool:
@@ -349,13 +346,9 @@ class FileSystemSource(SourceAdapter):
         dummy = Entry(path=PurePosixPath(target), name=entry.name, kind=entry.kind)
         # Apply gitignore engine first (fd behavior: VCS ignores by default, overridable)
         if self._ignore_engine is not None:
-            try:
-                abs_path = Path(str(entry.abs_path or entry.path))
-                if self._ignore_engine.is_ignored(abs_path):
-                    return False
-            except Exception:
-                # On any error, fall back to other filters only
-                pass
+            abs_path = Path(str(entry.abs_path or entry.path))
+            if self._ignore_engine.is_ignored(abs_path):
+                return False
         if is_excluded(dummy, exclude=self.exclusions):
             return False
         if not extension_match(dummy, extensions=self.extensions):

@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Sequence
 
 from pathspec.gitignore import GitIgnoreSpec
-from pathspec.util import normalize_file
 
 from .path_classifier import classify_pattern, is_glob
 from .types import Pattern
@@ -60,14 +59,12 @@ class GitIgnoreEngine:
         self._global_spec: GitIgnoreSpec | None = self._load_global_spec()
 
     def _load_global_spec(self) -> GitIgnoreSpec | None:
-        lines: list[str] = []
+        global_path = Path.home() / ".config" / "git" / "ignore"
+        if not global_path.exists():
+            return None
         try:
-            global_path = Path.home() / ".config" / "git" / "ignore"
-            if global_path.exists():
-                lines.extend(global_path.read_text(encoding="utf-8").splitlines())
-        except Exception:
-            pass
-        if not lines:
+            lines = global_path.read_text(encoding="utf-8").splitlines()
+        except (OSError, UnicodeDecodeError):
             return None
         return GitIgnoreSpec.from_lines(lines)
 
@@ -141,16 +138,14 @@ class GitIgnoreEngine:
         file_path = Path(abs_path)
         try:
             rel = file_path.relative_to(self.root).as_posix()
-        except Exception:
-            # If outside the root, do not ignore
-            rel = normalize_file(str(file_path))
+        except ValueError:
+            # Outside root: treat as not ignored by this engine
+            return False
         dir_path = file_path.parent if file_path.is_absolute() else (self.root / file_path).parent
-        # Clamp the directory to root subtree
+        # If not under root, use root for directory-scoped rules
         try:
-            while True:
-                dir_path.relative_to(self.root)
-                break
-        except Exception:
+            dir_path.relative_to(self.root)
+        except ValueError:
             dir_path = self.root
 
         spec = self._load_dir_spec(dir_path)
@@ -164,20 +159,6 @@ def is_excluded(entry: "Entry", *, exclude: Sequence[Pattern]) -> bool:
     # Match against full POSIX path only (relative to traversal base)
     target = path.as_posix()
     for _exclude in exclude:
-        # Support GitIgnoreSpec-style matchers stored in the list
-        try:
-            from pathspec.gitignore import GitIgnoreSpec as _GIS  # Local import for optional dep
-        except Exception:
-            _GIS = None  # type: ignore[assignment]
-
-        if _GIS is not None and isinstance(_exclude, _GIS):  # type: ignore[arg-type]
-            # We don't have the root context here, so prefer using adapter engine.
-            # If present in the list, treat a match (include=False) as exclusion.
-            res = _exclude.check_file(target)
-            if res.include is False:
-                return True
-            # If include True or None, fall through to other patterns
-            continue
         kind: Literal["regex", "glob"] = classify_pattern(_exclude)
         if kind == "glob":
             if fnmatch(target, t.cast(str, _exclude).strip()):
