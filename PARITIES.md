@@ -27,7 +27,7 @@ Define deliberate couplings in the codebase—places, or _members_, that must re
 
 ### Conventions
 
-1. Each parity set lists an ID, Members (with precise locations/symbols), a Contract (what must stay in sync), Triggers (what changes require syncing), and Tests (coverage that asserts the contract).
+1. Each parity set lists an ID, Members (with precise locations/symbols), a Contract (what must stay in sync), and Triggers (what changes require syncing).
 2. Always use backticks when referring to a `file.ext`, `dir/`, `Symbol`, `function`, etc.
 
 ### Always finish off your task by updating PARITIES.md
@@ -58,9 +58,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Triggers
 - Adding/removing/renaming a flag; changing a default; changing flag semantics.
 
-#### Tests
-- Filesystem options: `tests/test_options_fs.py`
-- Repository options: `tests/test_options_repo.py`
+ 
 
 ## Set 2 [FORMATTERS-CLI-TAG-OPTION]: Tag choices ↔ Formatter classes ↔ Defaults ↔ README examples
 #### Members
@@ -76,9 +74,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Triggers
 - Adding a tag; changing a formatter’s behavior/format.
 
-#### Tests
-- `tests/test_options_fs.py::test_tag_md_outputs_markdown_format`
-- `tests/test_options_repo.py::test_repo_tag_md_outputs_markdown_format`
+ 
 
 ## Set 3 [ONLY-HEADERS-ENFORCEMENT-WITH-HEADERFORMATTER]: `--only-headers` flag ↔ `HeaderFormatter` behavior
 #### Members
@@ -92,9 +88,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Triggers
 - Changing `only_headers` semantics or formatter enforcement.
 
-#### Tests
-- FS: `tests/test_options_fs.py::test_only_headers_prints_headers_only`
-- Repo: `tests/test_options_repo.py::test_repo_only_headers_prints_headers_only`
+ 
 
 ## Set 4 [FILTER-CATEGORIES-CLI-FLAGS-DEFAULTS-CONTEXT-FIELDS-TESTS-FS-FIXTURE-README]: Filter categories ↔ CLI flags ↔ Defaults ↔ Context fields ↔ FS Tests fixture ↔ README
 
@@ -102,7 +96,6 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - `src/prin/cli_common.py`: CLI flags, `Context` fields, CLI documentation in `parse_common_args`.
 - `src/prin/defaults.py`: patterns in `DEFAULT_EXCLUSIONS`, `DEFAULT_TEST_EXCLUSIONS`, `DEFAULT_LOCK_EXCLUSIONS`, `DEFAULT_BINARY_EXCLUSIONS`, `DEFAULT_DOC_EXTENSIONS`, `Hidden`; default CLI configuration by all the `DEFAULT_*` scalar constants.
 - `README.md` sections: “Sane Defaults for LLM Input”, “Output Control”, CLI Options”.
-- FS test fixture: `tests/conftest.py::fs_root` (mock files/paths and `VFS` field for each category).
 
 #### Contract
 - Filter flags exposed by the CLI in `cli_common.py` must have corresponding DEFAULT_* patterns and DEFAULT_* feature flags in `defaults.py`, `Context` fields, representation in `README.md` in specified sections, synced CLI help in `parse_common_args`, mocks in `conftest.fs_root` and a field in `conftest.VFS`.
@@ -112,9 +105,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Triggers
 - Adding/removing/renaming a filter category; changing category semantics.
 
-#### Tests
-- FS flags toggling categories: `tests/test_options_fs.py` (for example, `--hidden`, `--include-tests`, `--include-lock`, `--include-binary`, `--no-docs`, `--include-empty`, `--exclude`, `--no-exclude`, `--extension`).
-- Repo analogs: `tests/test_options_repo.py`.
+ 
 
 
 ## Set 5 [FILTERS-CONSISTENCY-ACROSS-SOURCES]: Path exclusion and extension semantics ↔ Pattern classifier
@@ -135,10 +126,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Triggers
 - Changing matching rules, glob/regex detection, or text-token semantics. Changing extension normalization rules.
 
-#### Tests
-- FS: `tests/test_options_fs.py::test_exclude_glob_and_literal`, `::test_extension_filters_by_extension`, `::test_literal_exclude_token_matches_segments_not_substrings`
-- Repo: `tests/test_options_repo.py::test_repo_exclude_glob_and_literal`, `::test_repo_extension_filters`, `::test_repo_literal_exclude_token_matches_segments_not_substrings`
-- Classifier: `tests/test_pattern_classifier.py` (covers `regex`/`glob`)
+ 
 
 
 ## Set 6 [SOURCE-ADAPTER-INTERFACE]: Protocol and uniform adapter semantics
@@ -158,11 +146,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Triggers
 - Changing the protocol, method contracts, or `Entry`/`NodeKind` shapes; adding a new adapter.
 
-#### Tests
-- FS traversal/roots: `tests/test_cli_engine_tmp_path.py`, `tests/test_cli_engine_positional.py`.
-- Repo positional semantics: `tests/test_print_repo_positional.py`.
-- Mixed invocation: `tests/test_print_mixed_fs_repo.py`.
-- Adapter specifics: `tests/test_filesystem_source.py`, `tests/test_github_adapter.py`, `tests/test_website_adapter.py`, `tests/test_website_adapter_all_urls.py`.
+ 
 
 ## Set 7 [SEMANTIC-EMPTINESS-ADAPTERS]: Shared definition across adapters
 
@@ -176,9 +160,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Triggers
 - Changing emptiness heuristics or language coverage.
 
-#### Tests
-- FS: `tests/test_filesystem_source.py` (empty/non-empty Python and text files).
-- Repo: `tests/test_options_repo.py::test_repo_include_empty`.
+ 
 
 ## Set 9 [BUDGET-GLOBALITY]: One global file budget across sources (`--max-files`)
 #### Members
@@ -191,10 +173,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Triggers
 - Changing budget semantics or introducing per-source budgets.
 
-#### Tests
-- FS: `tests/test_max_files_fs.py`.
-- Repo: `tests/test_max_files_repo.py`.
-- Mixed: `tests/test_print_mixed_fs_repo.py`.
+ 
 
 ## Set 10 [CLI-ALIAS-BEHAVIOR-README]: Alias expansion ↔ canonical flags
 #### Members
@@ -207,32 +186,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Triggers
 - Adding/removing an alias; changing the flags an alias expands to.
 
-#### Tests
-- FS: `tests/test_options_fs.py::test_uu_includes_hidden_and_gitignored`, `::test_unrestricted_includes_gitignored` (note: `.gitignore` behavior is currently stubbed; see Set 16).
-
-## Set 11 [TEST-COVERAGE-PARITY]: Feature coverage mirrored per source
-#### Members
-- `src/prin/core.py`: `SourceAdapter` protocol.
-- `src/prin/adapters/filesystem.py`: `FileSystemSource` implementation.
-- `src/prin/adapters/github.py`: `GitHubRepoSource` implementation.
-- `src/prin/adapters/website.py`: `WebsiteSource` implementation.
-- `tests/test_options_fs.py`, `tests/test_options_repo.py`: cover each CLI flag end-to-end per source.
-- `tests/test_cli_engine_*.py`: traversal and path display behavior.
-- `tests/test_max_files_*.py`: `--max-files` semantics.
-- `tests/test_website_adapter_*.py`: website parsing and rendering.
-- `tests/conftest.py`: adapter-specific pytest markers and selection flags (`--website`, `--repo`, `--no-website`, `--no-repo`).
-- `pyproject.toml` `[tool.pytest.ini_options].markers`: `website`, `repo` declarations.
-
-#### Contract
-- For each implemented feature/flag, maintain parallel coverage for filesystem and GitHub (and website where applicable). Adding a feature implies adding/adapting tests in all relevant suites.
- - Adapter markers/flags must map 1:1 to source adapters; include flags restrict to marked suites; exclude flags skip them.
-
-#### Triggers
-- Adding a new option/behavior; adding a new adapter.
-
-#### Tests
-- FS: `tests/test_options_fs.py` (for example flags); Repo: `tests/test_options_repo.py`; Website: `tests/test_website_adapter_*.py`.
-- Marker selection honored: `./test.sh --website` runs only website-marked tests; `./test.sh --no-repo` skips repo-marked tests.
+ 
 
 ## Set 12 [WEBSITE-LLMS-TXT-PARSING]: URL list parsing ↔ rendering
 #### Members
@@ -244,9 +198,6 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 
 #### Triggers
 - Changing the website URL-manifest interpretation, URL normalization, or keying rules.
-
-#### Tests
-- `tests/test_website_adapter.py`, `tests/test_website_adapter_all_urls.py`.
 
 ## Set 13 [CLI-URL-ROUTING-ADAPTERS]: Token routing to adapters
 #### Members
@@ -261,27 +212,19 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - Adapters provide a clear domain “matches” check that `prin.py` relies on.
 
 #### Triggers
-- Changing URL detection, subpath rules, or adding a new source kind.
-
-#### Tests
-- `tests/test_print_repo_positional.py`, `tests/test_print_mixed_fs_repo.py`, `tests/test_max_files_*`, `tests/test_github_adapter.py`.
-- `tests/test_github_adapter_combinatorics.py::test_parse_github_url_combinations`
+ - Changing URL detection, subpath rules, or adding a new source kind.
 
 ## Set 14 [README-EXAMPLES-CLI-REALITY]: Documentation ↔ observed behavior
 #### Members
 - `README.md`: examples and described behavior/flags
 - `src/prin/prin.py` and adapters: actual behavior
 - `src/prin/cli_common.py`: exposed CLI flags and options.
-- End-to-end tests that exercise the same stories.
 
 #### Contract
 - README claims must match implemented behavior and flags; examples should be runnable as shown.
 
 #### Triggers
 - Any behavior or flag change; example edits.
-
-#### Tests
-- Covered indirectly via options and mixed-source tests; add story-based tests if examples grow in complexity.
 
 ## Set 15 [EXPLICIT-PATH-FORCE-INCLUDE]: Explicit files bypass exclusions
 #### Members
@@ -294,10 +237,6 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Triggers
 - Changing explicit-path routing or how adapters signal file vs directory.
 
-#### Tests
-- FS: `tests/test_cli_engine_positional.py::test_directory_and_explicit_ignored_file_inside`.
-- Repo: `tests/test_print_repo_positional.py::test_repo_explicit_ignored_file_is_printed`.
-
 ## Set 16 [GITIGNORE-BEHAVIOR]: Current `.gitignore` semantics
 
 #### Members
@@ -309,9 +248,6 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 
 #### Triggers
 - Implementing real `.gitignore` parsing; changing the meaning of `no_ignore`/`unrestricted`.
-
-#### Tests
-- FS: `tests/test_options_fs.py::test_unrestricted_includes_gitignored` (and any currently skipped tests around `.gitignore` or `no-ignore`).
 
 ## Set 17 [PATTERN-THEN-PATH]: Pattern-then-path interface
 
@@ -331,9 +267,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Triggers
 - Changing pattern matching semantics; modifying path display logic.
 
-#### Tests
-- Integration: `tests/test_integration_what_then_where.py`
-- Pattern search: `tests/test_pattern_search.py`
+ 
 
 ---
 
@@ -384,16 +318,12 @@ Keep this exact shape in every new or existing set:
 #### Triggers
 - <event that requires syncing>
 - <event that requires syncing>
-
-#### Tests
-- <suite-or-path>::<test_name>
-- <suite-or-path>::<test_name>
 ```
 
 **Style rules**
 - **Members:** exact paths and symbols only; one item per line; no ranges.
 - **Contract/Triggers:** short, actionable sentences; avoid explanatory prose.
-- **Tests:** name the smallest checks that prove the contract.
+ 
 - **Cross-reference:** if another set owns a rule, write “See: Set `<ID>`”.
 
 ## Size discipline (line-delta rules)
@@ -427,7 +357,7 @@ If you exceed these budgets, ask the user to review.
 #### Add an element or new member
 1. Append **one** precise **Members** line.
 2. Add **at most one** new sentence under **Contract/Triggers** if semantics truly changed.
-3. Reference tests succinctly; prefer naming existing checks.
+ 
 4. Add references in other sets who have members coupled to the new element/member.
 
 #### Merge or split sets
@@ -443,7 +373,7 @@ Different sets can share members, although ideally this should be minimized. Thi
 * Vague members (for example, whole directories without symbol scoping).
 
 ## Operating principle
-Treat `PARITIES.md` as a **switchboard**: it names the circuits (Members), the rule that keeps them synchronized (Contract), when to check them (Triggers), and the fuses that trip if something breaks (Tests). Keep labels exact, sentences short, and growth justified.
+ Treat `PARITIES.md` as a **switchboard**: it names the circuits (Members), the rule that keeps them synchronized (Contract), and when to check them (Triggers). Keep labels exact, sentences short, and growth justified.
 
 ## Work Against and Update PARITIES.md
 
