@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
+    "pathspec>=0.12,<1",
     "requests>=2.32.5",
 ]
 

@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Iterable
 
 from prin import core
 from prin.core import Entry, NodeKind, SourceAdapter
-from prin.filters import extension_match, is_excluded
+from prin.filters import GitIgnoreEngine, extension_match, is_excluded
 from prin.path_classifier import classify_pattern
 
 if TYPE_CHECKING:
@@ -55,12 +55,14 @@ class FileSystemSource(SourceAdapter):
     exclusions: list
     extensions: list
     include_empty: bool
+    _ignore_engine: GitIgnoreEngine | None
 
     def __init__(self, anchor=None) -> None:
         self.anchor = Path(anchor or Path.cwd()).resolve()
         self.exclusions = []
         self.extensions = []
         self.include_empty = False
+        self._ignore_engine = None
         super().__init__()
 
     def __repr__(self) -> str:
@@ -314,6 +316,14 @@ class FileSystemSource(SourceAdapter):
         self.exclusions = ctx.exclusions
         self.extensions = ctx.extensions
         self.include_empty = ctx.include_empty
+        # Initialize ignore engine unless --no-ignore or --no-exclude
+        try:
+            if not ctx.no_exclude and not ctx.no_ignore:
+                self._ignore_engine = GitIgnoreEngine(self.anchor)
+            else:
+                self._ignore_engine = None
+        except Exception:
+            self._ignore_engine = None
 
     def should_print(self, entry: Entry) -> bool:
         """Source-owned filtering decision"""
@@ -337,6 +347,15 @@ class FileSystemSource(SourceAdapter):
         while target.startswith("../"):
             target = target[3:]
         dummy = Entry(path=PurePosixPath(target), name=entry.name, kind=entry.kind)
+        # Apply gitignore engine first (fd behavior: VCS ignores by default, overridable)
+        if self._ignore_engine is not None:
+            try:
+                abs_path = Path(str(entry.abs_path or entry.path))
+                if self._ignore_engine.is_ignored(abs_path):
+                    return False
+            except Exception:
+                # On any error, fall back to other filters only
+                pass
         if is_excluded(dummy, exclude=self.exclusions):
             return False
         if not extension_match(dummy, extensions=self.extensions):

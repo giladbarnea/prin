@@ -102,6 +102,6 @@ $ prin main /home/foo
 - `-K`, `--include-lock`: include lock files.
 - `-M`, `--include-empty`: include empty files (and semantically-empty Python files).
 - `-a`, `--binary`, `--include-binary` (alias: `--text`): include binary files.
-- `-I`, `--no-ignore` (aliases: `--no-gitignore`, `-u`, `--unrestricted`): do not honor VCS ignore files (currently no-op; `.gitignore` parsing not implemented).
+- `-I`, `--no-ignore` (aliases: `--no-gitignore`, `-u`, `--unrestricted`): do not honor VCS ignore files (.gitignore, .git/info/exclude, ~/.config/git/ignore, plus .ignore and .fdignore are ignored by default unless this is set).
 - `--no-exclude`, `-uuu`, `--include-all`: include everything (disable all default exclusions).
 - `-uu`: shorthand for `--hidden --no-ignore`.
