@@ -320,8 +320,18 @@ class FileSystemSource(SourceAdapter):
         if entry.explicit:
             return True
         # Exclusion rules
-        # Normalize display path for filtering: strip leading './' or '../' segments used only for display
+        # Normalize display path for filtering
+        # 1) If absolute, make it relative to the adapter anchor so hidden globs like '.*' work
+        # 2) Strip leading './' or '../' segments used only for display
         target = entry.path.as_posix()
+        if target.startswith("/"):
+            try:
+                base = str(self.anchor)
+                absolute = str(entry.abs_path or entry.path)
+                target = os.path.relpath(absolute, start=base)
+            except Exception:
+                # Fallback: remove only the leading slash to avoid blocking 'Hidden' checks at project root
+                target = target.lstrip("/")
         if target.startswith("./"):
             target = target[2:]
         while target.startswith("../"):
