@@ -166,6 +166,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Members
 - `src/prin/core.py`: `FileBudget`.
 - `src/prin/prin.py`: single `FileBudget` instance shared across all sources.
+- `src/prin/cli_common.py`: `Context.max_files`.
 
 #### Contract
 - The budget is enforced globally across all sources during a single invocation. New sources must share the same budget.
@@ -271,6 +272,19 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - Changing pattern matching semantics; modifying path display logic.
 
  
+## Set 18 [FS-DISPLAY-WHAT-THEN-WHERE]: Filesystem display semantics
+
+#### Members
+- `SPEC.md`: What–Then–Where: Filesystem Path Display Spec
+- `src/prin/adapters/filesystem.py`: `walk_pattern`
+- `src/prin/adapters/filesystem.py`: `_display_rel`
+- `README.md`: “Basic Usage”/“Matching” examples showing displayed path shapes
+
+#### Contract
+- The search_path token’s shape solely dictates displayed path form: None/child → bare relative; `./…` preserved; `../…` preserved; absolute → absolute paths.
+
+#### Triggers
+- Any change to filesystem display base/prefix rules or to README/SPEC examples reflecting them.
 
 ---
 
