@@ -7,11 +7,12 @@ description: specifies how to tackle any task
 
 This file contains instructions for AI agents to adhere to throughout an entire task lifespan.
 
-Carefully read and internalize the 3 Markdown files of the project before starting a task:
+Carefully read and internalize the Markdown files of the project before starting a task:
 1. README.md
 2. AGENTS.md (this file)
 4. SPEC.md
 3. PARITIES.md
+5. ROADMAP.md
 
 Whatever you do, try to align with the existing design philosophy (What knowledge each component holds, what knowledge it intentionally does not hold, responsibility and separation, what should be reused, and so on.)
 
@@ -29,7 +30,7 @@ Adapters own traversal. The printer (engine) is source-agnostic and is limited t
 ## Source Adapters
 - File system: owns DFS via the walk method, config via `configure(ctx)`, include/exclude via `should_print(entry)`, and body reads via `read_body_text(entry)` (may delegate to shared emptiness/text detection).
 - GitHub: should expose the same shape: `configure`, walking, `should_print`, `read_body_text`. `.gitignore` semantics are independent.
-- Website: // todo
+ 
 
 ## CLI and flags
 - One shared parser in `cli_common`; no interactive prompts; consistent flags.
@@ -87,7 +88,7 @@ Run the dedicated script:
 ## Important: Development Cycle
 
 #### Prep (before any code)
-1. Read first: README.md, AGENTS.md (which you are reading now), SPEC.md and PARITIES.md.
+1. Read first: README.md, AGENTS.md (which you are reading now), SPEC.md, PARITIES.md, and ROADMAP.md.
 2. Recognize elements in PARITIES.md relevant to your plan. You'll then know what your changes will affect around the project.
 3. Establish a baseline by running relevant commands.
 4. Validate desired behavior with minimal, surgical checks using the CLI.
