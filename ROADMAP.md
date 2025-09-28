@@ -14,7 +14,7 @@ Guiding principle: maximize filesystem feature breadth and polish before investi
 - Fix positional parsing bug with dot + file + filters: `prin --no-docs -E 'tests' -E internal . -E '*.sh' README.md`.
 - Zero-results hint: when matches are suppressed by default filters, suggest relevant include flags.
 - Add `.rtf` to docs extensions.
-- Introduce `--format`/`--output-format` as stable aliases for `-t/--tag` (keep `--tag` for compatibility).
+- Introduce `--format`/`--output-format` as stable aliases for `-t/--tag` (keep `--tag` for compatibility). (AI suggestion)
 
 ## P1 — Filesystem breadth (core)
 
@@ -22,7 +22,7 @@ Guiding principle: maximize filesystem feature breadth and polish before investi
 - Symlink handling: `-L/--follow` (and document default behavior clearly).
 - Case sensitivity toggles: `-s/--case-sensitive`, `-i/--ignore-case`; default remains smart-case.
 - Forced glob mode: `-g/--glob` to treat pattern as a glob when it looks like regex.
-- Ignore file support: `--ignore-file <path>` (repeatable). Precedence: CLI excludes > ignore-file(s) > VCS ignore; last matching rule wins; negations honored.
+- Ignore file support: `--ignore-file <path>` (repeatable). Precedence: CLI excludes > ignore-file(s) > VCS ignore; last matching rule wins; negations honored. (AI suggestion)
 - Size filters: `-S/--size <±NUMUNIT>` (e.g., `+10k`, `-2M`).
 - Line numbers: `-n/--line-number`.
 - Output throttling: `--limit-output <N>` to cap total printed lines.
@@ -33,19 +33,19 @@ Guiding principle: maximize filesystem feature breadth and polish before investi
 - Matching semantics and parity:
   - Regex/glob classifier correctness and smart-case (verify vs SPEC; ensure tests).
   - fd-compat behavior (e.g., token matching like `prin /tmp/par` → `/tmp/parts.md`, `/tmp/foo/non-partisan.md`).
-- Decision: `-A/--absolute-paths` — do not implement; SPEC ties display form to the “where” token shape.
+- Decision: `-A/--absolute-paths` — do not implement; SPEC ties display form to the “where” token shape. (AI suggestion)
 
 ## P2 — Output formats and explainability
 
 - Structured output: `-o/--output {json,yaml,csv}` with a stable, lossless schema.
 - Explainability: show top-N include/exclude reasons and sample file:line matches per token (capped) to debug filters.
-- Tree/listing modes: richer header-only displays (e.g., `--tree`) building on `--only-headers`.
+- Tree/listing modes: richer header-only displays (e.g., `--tree`) building on `--only-headers`. (AI suggestion)
 
 ## P3 — Performance and ergonomics (FS-focused)
 
-- Large-tree performance profiling and optimizations (traversal, filters, formatter I/O).
-- File budget polish: predictable global budget behavior across multiple FS roots; fast-stop on exhaustion.
-- Shell completions and `--version` flag.
+- Large-tree performance profiling and optimizations (traversal, filters, formatter I/O). (AI suggestion)
+- File budget polish: predictable global budget behavior across multiple FS roots; fast-stop on exhaustion. (AI suggestion)
+- Shell completions and `--version` flag. (AI suggestion)
 
 ## Parked — Adapters and network concerns (post FS breadth)
 
