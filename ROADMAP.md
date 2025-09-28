@@ -11,7 +11,7 @@ Guiding principle: maximize filesystem feature breadth and polish before investi
 
 ## P0 — Critical UX and bugs
 
-- Fix positional parsing bug with dot + file + filters: `prin --no-docs -E 'tests' -E internal . -E '*.sh' README.md`.
+- Fix positional parsing bug with dot + file + filters: `prin --no-docs README.md .`.
 - Ignore generated `d.ts`, `js.map` and `css.map` files.
 - Ignore:
   * .webp, .tif, .tiff - Additional image formats
