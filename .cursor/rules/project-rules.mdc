@@ -4,4 +4,4 @@ globs:
 alwaysApply: true
 ---
 
-Always read and internalize @README.md, @AGENTS.md and @PARITIES.md when starting a new task.
+Always read and internalize @README.md, @SPEC.md, @AGENTS.md, @PARITIES.md and @ROADMAP.md when starting a new task.

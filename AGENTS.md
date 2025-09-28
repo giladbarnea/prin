@@ -11,9 +11,9 @@ This file contains instructions for AI agents to adhere to throughout an entire 
 
 Carefully read and internalize the Markdown files of the project before starting a task:
 1. README.md
-2. AGENTS.md (this file)
-4. SPEC.md
-3. PARITIES.md
+2. SPEC.md
+3. AGENTS.md (this file)
+4. PARITIES.md
 5. ROADMAP.md
 
 Whatever you do, try to align with the existing design philosophy (What knowledge each component holds, what knowledge it intentionally does not hold, responsibility and separation, what should be reused, and so on.)
