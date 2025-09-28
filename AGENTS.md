@@ -29,7 +29,7 @@ Adapters own traversal. The printer (engine) is source-agnostic and is limited t
 ## Source Adapters
 - File system: owns DFS via the walk method, config via `configure(ctx)`, include/exclude via `should_print(entry)`, and body reads via `read_body_text(entry)` (may delegate to shared emptiness/text detection).
 - GitHub: should expose the same shape: `configure`, walking, `should_print`, `read_body_text`. `.gitignore` semantics are independent.
-- Website: // todo
+ 
 
 ## CLI and flags
 - One shared parser in `cli_common`; no interactive prompts; consistent flags.

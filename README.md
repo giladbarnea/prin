@@ -223,49 +223,6 @@ See [Development Cycle (Tight TDD Loop)](AGENTS.md) for more details.
 
 - [x] `-a`, `--text`, `--include-binary`, `--binary`: Include binary files in the output (e.g., *.pyc, images, archives). Binary files are emitted as headers only in some formats.
 
-## Planned (not implemented)
+## Roadmap
 
-- [ ] `--ignore-file <path>`: Add an additional ignore-file in .gitignore format (lower precedence than command-line excludes).
-
-- [ ] `-g`, `--glob`, `--force-glob`: Force the interpretation of the search pattern as a glob (instead of a regular expression). Examples: `prin -g '*.py'`, `prin -g 'src/**/test_*.rs'`.
-
-- [ ] `-S`, `--size <constraint>`: Filter by file size. Format: `<+|-><NUM><UNIT>` (e.g., `+10k`, `-2M`, `500b`). Units: `b`, `k`, `m`, `g`, `t`, `ki`, `mi`, `gi`, `ti`.
-
-- [ ] `-s`, `--case-sensitive`: Force case-sensitive matching of the search pattern. By default, case sensitivity is "smart".
-
-- [ ] `-i`, `--ignore-case`: Force case-insensitive matching of the search pattern. By default, case sensitivity is "smart".
-
-- [ ] `-L`, `--follow`: Follow symbolic links.
-
-- [ ] `-d`, `--max-depth <n>`: Limit directory traversal to at most <n> levels.
-
-- [ ] `-D`, `--exact-depth <n>`: Traverse directories exactly <n> levels deep.
-
-- [ ] `-m`, `--min-depth <n>`: Traverse directories at least <n> levels deep.
-
-- [ ] `-A`, `--absolute-paths`: Print absolute paths (instead of paths relative to the specified root).
-
-- [ ] `-n`, `--line-number` (alias: `--line-numbers`): Show line numbers in printed file contents.
-
-- [ ] `-o`, `--output {json,yaml,csv}`: Format the entire output as a JSON, YAML or CSV string.
-  - [ ] `--json` alias for `-o json`.
-  - [ ] `--yaml` alias for `-o yaml`.
-  - [ ] `--csv` alias for `-o csv`.
-
-- [ ] `--no-cache`: Do not cache GET network requests.
-
-- [ ] `--no-scripts`: Exclude shell scripts and `scripts/` dir.
-
-- [ ] `--limit-output <n>`: Maximum number of accumulated lines in the output.
-
-- [ ] `--include-types`: Include generated type files and type sheds (e.g., `*.pyi`, `*.d.ts`, `typeshed/`)
-
-- [ ] `--exclude-config`: Exclude config files (e.g., `*.toml`, `*.ini`, `*.ini*`)
-
-#### Capabilities
-
-- [ ] Support regex-based matching.
-- [ ] Smart-case matching.
-- [ ] `prin /tmp/par` matches `/tmp/parts.md` and `/tmp/foo/non-partisan.md` (compat with 'fd')
-- [ ] Exclude generated type files and type sheds by default. Complement with `--include-types`.
-- [ ] Exclude config files opt-in. Complement with `--include-config`.
+See `ROADMAP.md` for planned features and priorities.
