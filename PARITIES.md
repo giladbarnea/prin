@@ -237,17 +237,20 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Triggers
 - Changing explicit-path routing or how adapters signal file vs directory.
 
-## Set 16 [GITIGNORE-BEHAVIOR]: Current `.gitignore` semantics
+## Set 16 [GITIGNORE-BEHAVIOR]: `.gitignore` semantics
 
 #### Members
-- `src/prin/filters.py`: `get_gitignore_exclusions` (currently returns `[]`).
-- `src/prin/cli_common.py`: `Context.__post_init__` composition of exclusions with `no_ignore`.
+- `src/prin/adapters/filesystem.py`: `FileSystemSource.configure` initializes `GitIgnoreEngine`; `should_print` consults engine first.
+- `src/prin/filters.py`: `GitIgnoreEngine` implementation; `get_gitignore_exclusions` shim.
+- `src/prin/cli_common.py`: `Context.__post_init__` keeps `no_ignore` field; help text.
+- `SPEC.md`: CLI option notes for `--no-ignore`.
+- `README.md`: Sane defaults list includes VCS ignore paths.
 
 #### Contract
-- Until real `.gitignore` parsing is implemented, gitignored files are not excluded by default. Flags (`--no-ignore`, `-u`, `-uu`) remain consistent with current stubbed behavior and README/alias documentation.
+- By default, filesystem traversal respects `.gitignore`, `.git/info/exclude`, global `~/.config/git/ignore`, plus `.ignore` and `.fdignore`. The last matching rule wins, and negations are honored. `--no-ignore` disables this engine. Explicit file roots still force-include.
 
 #### Triggers
-- Implementing real `.gitignore` parsing; changing the meaning of `no_ignore`/`unrestricted`.
+- Changing ignore engine semantics or sources; altering `--no-ignore` meaning.
 
 ## Set 17 [PATTERN-THEN-PATH]: Pattern-then-path interface
 

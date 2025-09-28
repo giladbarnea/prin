@@ -43,7 +43,7 @@ prin "*.rs" github.com/rust-lang/book
 3. Binary files
 4. Dot-files and dot-dirs (.env, .git, .cache, .vscode, etc.)
 5. Tests
-6. Git-ignored paths  // noqa: parities
+6. Git-ignored paths (.gitignore, .git/info/exclude, ~/.config/git/ignore, plus .ignore and .fdignore)  // noqa: parities
 
 Each can be included in the output by specifying its corresponding `--include-...` CLI flag.
 
