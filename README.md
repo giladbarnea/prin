@@ -191,7 +191,7 @@ You can focus or skip tests for specific adapters via pytest flags:
 - [ ] Run ./format.sh
 - [ ] Status update user.
 
-See [Development Cycle (Tight TDD Loop)](AGENTS.md) for more details.
+See [Development Cycle (Tight TDD Loop)](AGENTS.md) for more details. Also read `ROADMAP.md` for planned work before starting a task.
 
 ## CLI Options
 
