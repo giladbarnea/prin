@@ -21,7 +21,11 @@ DEFAULT_EXCLUSIONS: list[Pattern] = [
     re.compile(r"^bin(/|$)"),
     re.compile("dist"),
     re.compile("node_modules"),
-    re.compile(r"cache", re.IGNORECASE),
+    # Cache directories: only exclude path segments that END WITH 'cache' (case-insensitive),
+    # e.g., '.ruff_cache', 'web_cache', 'Cache' — but do NOT exclude files like 'edge_cache.py'.
+    re.compile(r"(^|/)[^/]*cache(/|$)", re.IGNORECASE),
+    # Common special-case: Python bytecode caches
+    re.compile(r"(^|/)__pycache__(/|$)"),
     # Build artifacts and dependencies
     re.compile("target"),
     re.compile("vendor"),
