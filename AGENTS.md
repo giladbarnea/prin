@@ -63,30 +63,10 @@ All *.sh scripts automatically install uv if missing, take care of PATH and exec
 
 ### `prin` Smoke Run Matrix
 
+Run the dedicated script:
+
 ```bash
-# Warm-up (prints CLI help)
-./run.sh --help | head -30
-
-# Period variants
-# Expect: display = bare-relative (no prefix), dot-relative (./...), absolute ($PWD).
-# Matching: regex '.' (matches any single character, effectively most files). Default filters apply.
-./run.sh . -l | head -30
-./run.sh . . -l | head -30
-./run.sh . $PWD -l | head -30
-
-# Glob asterisk variants
-# Expect: same display rules as above (bare-relative, dot-relative, absolute) depending on where token.
-# Matching: glob '*' (matches any path). Default filters apply.
-./run.sh '*' -l | head -30
-./run.sh '*' . -l | head -30
-./run.sh '*' $PWD -l | head -30
-
-# Regex “everything” (quote to avoid shell expansion)
-# Expect: same display rules as above depending on where token.
-# Matching: regex '.*' (matches any path). Default filters apply.
-./run.sh '.*' -l | head -30
-./run.sh '.*' . -l | head -30
-./run.sh '.*' $PWD -l | head -30
+./smoke-test.sh
 ```
 
 ## Gotchas
