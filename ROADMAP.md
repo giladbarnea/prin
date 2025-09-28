@@ -7,47 +7,61 @@ authority rank: Has high authority over immediate plans as well as future plans.
 
 # Roadmap (Filesystem-first)
 
-Guiding principle: maximize filesystem feature breadth and polish before investing in network adapters (GitHub/Website). SPEC.md governs behavior; this doc captures priorities.
+Guiding principle: maximize filesystem feature breadth and polish before investing in network adapters (GitHub/Website). SPEC.md governs existing behavior; this doc captures plans and priorities.
 
 ## P0 — Critical UX and bugs
 
 - Fix positional parsing bug with dot + file + filters: `prin --no-docs -E 'tests' -E internal . -E '*.sh' README.md`.
+- Ignore generated `d.ts`, `js.map` and `css.map` files.
+- Ignore:
+  * .webp, .tif, .tiff - Additional image formats
+  * .tgz - Compressed archive (you already noted this)
+  * .ogg, .webm, .flv - Additional media formats (you already noted these)
+  * .m4a, .aac, .flac - Audio formats
+  * .mkv, .wmv, .m4v - Video formats
+  * .eps, .ai, .psd - Design/graphics files
+  * .sketch - Sketch design files
+  * .fig - Figma files (though these are usually cloud-based)
+  * .cab, .deb, .rpm - Package formats
+  * .iso - Disk images
+  * .beam - Erlang/Elixir bytecode
+  * .rlib - Rust library
+  * .a - Static library
+  * .otc, .otf, .ttf, .woff, .woff2, .ttc, .eot?, .pfb, .pfm - Font files
+- Detect binary files dynamically like `fd` does.
 - Add `.rtf` to docs extensions.
-- Add an inclusion/exclusion category for package management requirement files (package.json, pyproject.toml, requirements.txt, etc.)
-- Add an inclusion/exclusion category for style sheets (css, scss, sass, etc.)
-- Introduce `--format`/`--output-format` as stable aliases for `-t/--tag` (keep `--tag` for compatibility). (AI suggestion)
+- `--no-package`, `--no-requirements` (`package.json`, `pyproject.toml`, `requirements.txt`, etc.)
+- `--no-style`, `--no-css` (`css`, `scss`, `sass`, etc.)
+- `--no-config` (`json`, `yaml`, `toml`, `ini`, `cfg`, etc.)
+- `--no-scripts`: exclude shell scripts and `scripts/` directory (`*sh`, `bat`, `ps1`, `scripts/` dir, etc.)
+- `--no-web` (`html*`, stylesheets, `*js*`, `ts*`, etc.)  // This would be the first flag overlapping another flag (e.g., `--no-style`). I don‘t know if this hurts product precision.
 
-## P1 — Filesystem breadth (core)
+## P1 — Filesystem features breadth (core)
 
 - Depth controls: `--max-depth`, `--min-depth`, `--exact-depth`.
 - Symlink handling: `-L/--follow` (and document default behavior clearly).
 - Case sensitivity toggles: `-s/--case-sensitive`, `-i/--ignore-case`; default remains smart-case.
-- Forced glob mode: `-g/--glob` to treat pattern as a glob when it looks like regex.
+- Forced glob mode: `--glob` to force treat pattern as a glob.
+- Forced regex mode: `--regex` to force treat pattern as a regex.
 - Ignore file support: `--ignore-file <path>` (repeatable). Precedence: CLI excludes > ignore-file(s) > VCS ignore; last matching rule wins; negations honored. (AI suggestion)
 - Size filters: `-S/--size <±NUMUNIT>` (e.g., `+10k`, `-2M`).
 - Line numbers: `-n/--line-number`.
 - Output throttling: `--limit-output <N>` to cap total printed lines.
-- Category expansions:
-  - `--include-types` and default exclusion for generated type files and type sheds.
-  - `--exclude-config` (opt-in) with complementary `--include-config` semantics.
-  - `--no-scripts`: exclude shell scripts and `scripts/` directory.
-- Matching semantics and parity:
-  - Regex/glob classifier correctness and smart-case (verify vs SPEC; ensure tests).
-  - fd-compat behavior (e.g., token matching like `prin /tmp/par` → `/tmp/parts.md`, `/tmp/foo/non-partisan.md`).
-- Decision: `-A/--absolute-paths` — do not implement; SPEC ties display form to the “where” token shape. (AI suggestion)
+- Absolute paths: `-A/--absolute-paths` to always print absolute paths regardless of `where` value.
+- Structured output: `-o/--output {json,yaml,csv}` with a stable, lossless (roundtrippable) schema.
 
 ## P2 — Output formats and explainability
 
-- Structured output: `-o/--output {json,yaml,csv}` with a stable, lossless schema.
-- Explainability: show top-N include/exclude reasons and sample file:line matches per token (capped) to debug filters.
-- Tree/listing modes: richer header-only displays (e.g., `--tree`) building on `--only-headers`. (AI suggestion)
-- Zero-results hint: when matches are suppressed by default filters, suggest relevant include flags.
+- Introduce `--format`/`--output-format` as stable aliases for `-t/--tag` (keep `--tag` for compatibility). (AI suggestion)
+- Shell completions and `--version` flag. (AI suggestion)
+- File budget polish: predictable global budget behavior across multiple FS roots; fast-stop on exhaustion. (AI suggestion)
 
 ## P3 — Performance and ergonomics (FS-focused)
 
+- Zero-results hint: when matches are suppressed by default filters, suggest relevant include flags.
+- Tree/listing modes: richer header-only displays (e.g., `--tree`) building on `--only-headers`. (AI suggestion)
 - Large-tree performance profiling and optimizations (traversal, filters, formatter I/O). (AI suggestion)
-- File budget polish: predictable global budget behavior across multiple FS roots; fast-stop on exhaustion. (AI suggestion)
-- Shell completions and `--version` flag. (AI suggestion)
+- Explainability: show top-N include/exclude reasons and sample file:line matches per token (capped) to debug filters.
 
 ## Parked — Adapters and network concerns (post FS breadth)
 
@@ -59,8 +73,3 @@ Guiding principle: maximize filesystem feature breadth and polish before investi
 
 - PARITIES automation: stronger symbol verification (AST scan for module-level constants), argparse-introspection to diff flags/aliases/defaults vs `README.md` and `defaults.py`.
 - PARITIES suppressions: inline opt-outs via `// noqa: <token[, token...]>`.
-
-## Cross-references
-
-- Source lists: `README.md` (overview and CLI), `AGENTS.md` (adapter notes and development cycle), `SPEC.md` (source of truth for behavior).
-
