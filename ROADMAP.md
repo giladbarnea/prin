@@ -1,7 +1,7 @@
 ---
 audience: contributors
 description: Feature roadmap for prin, prioritized FS-first; adapters parked for later
-updated: keep in sync with README Planned and TODO.md
+updated: keep in sync with README and SPEC
 authority rank: planning doc (derive behavior from SPEC.md)
 ---
 
@@ -60,5 +60,5 @@ Guiding principle: maximize filesystem feature breadth and polish before investi
 
 ## Cross-references
 
-- Source lists: `README.md` (Planned), `TODO.md` (issues and ideas), `AGENTS.md` (adapter notes), `SPEC.md` (source of truth for behavior).
+- Source lists: `README.md` (overview and CLI), `AGENTS.md` (adapter notes and development cycle), `SPEC.md` (source of truth for behavior).
 
