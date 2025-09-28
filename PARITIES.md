@@ -1,8 +1,8 @@
 ---
 audience: AI agents
-description: records the dependencies between elements in the codebase
-updated: after making changes in the code
-authority rank: ”eventual“ source of truth. code changes first, then locking-in a snapshot of the codebase in this file. absolute source of truth before first change.
+description: Records the dependencies between elements in the codebase
+updated: After code changes
+authority rank: Eventual source of truth. Before any changes, this file is the canonical reference. When the code changes, the code is authoritative until this file is updated. After updating, this file locks a snapshot of the codebase and becomes the authoritative reference again.
 ---
 
 # PARITIES

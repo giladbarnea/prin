@@ -1,5 +1,5 @@
 ---
-audience: Human and AI maintainers
+audience: AI agents and humans
 description: Feature roadmap for prin, prioritized FS-first; adapters parked for later
 updated: When any of its items are implemented or discarded.
 authority rank: Has high authority over immediate plans as well as future plans. All features start here.

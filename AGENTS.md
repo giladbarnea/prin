@@ -1,6 +1,8 @@
 ---
 audience: AI agents
-description: specifies how to tackle any task
+description: Specifies how to tackle any task.
+updated: By humans, or only upon an explicit human request.
+authority rank: Holds primary authority over workflow and task execution.
 ---
 
 # Agents
