@@ -1,8 +1,8 @@
 ---
-audience: contributors
+audience: Human and AI maintainers
 description: Feature roadmap for prin, prioritized FS-first; adapters parked for later
-updated: keep in sync with README and SPEC
-authority rank: planning doc (derive behavior from SPEC.md)
+updated: When any of its items are implemented or discarded.
+authority rank: Has high authority over immediate plans as well as future plans. All features start here.
 ---
 
 # Roadmap (Filesystem-first)
@@ -12,8 +12,9 @@ Guiding principle: maximize filesystem feature breadth and polish before investi
 ## P0 — Critical UX and bugs
 
 - Fix positional parsing bug with dot + file + filters: `prin --no-docs -E 'tests' -E internal . -E '*.sh' README.md`.
-- Zero-results hint: when matches are suppressed by default filters, suggest relevant include flags.
 - Add `.rtf` to docs extensions.
+- Add an inclusion/exclusion category for package management requirement files (package.json, pyproject.toml, requirements.txt, etc.)
+- Add an inclusion/exclusion category for style sheets (css, scss, sass, etc.)
 - Introduce `--format`/`--output-format` as stable aliases for `-t/--tag` (keep `--tag` for compatibility). (AI suggestion)
 
 ## P1 — Filesystem breadth (core)
@@ -40,6 +41,7 @@ Guiding principle: maximize filesystem feature breadth and polish before investi
 - Structured output: `-o/--output {json,yaml,csv}` with a stable, lossless schema.
 - Explainability: show top-N include/exclude reasons and sample file:line matches per token (capped) to debug filters.
 - Tree/listing modes: richer header-only displays (e.g., `--tree`) building on `--only-headers`. (AI suggestion)
+- Zero-results hint: when matches are suppressed by default filters, suggest relevant include flags.
 
 ## P3 — Performance and ergonomics (FS-focused)
 
