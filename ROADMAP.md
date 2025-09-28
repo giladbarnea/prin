@@ -11,7 +11,17 @@ Guiding principle: maximize filesystem feature breadth and polish before investi
 
 ## P0 — Critical UX and bugs
 
+### Bugs
 - Fix positional parsing bug with dot + file + filters: `prin --no-docs README.md .`.
+- False exclusion of files like `edge_config_cache.py` because of the cache default exclusinos.
+- `prin` must support any amount of positional arguments as long as they resolve to existing paths. E.g., these need to work: 
+  1. ‘what’ is an existing entry (not a pattern), ‘where’ is specified: `prin --no-docs AGENTS.md .`. The expected output is the contents of `AGENTS.md` AND the contents of `prin --no-docs .`. In other words, `AGENTS.md` is treated as an explicit specified path, and not a pattern.
+  2. Only existing file paths are specified: `prin --no-docs AGENTS.md edge_config.py`. No positional argument is a directory, so no traversal happens. The expected output is the contents of `AGENTS.md`, the contents of `edge_config.py`, and THAT‘S IT. No other files are printed.
+    The only difference between this and the previous case is that one of the positional arguments of the previous case is a **directory** (which is then traversed), whereas this case has two **file** paths.
+  3. A hybrid of cases (1) and (2) — three existing paths are specified: `prin --no-docs . AGENTS.md edge_config.py`. The expected output is the contents of `AGENTS.md`, the contents of `edge_config.py`, AND the contents of `prin --no-docs .`. In other words, both `AGENTS.md` and `edge_config.py` are treated as explicit specified paths, and not patterns.
+  4. Exactly equivalent to case (2): `prin --no-docs . . AGENTS.md edge_config.py`. Case (3) had an implicit ’what’ (which resolved to "everything"). This case has an explicit dot (`.`) for ‘what’. Dot is a pattern for "everything", therefore (4) is just the expanded form of (3).
+
+### Features
 - Ignore generated `d.ts`, `js.map` and `css.map` files.
 - Ignore:
   * .webp, .tif, .tiff - Additional image formats
