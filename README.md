@@ -63,6 +63,14 @@ prin . https://docs.framework.io | codex "Leverage framework's API to remove cus
 
 See `prin --help` for the full list of options.
 
+### Smoke test
+
+Run the end-to-end smoke test script, which prints category-based expectations before each run:
+
+```sh
+./smoke-test.sh
+```
+
 ## Output Control
 
 #### `-l`, `--only-headers`
