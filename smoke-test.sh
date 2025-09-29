@@ -36,13 +36,13 @@ message "Running 'prin "*" $PWD -l': same categories; absolute display base"
 ./run.sh '*' "$PWD" -l | head -30 | cat
 
 # Regex '.*' variants (quote to avoid shell expansion)
-message "Running 'prin ".*" -l': regex matches all paths; default filters still apply (docs + regular; non-test, non-lock, non-binary, non-hidden)"
+message "Running 'prin \".*\" -l': regex matches all paths; default filters still apply (docs + regular; non-test, non-lock, non-binary, non-hidden)"
 ./run.sh '.*' -l | head -30 | cat
 
-message "Running 'prin ".*" . -l': same categories; dot-relative display"
+message "Running 'prin \".*\" . -l': same categories; dot-relative display"
 ./run.sh '.*' . -l | head -30 | cat
 
-message "Running 'prin ".*" $PWD -l': same categories; absolute display base"
+message "Running 'prin \".*\" $PWD -l': same categories; absolute display base"
 ./run.sh '.*' "$PWD" -l | head -30 | cat
 
 # --- One line per CLI option ---
