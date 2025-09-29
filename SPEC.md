@@ -5,7 +5,7 @@ updated: Before making changes in the code — like in TDD (think Spec Driven De
 authority rank: Absolute source of truth. Implementation and other docs derive from this file.
 ---
 
-## What–Then–Where: Filesystem Path Display Spec
+## What–Then–Where (per-root): Filesystem Path Display Spec
 
 ### Scope
 - Defines how printed file paths are displayed for the local filesystem adapter, based on the provided “where” token.
@@ -18,13 +18,13 @@ authority rank: Absolute source of truth. Implementation and other docs derive f
 ```
 
 ### Core Rules (Display Base and Prefix)
-- The first positional argument is the pattern (what). The second is the search location (where).
-- The “where” token determines two things:
+- The first positional argument may be a pattern (what). It is followed by zero or more search roots (where).
+- Each “where” token determines two things for its own subtree:
   - the traversal base (what subtree to search in)
   - the display form of matched paths (absolute vs relative and any required prefix)
 
 #### Relative vs Absolute “where”
-- If “where” is omitted (None):
+- If no “where” is provided: 
   - Traverse: cwd
   - Display: bare paths, relative to cwd (no leading `./`).
 - If “where” is a relative child of cwd (e.g., `foo`):
@@ -87,8 +87,8 @@ $ prin main /home/foo
 ```
 
 ### Notes
-- The display form (absolute vs relative; presence of `./` or `../`) is driven solely by the “where” token’s shape, not by where it resolves to.
-- Pattern matching is performed against the full path relative to the traversal base; specifying a pattern does not override default exclusions.
+- The display form (absolute vs relative; presence of `./` or `../`) is driven solely by each “where” token’s shape, not by where it resolves to.
+- Pattern matching is performed against the full path relative to each traversal base; specifying a pattern does not override default exclusions.
 
 ## CLI Options
 

@@ -16,7 +16,8 @@ Print the contents of full directories, remote GitHub repositories and websites 
 
 ## Basic Usage
 
-`prin` follows a "what-then-where" pattern similar to `fd`: the first argument is a pattern (glob or regex) and the second is where to search.
+`prin` accepts an optional pattern followed by zero or more paths (files or directories).
+If no paths are provided, it defaults to the current directory.
 
 ```sh
 # Search for Python files in the src directory
@@ -107,7 +108,9 @@ def main(): ...
 
 ## Matching
 
-The first positional argument is a pattern that can be either a glob or regex:
+The first positional argument may be a pattern (glob or regex). Any subsequent
+positional arguments are paths (files or directories). If no paths are given,
+the current directory is used.
 
 ```sh
 # Glob pattern - matches all markdown files
@@ -120,7 +123,7 @@ prin '^test_.*\.py$' src/
 prin '' docs/
 ```
 
-Patterns are matched against the full relative path from the search location.
+Patterns are matched against the full relative path from each provided path root.
 
 You can also filter by file extensions using the `-e` flag:
 ```sh

@@ -280,7 +280,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - `README.md`: “Basic Usage”/“Matching” examples showing displayed path shapes
 
 #### Contract
-- The search_path token’s shape solely dictates displayed path form: None/child → bare relative; `./…` preserved; `../…` preserved; absolute → absolute paths.
+- Each root token’s shape solely dictates displayed path form: None/child → bare relative; `./…` preserved; `../…` preserved; absolute → absolute paths.
 
 #### Triggers
 - Any change to filesystem display base/prefix rules or to README/SPEC examples reflecting them.
