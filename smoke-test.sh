@@ -26,13 +26,13 @@ message "Running 'prin . $PWD -l': same categories as above; display uses absolu
 ./run.sh . "$PWD" -l | head -30 | cat
 
 # Glob '*' variants
-message "Running 'prin "*" -l': glob matches all paths; default filters still apply (docs + regular; non-test, non-lock, non-binary, non-hidden)"
+message "Running 'prin \"*\" -l': glob matches all paths; default filters still apply (docs + regular; non-test, non-lock, non-binary, non-hidden)"
 ./run.sh '*' -l | head -30 | cat
 
-message "Running 'prin "*" . -l': same categories; dot-relative display"
+message "Running 'prin \"*\" . -l': same categories; dot-relative display"
 ./run.sh '*' . -l | head -30 | cat
 
-message "Running 'prin "*" $PWD -l': same categories; absolute display base"
+message "Running 'prin \"*\" $PWD -l': same categories; absolute display base"
 ./run.sh '*' "$PWD" -l | head -30 | cat
 
 # Regex '.*' variants (quote to avoid shell expansion)
@@ -55,7 +55,7 @@ message "Running 'prin . -I -l': disable gitignore processing (no effect with cu
 ./run.sh . -I -l | head -30 | cat
 
 # -E, --exclude (repeatable)
-message "Running 'prin . -E "*.md" -l': exclude Markdown docs; print regular, non-doc files; still exclude tests, locks, binaries, hidden"
+message "Running 'prin . -E \"*.md\" -l': exclude Markdown docs; print regular, non-doc files; still exclude tests, locks, binaries, hidden"
 ./run.sh . -E '*.md' -l | head -30 | cat
 
 # -e, --extension (repeatable)
