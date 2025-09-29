@@ -230,13 +230,12 @@ class FileSystemSource(SourceAdapter):
                 return f"{display_prefix.rstrip('/')}/{rel}", f"{display_prefix.rstrip('/')}/{rel}"
             return rel, None
 
-        # Special case: if pattern is an exact existing file path, treat it as explicit
-        if pattern and not search_path:
+        # Special case: if pattern is an exact existing file path, also emit it explicitly.
+        # Do not return early; still traverse to allow pattern matching to include other files.
+        if pattern and search_path is None:
             try:
                 pattern_as_path = self.resolve(pattern)
                 if pattern_as_path.exists() and pattern_as_path.is_file():
-                    # This is an explicit file reference
-                    # Display relative to anchor when under it; otherwise absolute
                     if str(pattern_as_path).startswith(str(self.anchor) + os.sep):
                         rel = self._display_rel(pattern_as_path, self.anchor)
                         disp = rel
@@ -249,8 +248,7 @@ class FileSystemSource(SourceAdapter):
                         abs_path=PurePosixPath(str(pattern_as_path)),
                         explicit=True,
                     )
-                    return
-            except:
+            except Exception:
                 pass
 
         # If no pattern or empty pattern, list all files

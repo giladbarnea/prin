@@ -63,7 +63,7 @@ def _expand_cli_aliases(argv: list[str] | None) -> list[str]:
 class Context:
     # Field list should match CLI options.
     pattern: str = ""
-    search_path: str | None = None
+    paths: list[str] = field(default_factory=list)
     include_tests: bool = DEFAULT_INCLUDE_TESTS
     include_lock: bool = DEFAULT_INCLUDE_LOCK
     include_binary: bool = DEFAULT_INCLUDE_BINARY
@@ -169,7 +169,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         epilog=epilog,
     )
 
-    # What-then-where positional arguments
+    # What-then-where positional arguments (pattern + zero or more paths)
     parser.add_argument(
         "pattern",
         type=str,
@@ -178,11 +178,11 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         default="",
     )
     parser.add_argument(
-        "search_path",
+        "paths",
         type=str,
-        nargs="?",
-        help="Path to search in. Defaults to current directory if not specified.",
-        default=None,
+        nargs="*",
+        help="Zero or more paths (files or directories). If omitted, defaults to current directory.",
+        default=[],
     )
 
     # Uppercase short flags are boolean "include" flags.
@@ -303,7 +303,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
 
     return Context(
         pattern=args.pattern,
-        search_path=args.search_path,
+        paths=list(args.paths or []),
         include_tests=bool(args.include_tests),
         include_lock=bool(args.include_lock),
         include_binary=bool(args.include_binary),
