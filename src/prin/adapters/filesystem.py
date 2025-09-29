@@ -182,19 +182,19 @@ class FileSystemSource(SourceAdapter):
         except Exception:
             return str(path)
 
-    def walk_pattern(self, pattern: str, search_path: str | None) -> Iterable[Entry]:
+    def walk_pattern(self, pattern: str, root: str | None) -> Iterable[Entry]:
         """
         Search for pattern in the given path.
         If search_path is None, use anchor.
         If pattern is empty, list all files in the path.
         """
         # Determine the search root (absolute path used for traversal)
-        if search_path is None:
+        if root is None:
             search_root = self.anchor
         else:
-            search_root = self.resolve(search_path)
+            search_root = self.resolve(root)
 
-        # Determine display relativity rules based on the raw search_path token
+        # Determine display relativity rules based on the raw root token
         # Rules (cwd == anchor):
         # - None: display relative to cwd (bare, no leading './')
         # - Absolute token: display absolute paths
@@ -203,19 +203,19 @@ class FileSystemSource(SourceAdapter):
         # - Other relative token (e.g., 'foo', 'foo/bar'): display relative to cwd (bare)
         abs_display: bool = False
         display_prefix: str = ""
-        if search_path is None:
+        if root is None:
             display_base = self.anchor
         else:
-            if Path(search_path).is_absolute():
+            if Path(root).is_absolute():
                 abs_display = True
                 display_base = search_root
-            elif search_path == "." or search_path.startswith("./"):
+            elif root == "." or root.startswith("./"):
                 display_base = self.anchor
                 display_prefix = "./"
-            elif search_path.startswith("../"):
+            elif root.startswith("../"):
                 display_base = search_root
                 # Keep the literal ../... prefix normalized
-                display_prefix = os.path.normpath(search_path)
+                display_prefix = os.path.normpath(root)
             else:
                 # Child path under cwd without explicit './' → bare paths relative to cwd
                 display_base = self.anchor
@@ -230,28 +230,7 @@ class FileSystemSource(SourceAdapter):
                 return f"{display_prefix.rstrip('/')}/{rel}", f"{display_prefix.rstrip('/')}/{rel}"
             return rel, None
 
-        # Special case: if pattern is an exact existing file path, treat it as explicit
-        if pattern and not search_path:
-            try:
-                pattern_as_path = self.resolve(pattern)
-                if pattern_as_path.exists() and pattern_as_path.is_file():
-                    # This is an explicit file reference
-                    # Display relative to anchor when under it; otherwise absolute
-                    if str(pattern_as_path).startswith(str(self.anchor) + os.sep):
-                        rel = self._display_rel(pattern_as_path, self.anchor)
-                        disp = rel
-                    else:
-                        disp = str(pattern_as_path)
-                    yield Entry(
-                        path=PurePosixPath(disp),
-                        name=pattern_as_path.name,
-                        kind=NodeKind.FILE,
-                        abs_path=PurePosixPath(str(pattern_as_path)),
-                        explicit=True,
-                    )
-                    return
-            except:
-                pass
+        # No special-casing of pattern-as-file here; explicit handling is done at the entrypoint.
 
         # If no pattern or empty pattern, list all files
         if not pattern:

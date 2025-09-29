@@ -195,11 +195,11 @@ class WebsiteSource(SourceAdapter):
         self._extensions = ctx.extensions
         self._include_empty = ctx.include_empty
 
-    def walk_pattern(self, pattern: str, search_path: str | None) -> Iterable[Entry]:
+    def walk_pattern(self, pattern: str, root: str | None) -> Iterable[Entry]:
         """
         Search for pattern in the website URLs.
         Pattern matching is applied to the URL keys.
-        search_path is ignored for websites (the base URL is already set).
+        Root is ignored for websites (the base URL is already set).
         """
         ctx = self._ensure_ctx()
 

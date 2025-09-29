@@ -43,14 +43,14 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 ## Set 1 [CLI-CTX-DEFAULTs-README]: CLI options ↔ Context fields ↔ Defaults ↔ README
 
 #### Members
-- `README.md`: Options documented under "Options"/usage; pattern-then-path syntax examples.
-- `src/prin/cli_common.py`: `parse_common_args(...)` flags and help; `Context` dataclass fields with `pattern` and `search_path`; `_expand_cli_aliases`.
+- `README.md`: Options documented under "Options"/usage; pattern-then-paths syntax examples.
+- `src/prin/cli_common.py`: `parse_common_args(...)` flags and help; `Context` dataclass fields with `pattern` and `paths`; `_expand_cli_aliases`.
 - `src/prin/defaults.py`: `DEFAULT_*` used by CLI defaults and choices.
 - `src/prin/core.py`: `DepthFirstPrinter._set_from_context` minimal consumption for printing behavior.
 - `src/prin/adapters/*`: `SourceAdapter.configure(Context)` consumes CLI-derived configuration.
 
 #### Contract
-- CLI accepts two positional arguments: pattern (optional, defaults to "") and search_path (optional, defaults to None/cwd).
+- CLI accepts: optional pattern (defaults to "") and zero or more paths (files or directories). If no paths are provided, cwd is used.
 - One-to-one mapping between CLI flags and `Context` fields, including default values from `defaults.py` and documented behavior in `README.md`.
 - If a flag affects traversal, filtering, or output, the adapter must consume it via `configure(Context)`; printer only consumes printing-related flags (e.g., `only_headers`, `tag`, `max_files`).
 - `README.md` must document only implemented flags with correct semantics (no "planned" flags presented as implemented).
@@ -135,10 +135,9 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - Protocol: `src/prin/core.py`: `SourceAdapter` with `configure`, `walk_pattern`, `should_print`, `read_body_text`, `resolve`, `exists` (and `Entry`/`NodeKind` shapes).
 - Implementations: `src/prin/adapters/filesystem.py`, `src/prin/adapters/github.py`, `src/prin/adapters/website.py`.
 
-#### Contract
 - Adapters implement a uniform interface:
   - `configure(Context)` consumes CLI-derived config.
-  - `walk_pattern(pattern, search_path)` yields files matching pattern in search_path.
+  - `walk_pattern(pattern, root)` yields files matching pattern under the given root token.
   - `should_print(entry)` applies exclusions/extensions/emptiness (`Entry.explicit` forces include).
   - `read_body_text(entry)` returns (text, is_binary) for the printer.
 - `resolve`/`exists` keep lexical resolution rules; `is_empty` should adhere to shared definition (see Set 7).
@@ -253,20 +252,20 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Triggers
 - Changing ignore engine semantics or sources; altering `--no-ignore` meaning.
 
-## Set 17 [PATTERN-THEN-PATH]: Pattern-then-path interface
+## Set 17 [PATTERN-THEN-PATHS]: Pattern-then-paths interface
 
 #### Members
-- `src/prin/cli_common.py`: positional args parsing (pattern, search_path).
+- `src/prin/cli_common.py`: positional args parsing (pattern, paths*).
 - `src/prin/core.py`: `DepthFirstPrinter.run_pattern` method.
 - `src/prin/prin.py`: main dispatcher logic.
-- `src/prin/adapters/*`: `walk_pattern(pattern, search_path)` implementations.
+- `src/prin/adapters/*`: `walk_pattern(pattern, root)` implementations.
 - `README.md`: what-then-where usage examples.
 
 #### Contract
-- First arg is pattern (glob/regex), second is search path (optional, defaults to cwd).
-- Pattern matching happens against full relative paths from search location.
+- First arg is pattern (glob/regex), followed by zero or more paths (files or directories). With no paths, cwd is used.
+- Pattern matching happens against full relative paths from each provided path root.
 - Empty pattern means list all files in the path.
-- Paths are displayed relative to search location.
+- Paths are displayed relative to each root token's shape (absolute vs relative vs ./ or ../ prefix).
 
 #### Triggers
 - Changing pattern matching semantics; modifying path display logic.
@@ -281,7 +280,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - `README.md`: “Basic Usage”/“Matching” examples showing displayed path shapes
 
 #### Contract
-- The search_path token’s shape solely dictates displayed path form: None/child → bare relative; `./…` preserved; `../…` preserved; absolute → absolute paths.
+- Each root token’s shape solely dictates displayed path form: None/child → bare relative; `./…` preserved; `../…` preserved; absolute → absolute paths.
 
 #### Triggers
 - Any change to filesystem display base/prefix rules or to README/SPEC examples reflecting them.

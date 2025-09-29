@@ -41,20 +41,23 @@ Adapters own traversal. The printer (engine) is source-agnostic and is limited t
 - Adapters consume config via `SourceAdapter.configure(Context)`; keep `Context` in sync with CLI options.
 - See SPEC.md for a precise and complete contract for `prin`'s behavior. It should be regarded as an anchor, and divergence from what it specifies is considered a bug.
 
-## Filtering semantics
-// TODO: this section is vague and sometimes inaccurate. Should align with SPEC.md (which is the source of truth).
-//  The wrong parts have to do with not imbuing the what-then-where model.
+## CLI semantics: optional pattern + N paths
 
-prin matches tokens in two modes, uniformly across adapters:
+`prin` accepts an optional pattern followed by zero or more path arguments:
 
-- Existing path mode: If a positional token resolves to an existing root (file or directory) in the adapter’s domain, traversal starts at that root and printed paths are relative to the chosen base (typically the adapter anchor/root). Explicit file roots are force-included regardless of filters.
-- Pattern mode: If a token does not resolve as a path, it is treated as a pattern:
-  - Classifier distinguishes `glob` vs `regex`.
-  - Matching is performed against the full display-relative path (not just the basename).
-  - Case sensitivity follows the underlying engine (Python `re` for regex, `fnmatch` for globs).
-  - Default filters (docs, binary, tests, hidden, etc.) still apply unless toggled.
+```bash
+prin [pattern] [path1] [path2] ...
+```
 
-For GitHub URLs, subpaths may include literal segments and a trailing pattern segment. The literal base is traversed and the pattern matches the full display-relative path under that base.
+- **Pattern**: Optional glob or regex. If the pattern itself resolves to an existing file, that file is force-printed (explicit) regardless of filters, AND the pattern is applied to each specified path.
+- **Paths**: Zero or more files or directories. If omitted, defaults to current directory.
+  - Files are force-printed (explicit) regardless of filters.
+  - Directories are traversed; the pattern (if provided) is applied and default filters govern inclusion.
+  - Each path preserves its display semantics (relative/absolute, prefix rules) independently.
+
+**Pattern classification**: Classifier distinguishes `glob` vs `regex`. Matching is performed against the full display-relative path (not just basename). Case sensitivity follows the underlying engine (Python `re` for regex, `fnmatch` for globs).
+
+**GitHub URLs**: Subpaths may include literal segments and a trailing pattern segment. The literal base is traversed and the pattern matches the full display-relative path under that base.
 
 ## How to install, execute, and lint
 

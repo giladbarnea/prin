@@ -4,7 +4,7 @@ import sys
 from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path, PurePosixPath
-from typing import TYPE_CHECKING, ClassVar, Iterable, Protocol, Self
+from typing import TYPE_CHECKING, Iterable, Protocol, Self
 
 from prin.formatters import Formatter, HeaderFormatter
 
@@ -47,15 +47,12 @@ class SourceAdapter(Protocol):
     - Non-responsibilities: printing, budgeting, formatting selection.
     """
 
-    anchor: ClassVar[Path]
-
-    def resolve(self: Self, path) -> PurePosixPath: ...
+    def resolve(self: Self, path) -> PurePosixPath | Path: ...
     def list_dir(self: Self, dir_path) -> Iterable[Entry]: ...
     def read_file_bytes(self: Self, file_path) -> bytes: ...
     def is_empty(self: Self, file_path) -> bool: ...
-    def exists(self: Self, path) -> bool: ...
     def configure(self: Self, ctx: "Context") -> None: ...
-    def walk_pattern(self: Self, pattern: str, search_path: str | None) -> Iterable[Entry]: ...
+    def walk_pattern(self: Self, pattern: str, root: str | None) -> Iterable[Entry]: ...
     def should_print(self: Self, entry: Entry) -> bool: ...
     def read_body_text(self: Self, entry: Entry) -> tuple[str | None, bool]: ...
 
@@ -197,12 +194,6 @@ class DepthFirstPrinter:
     ) -> None:
         self.source = source
         if ctx.only_headers:
-            if not isinstance(formatter, HeaderFormatter):
-                import logging
-
-                logging.getLogger(__name__).warning(
-                    "[WARNING] --only-headers was specified but formatter passed is not a HeaderFormatter. Forcing to HeaderFormatter."
-                )
             formatter = HeaderFormatter()
         self.formatter = formatter
 
@@ -220,14 +211,14 @@ class DepthFirstPrinter:
     def run_pattern(
         self,
         pattern: str,
-        search_path: str | None,
+        root: str | None,
         writer: Writer,
         budget: "FileBudget | None" = None,
     ) -> None:
         """Run with pattern and search path."""
         if budget is not None and budget.spent():
             return
-        for entry in self.source.walk_pattern(pattern, search_path):
+        for entry in self.source.walk_pattern(pattern, root):
             if budget is not None and budget.spent():
                 return
             self._handle_file(entry, writer, budget=budget)

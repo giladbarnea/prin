@@ -288,15 +288,15 @@ class GitHubRepoSource(SourceAdapter):
         except Exception:
             return path
 
-    def walk_pattern(self, pattern: str, search_path: str | None) -> Iterable[Entry]:
+    def walk_pattern(self, pattern: str, root: str | None) -> Iterable[Entry]:
         """
         Search for pattern in the given path.
         If search_path is None, use repository root.
         If pattern is empty, list all files in the path.
         """
-        # Parse the search_path to get the subpath within the repo
-        if search_path:
-            parsed = parse_github_url(search_path)
+        # Parse the root to get the subpath within the repo
+        if root:
+            parsed = parse_github_url(root)
             subpath = parsed["subpath"].strip("/")
             search_root = PurePosixPath(subpath) if subpath else PurePosixPath()
         else:
@@ -457,7 +457,7 @@ class GitHubRepoSource(SourceAdapter):
         if isinstance(items, dict) and items.get("type") == "file":
             raise NotADirectoryError(path or ".")
         assert isinstance(items, list)
-        entries: list[Entry] = []
+        entries: list[Entry] = []  # type: ignore[reportRedeclaration]
         for it in items:
             it_type = it.get("type")
             it_name = it.get("name")
