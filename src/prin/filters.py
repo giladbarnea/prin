@@ -98,7 +98,6 @@ class GitIgnoreEngine:
             return self._dir_spec_cache[directory]
 
         parent = directory.parent
-        spec_lines: list[str] = []
         if directory != self.root:
             parent_spec = self._load_dir_spec(parent)
             # Start from parent's compiled patterns
@@ -125,7 +124,9 @@ class GitIgnoreEngine:
         lines_here += self._prefixed_lines(read_lines(directory / ".ignore"), rel_dir)
         lines_here += self._prefixed_lines(read_lines(directory / ".gitignore"), rel_dir)
         # Repo-specific excludes (usually only under repo root)
-        lines_here += self._prefixed_lines(read_lines(directory / ".git" / "info" / "exclude"), rel_dir)
+        lines_here += self._prefixed_lines(
+            read_lines(directory / ".git" / "info" / "exclude"), rel_dir
+        )
 
         if lines_here:
             spec += GitIgnoreSpec.from_lines(lines_here)

@@ -35,8 +35,8 @@ def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None
         try:
             p_as_path = fs_source.resolve(pattern)
             if p_as_path.exists() and p_as_path.is_file():
-                # Print the exact file regardless of filters
-                fs_printer.run_pattern("", str(p_as_path), out_writer, budget=budget)
+                # Print the exact file regardless of filters, using original token for display
+                fs_printer.run_pattern("", pattern, out_writer, budget=budget)
         except Exception:
             pass
 
@@ -52,7 +52,8 @@ def main(*, argv: list[str] | None = None, writer: Writer | None = None) -> None
     try:
         p_as_path = fs_source.resolve(pattern)
         if p_as_path.exists() and p_as_path.is_file():
-            fs_printer.run_pattern("", str(p_as_path), out_writer, budget=budget)
+            # Print the exact file regardless of filters, using original token for display
+            fs_printer.run_pattern("", pattern, out_writer, budget=budget)
     except Exception:
         pass
 

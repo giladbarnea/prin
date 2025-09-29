@@ -102,3 +102,20 @@ message "Running 'prin . -uu -l': include hidden; disable gitignore processing (
 message "Running 'prin . -uuu -l': include everything (overrides exclusions): docs, tests, locks, binaries, hidden, and build artifacts"
 ./run.sh . -uuu -l | head -30 | cat
 
+# --- Multi-path and pattern-as-file edge cases (P0 validation) ---
+# Pattern that resolves to a file + directory
+message "Running 'prin README.md . -l': pattern is an existing file (explicit); also applies to . traversal; filters apply to nested matches"
+./run.sh README.md . -l | head -30 | cat
+
+# Two explicit file paths (no directory)
+message "Running 'prin README.md AGENTS.md -l': two explicit files; no traversal; both printed regardless of filters"
+./run.sh README.md AGENTS.md -l | head -30 | cat
+
+# Pattern that exists + pattern matching in directory
+message "Running 'prin \"*.py\" src/prin -l': pattern as glob matches Python files in src/prin; filters apply"
+./run.sh '*.py' src/prin -l | head -30 | cat
+
+# Edge case: empty pattern + single file path
+message "Running 'prin \"\" README.md -l': empty pattern with explicit file path; prints the file"
+./run.sh '' README.md -l | head -30 | cat
+

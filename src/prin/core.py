@@ -4,7 +4,7 @@ import sys
 from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path, PurePosixPath
-from typing import TYPE_CHECKING, ClassVar, Iterable, Protocol, Self
+from typing import TYPE_CHECKING, Iterable, Protocol, Self
 
 from prin.formatters import Formatter, HeaderFormatter
 
@@ -194,12 +194,6 @@ class DepthFirstPrinter:
     ) -> None:
         self.source = source
         if ctx.only_headers:
-            if not isinstance(formatter, HeaderFormatter):
-                import logging
-
-                logging.getLogger(__name__).warning(
-                    "[WARNING] --only-headers was specified but formatter passed is not a HeaderFormatter. Forcing to HeaderFormatter."
-                )
             formatter = HeaderFormatter()
         self.formatter = formatter
 

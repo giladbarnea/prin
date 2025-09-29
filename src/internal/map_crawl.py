@@ -68,12 +68,13 @@ If you want, I can extend the script to:
 """
 
 import argparse
+import contextlib
 import json
-import os
+import pathlib
+import posixpath
 import re
 import sys
-import posixpath
-from typing import Dict, List, Set, Tuple, Optional
+from typing import Dict, List, Optional, Set, Tuple
 from urllib.parse import urljoin, urlparse, urlunparse
 
 import httpx
@@ -215,12 +216,13 @@ def extract_links(html: str, base_url: str) -> List[str]:
 
 
 def load_store(path: str) -> Dict[str, List[str]]:
-    """Load adjacency mapping from a file that may be in new or old format.
+    """
+    Load adjacency mapping from a file that may be in new or old format.
 
     New format: { "urls": [...], <canon>: [<canon> ...], ... }
     Old format: { <canon>: [<canon> ...], ... }
     """
-    if not os.path.exists(path):
+    if not pathlib.Path(path).exists():
         return {}
     try:
         with open(path, "r", encoding="utf-8") as f:
@@ -231,15 +233,14 @@ def load_store(path: str) -> Dict[str, List[str]]:
             return {str(k): [str(v) for v in (vs or [])] for k, vs in data.items()}
     except Exception:
         # backup corrupted file and start fresh
-        try:
-            os.replace(path, path + ".bak")
-        except Exception:
-            pass
+        with contextlib.suppress(Exception):
+            pathlib.Path(path).replace(path + ".bak")
         return {}
 
 
 def write_store(mapping: Dict[str, List[str]], path: str) -> None:
-    """Write store in DRY per-domain format with a top-level union 'urls' list.
+    """
+    Write store in DRY per-domain format with a top-level union 'urls' list.
 
     The output JSON shape is:
     { "urls": [ ... ], <canon>: [<canon> ...], ... }
@@ -256,11 +257,11 @@ def write_store(mapping: Dict[str, List[str]], path: str) -> None:
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(data_out, f, indent=2, sort_keys=False, ensure_ascii=False)
-    os.replace(tmp, path)
+    pathlib.Path(tmp).replace(path)
 
 
 def is_page_like_canon(canon: str) -> bool:
-    host, _, rest = canon.partition("/")
+    _host, _, rest = canon.partition("/")
     path = "/" + rest if rest else "/"
     # Allow host roots and path-like pages without asset extensions
     if path == "/":
@@ -286,7 +287,9 @@ def clean_mapping_assets(mapping: Dict[str, List[str]]) -> Dict[str, List[str]]:
     return cleaned
 
 
-def pick_fetch_urls(canon: str, sample_full_url: Optional[str], seed_scheme: Optional[str]) -> List[str]:
+def pick_fetch_urls(
+    canon: str, sample_full_url: Optional[str], seed_scheme: Optional[str]
+) -> List[str]:
     host, _, rest = canon.partition("/")
     path = "/" + rest if rest else "/"
     urls: List[str] = []
@@ -323,7 +326,9 @@ def fetch_html(urls_to_try: List[str], client: httpx.Client) -> Optional[Tuple[s
 
 def crawl(seed_url: str, json_path: str) -> None:
     # ensure absolute seed with scheme for initial parsing
-    seed_abs = seed_url if re.match(r"^https?://", seed_url, re.IGNORECASE) else f"https://{seed_url}"
+    seed_abs = (
+        seed_url if re.match(r"^https?://", seed_url, re.IGNORECASE) else f"https://{seed_url}"
+    )
     parsed = urlparse(seed_abs)
     if not parsed.netloc:
         print("Seed URL must include a hostname", file=sys.stderr)
@@ -333,14 +338,16 @@ def crawl(seed_url: str, json_path: str) -> None:
     seed_scheme = parsed.scheme.lower() if parsed.scheme else None
 
     # Determine per-domain JSON path (e.g., ghuntley-com.json)
-    default_name = os.path.basename(json_path)
+    default_name = pathlib.Path(json_path).name
     domain_filename = f"{allowed_domain.replace('.', '-')}.json"
-    domain_json_path = (
-        domain_filename if default_name == "crawl_map.json" else json_path
-    )
+    domain_json_path = domain_filename if default_name == "crawl_map.json" else json_path
 
     # One-time migration from old crawl_map.json to per-domain store
-    if default_name == "crawl_map.json" and os.path.exists(json_path) and not os.path.exists(domain_json_path):
+    if (
+        default_name == "crawl_map.json"
+        and pathlib.Path(json_path).exists()
+        and not pathlib.Path(domain_json_path).exists()
+    ):
         old_mapping = load_store(json_path)
         old_mapping = clean_mapping_assets(old_mapping)
         write_store(old_mapping, domain_json_path)
@@ -361,9 +368,7 @@ def crawl(seed_url: str, json_path: str) -> None:
 
     client = httpx.Client(
         follow_redirects=True,
-        headers={
-            "User-Agent": "stupid-simple-crawler/0.1 (+https://example.invalid)"
-        },
+        headers={"User-Agent": "stupid-simple-crawler/0.1 (+https://example.invalid)"},
     )
 
     try:
