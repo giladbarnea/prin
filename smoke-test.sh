@@ -90,6 +90,18 @@ message "Running 'prin . -t md': output tag/format changes (Markdown) but catego
 message "Running 'prin . --max-files 5 -l': same categories as default; output limited to 5 files globally"
 ./run.sh . --max-files 5 -l | head -30 | cat
 
+# --max-depth <n>
+message "Running 'prin . --max-depth 2 -l': limit traversal to depth 2 (direct children and one level down); default filters apply"
+./run.sh . --max-depth 2 -l | head -30 | cat
+
+# --min-depth <n>
+message "Running 'prin . --min-depth 2 -l': exclude root-level files, only print files at depth 2 or deeper; default filters apply"
+./run.sh . --min-depth 2 -l | head -30 | cat
+
+# --exact-depth <n>
+message "Running 'prin . --exact-depth 2 -l': print only files at exactly depth 2; default filters apply"
+./run.sh . --exact-depth 2 -l | head -30 | cat
+
 # -a, --text/--include-binary/--binary
 message "Running 'prin . -a -l': include binary files in addition to default inclusions; still exclude hidden unless -H"
 ./run.sh . -a -l | head -30 | cat

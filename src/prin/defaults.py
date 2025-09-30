@@ -188,4 +188,9 @@ DEFAULT_INCLUDE_HIDDEN = False
 DEFAULT_TAG: Literal["xml"] = "xml"
 DEFAULT_TAG_CHOICES: Literal["xml", "md"] = [DEFAULT_TAG, "md"]
 
+# Depth control defaults
+DEFAULT_MAX_DEPTH: int | None = None
+DEFAULT_MIN_DEPTH: int | None = None
+DEFAULT_EXACT_DEPTH: int | None = None
+
 # endregion ---[ Default CLI Options ]---

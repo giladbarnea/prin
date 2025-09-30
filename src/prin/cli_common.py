@@ -11,6 +11,7 @@ from typing import Literal
 from prin.defaults import (
     DEFAULT_BINARY_EXCLUSIONS,
     DEFAULT_DOC_EXTENSIONS,
+    DEFAULT_EXACT_DEPTH,
     DEFAULT_EXCLUDE_FILTER,
     DEFAULT_EXCLUSIONS,
     DEFAULT_EXTENSIONS_FILTER,
@@ -20,6 +21,8 @@ from prin.defaults import (
     DEFAULT_INCLUDE_LOCK,
     DEFAULT_INCLUDE_TESTS,
     DEFAULT_LOCK_EXCLUSIONS,
+    DEFAULT_MAX_DEPTH,
+    DEFAULT_MIN_DEPTH,
     DEFAULT_NO_DOCS,
     DEFAULT_NO_EXCLUDE,
     DEFAULT_NO_IGNORE,
@@ -73,6 +76,11 @@ class Context:
     exclusions: list[Pattern] = field(default_factory=lambda: list(DEFAULT_EXCLUDE_FILTER))
     no_exclude: bool = DEFAULT_NO_EXCLUDE
     no_ignore: bool = DEFAULT_NO_IGNORE
+
+    # Depth controls
+    max_depth: int | None = DEFAULT_MAX_DEPTH
+    min_depth: int | None = DEFAULT_MIN_DEPTH
+    exact_depth: int | None = DEFAULT_EXACT_DEPTH
 
     # Formatting and output
     only_headers: bool = DEFAULT_ONLY_HEADERS
@@ -295,6 +303,29 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         help="Maximum number of files to print across all inputs.",
     )
 
+    # Depth control arguments
+    parser.add_argument(
+        "--max-depth",
+        type=int,
+        dest="max_depth",
+        default=DEFAULT_MAX_DEPTH,
+        help="Maximum depth to traverse. Depth 1 means only direct children of the root.",
+    )
+    parser.add_argument(
+        "--min-depth",
+        type=int,
+        dest="min_depth",
+        default=DEFAULT_MIN_DEPTH,
+        help="Minimum depth to start printing files. Depth 1 means only direct children of the root.",
+    )
+    parser.add_argument(
+        "--exact-depth",
+        type=int,
+        dest="exact_depth",
+        default=DEFAULT_EXACT_DEPTH,
+        help="Print files only at this exact depth. Overrides --max-depth and --min-depth.",
+    )
+
     # Expand known alias flags before parsing. If argv is None, use sys.argv[1:].
     effective_argv = _expand_cli_aliases(argv if argv is not None else sys.argv[1:])
     args = parser.parse_args(effective_argv)
@@ -315,4 +346,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         include_hidden=bool(args.include_hidden),
         tag=args.tag,
         max_files=args.max_files,
+        max_depth=args.max_depth,
+        min_depth=args.min_depth,
+        exact_depth=args.exact_depth,
     )

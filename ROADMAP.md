@@ -38,7 +38,6 @@ Guiding principle: maximize filesystem feature breadth and polish before investi
 
 ## P1 — Filesystem features breadth (core)
 
-- Depth controls: `--max-depth`, `--min-depth`, `--exact-depth`.
 - Symlink handling: `-L/--follow` (and document default behavior clearly).
 - Case sensitivity toggles: `-s/--case-sensitive`, `-i/--ignore-case`; default remains smart-case.
 - Forced glob mode: `--glob` to force treat pattern as a glob.
