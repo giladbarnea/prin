@@ -147,12 +147,7 @@ class FileSystemSource(SourceAdapter):
         stack: list[tuple[Path, int]] = [(start, 0)]
         while stack:
             current, current_depth = stack.pop()
-
-            # Check if we should stop traversing deeper
-            if self.max_depth is not None and current_depth >= self.max_depth:
-                # Still process files at this level, but don't traverse subdirectories
-                pass
-
+            
             try:
                 with os.scandir(current) as it:
                     dirs: list[os.DirEntry] = []
