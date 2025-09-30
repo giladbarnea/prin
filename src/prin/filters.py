@@ -29,14 +29,6 @@ def read_gitignore_file(gitignore_path: Path) -> list[Pattern]:
     return exclusions
 
 
-def get_gitignore_exclusions(paths: list[str]) -> list[Pattern]:
-    """
-    Backward-compat shim for callers that expect a list of exclusions from VCS ignore files.
-
-    Now returns an empty list and VCS ignore handling is performed by a dedicated engine
-    integrated at the adapter layer. Kept to preserve the call site in Context.__post_init__.
-    """
-    return []
 
 
 class GitIgnoreEngine:

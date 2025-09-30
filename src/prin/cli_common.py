@@ -29,7 +29,6 @@ from prin.defaults import (
     DEFAULT_TEST_EXCLUSIONS,
     Hidden,
 )
-from prin.filters import get_gitignore_exclusions
 from prin.types import Glob, Pattern, TPath, _describe_predicate
 
 # Map shorthand/alias flags to their canonical expanded forms.
@@ -107,9 +106,8 @@ class Context:
         if not self.include_binary:
             exclusions.extend(DEFAULT_BINARY_EXCLUSIONS)
 
-        if not self.no_ignore:
-            # For now, gitignore exclusions are empty (see filters.py)
-            exclusions.extend(get_gitignore_exclusions([]))
+        # Note: VCS ignore handling (.gitignore, .ignore, .fdignore, etc.) is performed
+        # by GitIgnoreEngine at the adapter layer, not via exclusions list.
 
         if self.no_docs:
             exclusions.extend(DEFAULT_DOC_EXTENSIONS)
@@ -221,7 +219,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         "-M",
         "--include-empty",
         action="store_true",
-        help="Include empty files and Python files that only contain imports, comments, and __all__=... expressions.",
+        help="Include empty files and Python files that only contain imports and __all__=... expressions.",
         default=DEFAULT_INCLUDE_EMPTY,
     )
     parser.add_argument(

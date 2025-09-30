@@ -8,8 +8,8 @@ authority rank: Absolute source of truth. Implementation and other docs derive f
 ## What–Then–Where (per-root): Filesystem Path Display Spec
 
 ### Scope
-- Defines how printed file paths are displayed for the local filesystem adapter, based on the provided “where” token.
-- Assumes anchor = current working directory (cwd). In examples, cwd = `/home` and the project layout is:
+- Defines how printed file paths are displayed for the local filesystem adapter, based on the provided "where" token.
+- Assumes anchor = current working directory (cwd). In examples, cwd = `/home/user` and the project layout is:
 
 ```bash
 ./
@@ -33,62 +33,78 @@ authority rank: Absolute source of truth. Implementation and other docs derive f
 - If “where” is `.` or begins with `./` (e.g., `.` or `./foo`):
   - Traverse: cwd (or the given child under cwd)
   - Display: paths relative to current dir, prefixed exactly as written (`./…`).
-- If “where” begins with `../` (one-level walk-up):
-  - Traverse: the resolved parent path (e.g., `/` when cwd is `/home`)
+- If "where" begins with `../` (one-level walk-up):
+  - Traverse: the resolved parent path (e.g., `/home` when cwd is `/home/user`)
   - Display: paths relative to that base, preserving the leading `../…` prefix.
 - If “where” is absolute (e.g., `/`, `/home`, `/home/foo`):
   - Traverse: the absolute path
   - Display: absolute paths (the fact it may equal cwd or be a child of it is irrelevant).
 
-### Canonical Examples (cwd = `/home`)
+### Canonical Examples (cwd = `/home/user`)
 
 ```bash
-# No ‘where’ arg → bare paths relative to cwd
+# No 'where' arg → bare paths relative to cwd
 $ prin main
 foo/main.py
 bar/main.py
 
-# ‘where’ = current dir dot → relative to current dir (with leading ./)
+# 'where' = current dir dot → relative to current dir (with leading ./)
 $ prin main .
 ./foo/main.py
 ./bar/main.py
 
-# ‘where’ = foo (relative child) → traverse /home/foo; display bare relative to cwd
+# 'where' = foo (relative child) → traverse /home/user/foo; display bare relative to cwd
 $ prin main foo
 foo/main.py
 
-# ‘where’ = ./foo → display relative to current dir (child), preserving ./
+# 'where' = ./foo → display relative to current dir (child), preserving ./
 $ prin main ./foo
 ./foo/main.py
 
-# ‘where’ = ../ (one-level up) → display relative to that ../ segment
+# 'where' = ../ (one-level up) → display relative to that ../ segment
 $ prin main ../
-../home/foo/main.py
-../home/bar/main.py
+../user/foo/main.py
+../user/bar/main.py
 
-# ‘where’ = ../home (walk up then back down) → still relative to ../home
-$ prin main ../home
-../home/foo/main.py
-../home/bar/main.py
+# 'where' = ../user (walk up then back down) → still relative to ../user
+$ prin main ../user
+../user/foo/main.py
+../user/bar/main.py
 
-# ‘where’ = / (absolute) → display absolute
+# 'where' = / (absolute) → display absolute
 $ prin main /
-/home/foo/main.py
-/home/bar/main.py
+/home/user/foo/main.py
+/home/user/bar/main.py
 
-# ‘where’ = /home (absolute path of cwd) → display absolute
-$ prin main /home
-/home/foo/main.py
-/home/bar/main.py
+# 'where' = /home/user (absolute path of cwd) → display absolute
+$ prin main /home/user
+/home/user/foo/main.py
+/home/user/bar/main.py
 
-# ‘where’ = /home/foo (absolute child) → display absolute
-$ prin main /home/foo
-/home/foo/main.py
+# 'where' = /home/user/foo (absolute child) → display absolute
+$ prin main /home/user/foo
+/home/user/foo/main.py
 ```
 
 ### Notes
-- The display form (absolute vs relative; presence of `./` or `../`) is driven solely by each “where” token’s shape, not by where it resolves to.
+- The display form (absolute vs relative; presence of `./` or `../`) is driven solely by each "where" token's shape, not by where it resolves to.
 - Pattern matching is performed against the full path relative to each traversal base; specifying a pattern does not override default exclusions.
+
+## Pattern-as-File Behavior
+
+When the pattern argument resolves to an existing file path, `prin` exhibits dual behavior:
+
+1. The file is force-printed (explicit) regardless of filters
+2. The pattern is ALSO applied to traverse each specified path (or current directory if none given), with matches still subject to default filters and exclusions
+
+**Example:**
+```bash
+# If README.md exists:
+$ prin README.md src/
+# Output: README.md (force-printed) + any files matching "README.md" pattern in src/ (if not excluded)
+```
+
+This allows combining explicit file output with pattern-based search in a single invocation.
 
 ## CLI Options
 
