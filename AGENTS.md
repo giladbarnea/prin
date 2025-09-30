@@ -87,7 +87,7 @@ Run the dedicated script:
 
 - Prefer `pathlib` to `os.path`. Use `Path.open()` instead of `open()`, and `Path.glob` instead of `glob`.
 - NEVER use Pytest's `tmp_path` fixture. Use the custom `prin_tmp_path` instead.
-- Type annotation linter errors are not important unless they point out a real problem. Do not modify type annotations just to make the linter happy.
+- Type annotation and mypy linter errors are not important unless they point out a real problem. Do not modify type annotations just to make the linter happy.
 
 ---
 
@@ -112,9 +112,8 @@ Repeat the following:
 1. Suggest the user to update SPEC.md if core behavior has changed.
 2. Update PARITIES.md as instructed in [Important: Working Against and Updating PARITIES.md](AGENTS.md) and in [Maintaining PARITIES.md](PARITIES.md).
 3. Review all root-level `*.md` files for discrepancies—the kind that occur after a behavior change or refactor when some parts of the docs are updated but others are forgotten. Check that README.md, SPEC.md, AGENTS.md, PARITIES.md, and ROADMAP.md remain consistent with each other and with the implementation.
-4. Run `uv run src/internal/parities_check.py`.
-5. Run ./format.sh to fix any fixable issues and print remaining, usually insignificant issues.
-6. Final update to user: Summarize what changed, and what still remains to be done (if anything).
+4. Run ./format.sh to fix any fixable issues and print remaining, usually insignificant issues.
+5. Final update to user: Summarize what changed, and what still remains to be done (if anything).
 
 **Always add an item to every to-do list you create throughout the entire session saying 'ensure I remember the instructions about maintaining and updating PARITIES.md'.**
 
