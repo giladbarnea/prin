@@ -45,7 +45,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Members
 - `README.md`: Options documented under "Options"/usage; pattern-then-paths syntax examples.
 - `src/prin/cli_common.py`: `parse_common_args(...)` flags and help; `Context` dataclass fields with `pattern` and `paths`; `_expand_cli_aliases`.
-- `src/prin/defaults.py`: `DEFAULT_*` used by CLI defaults and choices including `DEFAULT_MAX_DEPTH`, `DEFAULT_MIN_DEPTH`, `DEFAULT_EXACT_DEPTH`.
+- `src/prin/defaults.py`: `DEFAULT_*` used by CLI defaults and choices.
 - `src/prin/core.py`: `DepthFirstPrinter._set_from_context` minimal consumption for printing behavior.
 - `src/prin/adapters/*`: `SourceAdapter.configure(Context)` consumes CLI-derived configuration.
 - `src/prin/adapters/filesystem.py`: `FileSystemSource._walk_dfs` respects depth settings via `max_depth`, `min_depth`, `exact_depth` fields.
