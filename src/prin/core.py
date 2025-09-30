@@ -59,9 +59,9 @@ class SourceAdapter(Protocol):
 
 def _is_text_semantically_empty(text: str) -> bool:
     """
-    Return True if text contains only imports, __all__=..., or docstrings.
+    Return True if text contains only imports and __all__=... expressions.
 
-    Mirrors the behavior used by the filesystem implementation.
+    Module-level docstrings make a file non-empty (they represent meaningful documentation).
     """
     import ast
 
@@ -91,8 +91,8 @@ def _is_text_semantically_empty(text: str) -> bool:
             and isinstance(node.value, ast.Constant)
             and isinstance(node.value.value, str)
         ):
-            # Docstring
-            continue
+            # Module-level docstring: makes file non-empty
+            return False
         else:
             return False
     return True

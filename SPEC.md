@@ -87,8 +87,24 @@ $ prin main /home/foo
 ```
 
 ### Notes
-- The display form (absolute vs relative; presence of `./` or `../`) is driven solely by each “where” token’s shape, not by where it resolves to.
+- The display form (absolute vs relative; presence of `./` or `../`) is driven solely by each "where" token's shape, not by where it resolves to.
 - Pattern matching is performed against the full path relative to each traversal base; specifying a pattern does not override default exclusions.
+
+## Pattern-as-File Behavior
+
+When the pattern argument resolves to an existing file path, `prin` exhibits dual behavior:
+
+1. The file is force-printed (explicit) regardless of filters
+2. The pattern is ALSO applied to traverse each specified path (or current directory if none given)
+
+**Example:**
+```bash
+# If README.md exists:
+$ prin README.md src/
+# Output: README.md (force-printed) + any files matching "README.md" pattern in src/
+```
+
+This allows combining explicit file output with pattern-based search in a single invocation.
 
 ## CLI Options
 

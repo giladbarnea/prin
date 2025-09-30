@@ -1,6 +1,6 @@
 ---
 audience: Humans
-description: Introduces 'prin' to newcomers in a clear and simple manner, with approachable examples.
+description: Introduces 'prin' to newcomers in a clear and simple manner, with approachable examples. Presents what IS (current implementation) to attract users rather than overwhelm with future plans.
 updated: After feature changes, additions, or removals.
 authority rank: Not a source of truth. Should be derived from SPEC.md and AGENTS.md.
 ---
@@ -35,6 +35,8 @@ prin "" docs/
 # Search in GitHub repositories
 prin "*.rs" github.com/rust-lang/book
 ```
+
+**Pattern-as-file behavior:** If the pattern itself is an existing file, it will be printed explicitly AND used as a search pattern. For example, `prin README.md src/` prints README.md plus any files matching "README.md" in src/.
 
 ## Sane Defaults with LLM performance in mind
 
@@ -94,16 +96,20 @@ def main(): ...
 </src/main.py>
 ```
 
-- `md` preceds the file contents with a H2 heading:
+- `md` precedes each file with a heading, separator, content, and divider:
 
 ```md
-## LICENSE
+## FILE: LICENSE
+================
 MIT-whatever
 
 ---
 
-## src/main.py
+## FILE: src/main.py
+====================
 def main(): ...
+
+---
 ```
 
 ## Matching
@@ -190,6 +196,7 @@ You can focus or skip tests for specific adapters via pytest flags:
 3. **After the loop**
 - [ ] Run ./test.sh.
 - [ ] Update PARITIES.md as instructed in [Important: Working Against and Updating PARITIES.md](AGENTS.md) and in [Maintaining PARITIES.md](PARITIES.md).
+- [ ] Review root-level `*.md` files for discrepancies across README.md, SPEC.md, AGENTS.md, PARITIES.md, and ROADMAP.md.
 - [ ] Run `uv run src/internal/parities_check.py`.
 - [ ] Run ./format.sh
 - [ ] Status update user.
@@ -218,7 +225,7 @@ See [Development Cycle (Tight TDD Loop)](AGENTS.md) for more details.
 
 - [x] `-t`, `--tag {xml|md}`: Choose output format.
 
-- [x] `--max-files <n>`: Maximum number of files to print across all inputs.
+- [x] `--max-files <n>`: Global maximum number of files to print across all inputs.
 
 - [x] `-uu`: Unrestricted search: include hidden files and disable ignore rules (equivalent to `--hidden --no-ignore`).
 
