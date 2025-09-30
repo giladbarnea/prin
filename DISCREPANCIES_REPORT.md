@@ -458,3 +458,21 @@ The following changes have been implemented based on user feedback:
 
 **Status:** Implementation complete for approved changes (issues 1-18 subset)  
 **Next:** User to continue reviewing issues 20-25 after rest
+
+---
+
+## Issue #20 Resolution
+
+**SPEC.md Example Path Confusion** - COMPLETED ✅
+
+Changed all examples in SPEC.md from `cwd = /home` to `cwd = /home/user`:
+- Updated Scope section (line 12)
+- Updated Core Rules `../` example (line 37)
+- Updated all Canonical Examples section paths (lines 43-87)
+
+This makes the `../` example clearer:
+- When cwd is `/home/user`, `../` resolves to `/home`
+- Output shows `../user/foo/main.py` which is correct (relative to `/home`)
+- More realistic path structure that users will recognize
+
+**All identified discrepancies have been resolved.**
