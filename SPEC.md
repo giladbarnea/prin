@@ -95,13 +95,13 @@ $ prin main /home/user/foo
 When the pattern argument resolves to an existing file path, `prin` exhibits dual behavior:
 
 1. The file is force-printed (explicit) regardless of filters
-2. The pattern is ALSO applied to traverse each specified path (or current directory if none given)
+2. The pattern is ALSO applied to traverse each specified path (or current directory if none given), with matches still subject to default filters and exclusions
 
 **Example:**
 ```bash
 # If README.md exists:
 $ prin README.md src/
-# Output: README.md (force-printed) + any files matching "README.md" pattern in src/
+# Output: README.md (force-printed) + any files matching "README.md" pattern in src/ (if not excluded)
 ```
 
 This allows combining explicit file output with pattern-based search in a single invocation.
