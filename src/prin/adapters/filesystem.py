@@ -56,6 +56,9 @@ class FileSystemSource(SourceAdapter):
     extensions: list
     include_empty: bool
     _ignore_engine: GitIgnoreEngine | None
+    max_depth: int | None
+    min_depth: int | None
+    exact_depth: int | None
 
     def __init__(self, anchor=None) -> None:
         self.anchor = Path(anchor or Path.cwd()).resolve()
@@ -63,6 +66,9 @@ class FileSystemSource(SourceAdapter):
         self.extensions = []
         self.include_empty = False
         self._ignore_engine = None
+        self.max_depth = None
+        self.min_depth = None
+        self.exact_depth = None
         super().__init__()
 
     def __repr__(self) -> str:
@@ -121,6 +127,7 @@ class FileSystemSource(SourceAdapter):
         - If root is a directory, traverses directories first (case-insensitive sort),
           then files (case-insensitive sort) at each level.
         - Symbolic links are not followed.
+        - Respects max_depth, min_depth, and exact_depth settings.
         """
         start = Path(str(root))
         # If it's a file, emit and stop
@@ -136,9 +143,16 @@ class FileSystemSource(SourceAdapter):
         if not start.exists() or not start.is_dir():
             return
 
-        stack: list[Path] = [start]
+        # Stack now contains (Path, depth) tuples
+        stack: list[tuple[Path, int]] = [(start, 0)]
         while stack:
-            current = stack.pop()
+            current, current_depth = stack.pop()
+
+            # Check if we should stop traversing deeper
+            if self.max_depth is not None and current_depth >= self.max_depth:
+                # Still process files at this level, but don't traverse subdirectories
+                pass
+
             try:
                 with os.scandir(current) as it:
                     dirs: list[os.DirEntry] = []
@@ -159,16 +173,34 @@ class FileSystemSource(SourceAdapter):
                 files.sort(key=lambda e: e.name.casefold())
 
                 # Push directories in reverse order for stack-based DFS
-                for d in reversed(dirs):
-                    stack.append(Path(d.path))
+                # Only traverse deeper if max_depth allows it
+                next_depth = current_depth + 1
+                if self.max_depth is None or next_depth < self.max_depth:
+                    for d in reversed(dirs):
+                        stack.append((Path(d.path), next_depth))
 
-                # Yield files at this level
-                for f in files:
-                    yield Entry(
-                        path=PurePosixPath(f.path),
-                        name=f.name,
-                        kind=NodeKind.FILE,
-                    )
+                # Determine the depth of files at this level
+                # Files are considered to be at depth (current_depth + 1) relative to root
+                file_depth = current_depth + 1
+
+                # Apply depth filters
+                should_include_files = True
+                if self.exact_depth is not None:
+                    should_include_files = file_depth == self.exact_depth
+                else:
+                    if self.min_depth is not None and file_depth < self.min_depth:
+                        should_include_files = False
+                    if self.max_depth is not None and file_depth > self.max_depth:
+                        should_include_files = False
+
+                # Yield files at this level if depth constraints are satisfied
+                if should_include_files:
+                    for f in files:
+                        yield Entry(
+                            path=PurePosixPath(f.path),
+                            name=f.name,
+                            kind=NodeKind.FILE,
+                        )
             except (FileNotFoundError, NotADirectoryError, PermissionError):
                 # Skip paths that disappeared or aren't traversable
                 continue
@@ -295,6 +327,9 @@ class FileSystemSource(SourceAdapter):
         self.exclusions = ctx.exclusions
         self.extensions = ctx.extensions
         self.include_empty = ctx.include_empty
+        self.max_depth = ctx.max_depth
+        self.min_depth = ctx.min_depth
+        self.exact_depth = ctx.exact_depth
         # Initialize ignore engine unless --no-ignore or --no-exclude
         if not ctx.no_exclude and not ctx.no_ignore:
             self._ignore_engine = GitIgnoreEngine(self.anchor)

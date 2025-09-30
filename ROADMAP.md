@@ -9,6 +9,10 @@ authority rank: Has high authority over immediate plans as well as future plans.
 
 Guiding principle: maximize filesystem feature breadth and polish before investing in network adapters (GitHub/Website). SPEC.md governs existing behavior; this doc captures plans and priorities.
 
+## Implemented Features
+
+- Depth controls: `--max-depth`, `--min-depth`, `--exact-depth`. Depth is counted from the search root (depth 1 = direct children of the root).
+
 ## P0 — Critical UX and bugs
 
 ### Features
@@ -38,7 +42,6 @@ Guiding principle: maximize filesystem feature breadth and polish before investi
 
 ## P1 — Filesystem features breadth (core)
 
-- Depth controls: `--max-depth`, `--min-depth`, `--exact-depth`.
 - Symlink handling: `-L/--follow` (and document default behavior clearly).
 - Case sensitivity toggles: `-s/--case-sensitive`, `-i/--ignore-case`; default remains smart-case.
 - Forced glob mode: `--glob` to force treat pattern as a glob.

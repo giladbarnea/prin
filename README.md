@@ -227,6 +227,12 @@ See [Development Cycle (Tight TDD Loop)](AGENTS.md) for more details.
 
 - [x] `--max-files <n>`: Global maximum number of files to print across all inputs.
 
+- [x] `--max-depth <n>`: Maximum depth to traverse. Depth 1 means only direct children of the root.
+
+- [x] `--min-depth <n>`: Minimum depth to start printing files. Depth 1 means only direct children of the root.
+
+- [x] `--exact-depth <n>`: Print files only at this exact depth. Overrides `--max-depth` and `--min-depth`.
+
 - [x] `-uu`: Unrestricted search: include hidden files and disable ignore rules (equivalent to `--hidden --no-ignore`).
 
 - [x] `-uuu`, `--no-exclude`, `--include-all`: Include everything. Equivalent to `--no-ignore --hidden --binary`.

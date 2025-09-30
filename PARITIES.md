@@ -45,14 +45,17 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Members
 - `README.md`: Options documented under "Options"/usage; pattern-then-paths syntax examples.
 - `src/prin/cli_common.py`: `parse_common_args(...)` flags and help; `Context` dataclass fields with `pattern` and `paths`; `_expand_cli_aliases`.
-- `src/prin/defaults.py`: `DEFAULT_*` used by CLI defaults and choices.
+- `src/prin/defaults.py`: `DEFAULT_*` used by CLI defaults and choices including `DEFAULT_MAX_DEPTH`, `DEFAULT_MIN_DEPTH`, `DEFAULT_EXACT_DEPTH`.
 - `src/prin/core.py`: `DepthFirstPrinter._set_from_context` minimal consumption for printing behavior.
 - `src/prin/adapters/*`: `SourceAdapter.configure(Context)` consumes CLI-derived configuration.
+- `src/prin/adapters/filesystem.py`: `FileSystemSource._walk_dfs` respects depth settings via `max_depth`, `min_depth`, `exact_depth` fields.
+- `tests/test_depth_controls.py`: Depth control feature tests.
 
 #### Contract
 - CLI accepts: optional pattern (defaults to "") and zero or more paths (files or directories). If no paths are provided, cwd is used.
 - One-to-one mapping between CLI flags and `Context` fields, including default values from `defaults.py` and documented behavior in `README.md`.
 - If a flag affects traversal, filtering, or output, the adapter must consume it via `configure(Context)`; printer only consumes printing-related flags (e.g., `only_headers`, `tag`, `max_files`).
+- Depth controls (`--max-depth`, `--min-depth`, `--exact-depth`) are consumed by filesystem adapter; depth is counted from the search root (depth 1 = direct children).
 - `README.md` must document only implemented flags with correct semantics (no "planned" flags presented as implemented).
 
 #### Triggers

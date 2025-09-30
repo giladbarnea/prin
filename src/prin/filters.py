@@ -29,8 +29,6 @@ def read_gitignore_file(gitignore_path: Path) -> list[Pattern]:
     return exclusions
 
 
-
-
 class GitIgnoreEngine:
     """
     Git-ignore style matcher that aggregates patterns from:
