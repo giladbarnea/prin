@@ -35,6 +35,22 @@ DEFAULT_EXCLUSIONS: list[Pattern] = [
     re.compile(r"(^|/)venv(/|$)"),
     # Minified assets
     Glob("*.min.*"),
+    # Generated source artifacts (TypeScript, source maps)
+    Glob("*.d.ts"),
+    Glob("*.map"),
+    # Version control artifacts
+    Glob("*.orig"),
+    Glob("*.rej"),
+    # Editor backup files
+    Glob("*.bak"),
+    Glob("*.old"),
+    # Additional editor temporary files
+    Glob("*.swn"),  # Vim (complements .swp, .swo)
+    Glob("*.temp"),
+    # Language/IDE-specific generated files
+    Glob("*.d"),  # C/C++ dependency files
+    Glob("*.iml"),  # IntelliJ IDEA modules
+    Glob("*.user"),  # Visual Studio user files (includes .csproj.user, .vbproj.user, etc.)
     re.compile("DerivedData"),
     re.compile("Pods"),
     re.compile(r"Carthage/Build"),
