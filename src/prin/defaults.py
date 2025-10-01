@@ -17,7 +17,7 @@ Hidden = Glob(".*")
 
 DEFAULT_EXCLUSIONS: list[Pattern] = [
     Glob("*egg-info"),
-    re.compile(r"(^|/)build(/|$)"),
+    re.compile(r"(^|/)_?build(/|$)"),
     re.compile(r"^bin(/|$)"),
     re.compile("dist"),
     re.compile("node_modules"),
@@ -31,6 +31,9 @@ DEFAULT_EXCLUSIONS: list[Pattern] = [
     re.compile("vendor"),
     re.compile("out"),
     re.compile("coverage"),
+    re.compile(r"(^|/)te?mp(/|$)"),  # tmp/ and temp/ directories
+    re.compile(r"(^|/)CMakeFiles(/|$)"),  # CMake build metadata
+    re.compile(r"(^|/)pkg(/|$)"),  # Go package objects
     # Additional common directories/files
     re.compile(r"(^|/)venv(/|$)"),
     # Minified assets
