@@ -27,7 +27,6 @@ Guiding principle: maximize filesystem feature breadth and polish before investi
   * .a - Static library
   * .otc, .ttc, .pfb, .pfm - Additional font files (.otf, .ttf, .woff, .woff2, .eot already handled)
 - Detect binary files dynamically like `fd` does.
-- Add `.rtf` to docs extensions.
 - `--no-package`, `--no-requirements` (`package.json`, `pyproject.toml`, `requirements.txt`, etc.)
 - `--no-style`, `--no-css` (`css`, `scss`, `sass`, etc.)
 - `--no-config` (`json`, `yaml`, `toml`, `ini`, `cfg`, etc.)
