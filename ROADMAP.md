@@ -12,22 +12,20 @@ Guiding principle: maximize filesystem feature breadth and polish before investi
 ## P0 — Critical UX and bugs
 
 ### Features
-- Ignore generated `d.ts`, `js.map` and `css.map` files.
-- Ignore:
+- Ignore (binary formats):
   * .webp, .tif, .tiff - Additional image formats
-  * .tgz - Compressed archive (you already noted this)
-  * .ogg, .webm, .flv - Additional media formats (you already noted these)
+  * .tgz - Compressed archive
+  * .ogg, .webm, .flv - Additional media formats
   * .m4a, .aac, .flac - Audio formats
   * .mkv, .wmv, .m4v - Video formats
   * .eps, .ai, .psd - Design/graphics files
   * .sketch - Sketch design files
   * .fig - Figma files (though these are usually cloud-based)
-  * .cab, .deb, .rpm - Package formats
-  * .iso - Disk images
+  * .cab, .iso - Package/disk image formats (.deb and .rpm already handled)
   * .beam - Erlang/Elixir bytecode
   * .rlib - Rust library
   * .a - Static library
-  * .otc, .otf, .ttf, .woff, .woff2, .ttc, .eot?, .pfb, .pfm - Font files
+  * .otc, .ttc, .pfb, .pfm - Additional font files (.otf, .ttf, .woff, .woff2, .eot already handled)
 - Detect binary files dynamically like `fd` does.
 - Add `.rtf` to docs extensions.
 - `--no-package`, `--no-requirements` (`package.json`, `pyproject.toml`, `requirements.txt`, etc.)
