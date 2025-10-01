@@ -17,7 +17,7 @@ Hidden = Glob(".*")
 
 DEFAULT_EXCLUSIONS: list[Pattern] = [
     Glob("*egg-info"),
-    re.compile(r"(^|/)build(/|$)"),
+    re.compile(r"(^|/)_?build(/|$)"),
     re.compile(r"^bin(/|$)"),
     re.compile("dist"),
     re.compile("node_modules"),
@@ -31,10 +31,29 @@ DEFAULT_EXCLUSIONS: list[Pattern] = [
     re.compile("vendor"),
     re.compile("out"),
     re.compile("coverage"),
+    re.compile(r"(^|/)te?mp(/|$)"),  # tmp/ and temp/ directories
+    re.compile(r"(^|/)CMakeFiles(/|$)"),  # CMake build metadata
+    re.compile(r"(^|/)pkg(/|$)"),  # Go package objects
     # Additional common directories/files
     re.compile(r"(^|/)venv(/|$)"),
     # Minified assets
     Glob("*.min.*"),
+    # Generated source artifacts (TypeScript, source maps)
+    Glob("*.d.ts"),
+    Glob("*.map"),
+    # Version control artifacts
+    Glob("*.orig"),
+    Glob("*.rej"),
+    # Editor backup files
+    Glob("*.bak"),
+    Glob("*.old"),
+    # Additional editor temporary files
+    Glob("*.swn"),  # Vim (complements .swp, .swo)
+    Glob("*.temp"),
+    # Language/IDE-specific generated files
+    Glob("*.d"),  # C/C++ dependency files
+    Glob("*.iml"),  # IntelliJ IDEA modules
+    Glob("*.user"),  # Visual Studio user files (includes .csproj.user, .vbproj.user, etc.)
     re.compile("DerivedData"),
     re.compile("Pods"),
     re.compile(r"Carthage/Build"),
@@ -58,7 +77,7 @@ DEFAULT_EXCLUSIONS: list[Pattern] = [
 ]
 
 
-DEFAULT_DOC_EXTENSIONS: list[Glob] = [Glob("*.md"), Glob("*.rst"), Glob("*.mdx"), Glob("*.1")]
+DEFAULT_DOC_EXTENSIONS: list[Glob] = [Glob("*.md"), Glob("*.rst"), Glob("*.mdx"), Glob("*.1"), Glob("*.rtf")]
 
 
 DEFAULT_TEST_EXCLUSIONS: list[Pattern] = [
