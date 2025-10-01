@@ -77,7 +77,7 @@ DEFAULT_EXCLUSIONS: list[Pattern] = [
 ]
 
 
-DEFAULT_DOC_EXTENSIONS: list[Glob] = [Glob("*.md"), Glob("*.rst"), Glob("*.mdx"), Glob("*.1")]
+DEFAULT_DOC_EXTENSIONS: list[Glob] = [Glob("*.md"), Glob("*.rst"), Glob("*.mdx"), Glob("*.1"), Glob("*.rtf")]
 
 
 DEFAULT_TEST_EXCLUSIONS: list[Pattern] = [
