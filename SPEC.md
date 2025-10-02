@@ -111,6 +111,7 @@ This allows combining explicit file output with pattern-based search in a single
 ### Exclusions
 - `-E`, `--exclude <glob|regex>` (repeatable): exclude paths matching the pattern; matches full display-relative path.
 - `-d`, `--no-docs`: exclude documentation files (e.g., `*.md`, `*.rst`, `*.txt`).
+- `--no-style`, `--no-css`: exclude stylesheet files (e.g., `*.css`, `*.scss`, `*.sass`, `*.less`, `*.styl`, `*.stylus`, `*.pcss`, `*.postcss`, `*.sss`).
 
 ### Inclusions
 - `-H`, `--hidden`: include dot-files and dot-directories.

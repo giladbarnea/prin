@@ -86,6 +86,19 @@ DEFAULT_DOC_EXTENSIONS: list[Glob] = [
 ]
 
 
+DEFAULT_STYLESHEET_EXTENSIONS: list[Glob] = [
+    Glob("*.css"),
+    Glob("*.scss"),
+    Glob("*.sass"),
+    Glob("*.less"),
+    Glob("*.styl"),
+    Glob("*.stylus"),
+    Glob("*.pcss"),
+    Glob("*.postcss"),
+    Glob("*.sss"),
+]
+
+
 DEFAULT_TEST_EXCLUSIONS: list[Pattern] = [
     re.compile(r".*\.test(\..+)?"),
     re.compile(r"tests?/"),
@@ -239,6 +252,7 @@ DEFAULT_INCLUDE_LOCK = False
 DEFAULT_INCLUDE_DEPENDENCIES = True
 DEFAULT_INCLUDE_BINARY = False
 DEFAULT_NO_DOCS = False
+DEFAULT_NO_STYLESHEETS = False
 DEFAULT_INCLUDE_EMPTY = False
 DEFAULT_ONLY_HEADERS = False
 DEFAULT_EXTENSIONS_FILTER = []
