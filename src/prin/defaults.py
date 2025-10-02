@@ -98,27 +98,15 @@ DEFAULT_TEST_EXCLUSIONS: list[Pattern] = [
 DEFAULT_LOCK_EXCLUSIONS: list[Pattern] = [
     Glob("*.lock"),
     Glob("*.lockfile"),
-    # JavaScript/Node
-    re.compile(r"package-lock\.json"),
-    re.compile(r"pnpm-lock\.yaml"),
-    re.compile(r"yarn\.lock"),
+    Glob("*lock.json"),
+    Glob("*lock.yaml"),
     # Go
     re.compile(r"go\.sum"),
-    # Rust
-    re.compile(r"Cargo\.lock"),
     # Swift/iOS
     re.compile(r"Package\.resolved"),
-    re.compile(r"Podfile\.lock"),
-    # Dart/Flutter
-    re.compile(r"pubspec\.lock"),
-    # Ruby
-    re.compile(r"Gemfile\.lock"),
-    # PHP
-    re.compile(r"composer\.lock"),
     # Other
     re.compile(r"bun\.lockb"),
     re.compile(r"Cartfile\.resolved"),
-    re.compile(r"packages\.lock\.json"),
 ]
 
 
