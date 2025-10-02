@@ -98,8 +98,7 @@ DEFAULT_TEST_EXCLUSIONS: list[Pattern] = [
 DEFAULT_LOCK_EXCLUSIONS: list[Pattern] = [
     Glob("*.lock"),
     Glob("*.lockfile"),
-    Glob("*lock.json"),
-    Glob("*lock.yaml"),
+    Glob("*lock.*"),
     # Go
     re.compile(r"go\.sum"),
     # Swift/iOS
