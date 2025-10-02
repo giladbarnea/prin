@@ -35,6 +35,7 @@ class VFS(NamedTuple):
     test_files: dict[str, str]
     build_dependency_files: dict[str, str]
     dependency_spec_files: dict[str, str]
+    stylesheet_files: dict[str, str]
     artifact_files: dict[str, str]
     cache_files: dict[str, str]
     log_files: dict[str, str]
@@ -125,6 +126,17 @@ def fs_root() -> VFS:
         "Podfile": 'platform :ios, "14.0"\n',
         "pubspec.yaml": "name: test_app\n",
     }
+    stylesheet_files: dict[str, str] = {
+        "assets/styles/main.css": "body { color: red; }\n",
+        "assets/styles/theme.scss": "$primary: #00f;\n",
+        "assets/styles/legacy.sass": "body\n  color: #0f0\n",
+        "assets/styles/vars.less": "@primary: #333;\n",
+        "assets/styles/editor.styl": "body\n  color #fff\n",
+        "assets/styles/layout.stylus": "body\n  background #000\n",
+        "assets/styles/custom.pcss": ":root {\n  --gap: 1rem;\n}\n",
+        "assets/styles/postcss.postcss": ":root {\n  --font: 'Inter';\n}\n",
+        "assets/styles/sugar.sss": ":root\n  color: #123\n",
+    }
     artifact_files: dict[str, str] = {
         "build/artifact.o": "OBJ\n",
         "dist/regular.js": "console.log('dist/regular.js');\n",  # Should be excluded because of the dist/ dir.
@@ -159,6 +171,7 @@ def fs_root() -> VFS:
         test_files,
         build_dependency_files,
         dependency_spec_files,
+        stylesheet_files,
         artifact_files,
         cache_files,
         log_files,
@@ -181,6 +194,7 @@ def fs_root() -> VFS:
         **test_files,
         **build_dependency_files,
         **dependency_spec_files,
+        **stylesheet_files,
         **artifact_files,
         **cache_files,
         **log_files,
@@ -234,6 +248,7 @@ def fs_root() -> VFS:
             test_files=test_files,
             build_dependency_files=build_dependency_files,
             dependency_spec_files=dependency_spec_files,
+            stylesheet_files=stylesheet_files,
             artifact_files=artifact_files,
             cache_files=cache_files,
             log_files=log_files,

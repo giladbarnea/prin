@@ -27,7 +27,6 @@ Guiding principle: maximize filesystem feature breadth and polish before investi
   * .a - Static library
   * .otc, .ttc, .pfb, .pfm - Additional font files (.otf, .ttf, .woff, .woff2, .eot already handled)
 - Detect binary files dynamically like `fd` does.
-- `--no-style`, `--no-css` (`css`, `scss`, `sass`, etc.)
 - `--no-config` (`json`, `yaml`, `toml`, `ini`, `cfg`, etc.)
 - `--no-scripts`: exclude shell scripts and `scripts/` directory (`*sh`, `bat`, `ps1`, `scripts/` dir, etc.)
 - `--no-web` (`html*`, stylesheets, `*js*`, `ts*`, etc.)  // This would be the first flag overlapping another flag (e.g., `--no-style`). I don‘t know if this hurts product precision.
