@@ -77,7 +77,13 @@ DEFAULT_EXCLUSIONS: list[Pattern] = [
 ]
 
 
-DEFAULT_DOC_EXTENSIONS: list[Glob] = [Glob("*.md"), Glob("*.rst"), Glob("*.mdx"), Glob("*.1"), Glob("*.rtf")]
+DEFAULT_DOC_EXTENSIONS: list[Glob] = [
+    Glob("*.md"),
+    Glob("*.rst"),
+    Glob("*.mdx"),
+    Glob("*.1"),
+    Glob("*.rtf"),
+]
 
 
 DEFAULT_TEST_EXCLUSIONS: list[Pattern] = [
@@ -95,11 +101,61 @@ DEFAULT_LOCK_EXCLUSIONS: list[Pattern] = [
     # JavaScript/Node
     re.compile(r"package-lock\.json"),
     re.compile(r"pnpm-lock\.yaml"),
+    re.compile(r"yarn\.lock"),
+    # Go
     re.compile(r"go\.sum"),
-    re.compile(r"bun\.lockb"),
+    # Rust
+    re.compile(r"Cargo\.lock"),
+    # Swift/iOS
     re.compile(r"Package\.resolved"),
+    re.compile(r"Podfile\.lock"),
+    # Dart/Flutter
+    re.compile(r"pubspec\.lock"),
+    # Ruby
+    re.compile(r"Gemfile\.lock"),
+    # PHP
+    re.compile(r"composer\.lock"),
+    # Other
+    re.compile(r"bun\.lockb"),
     re.compile(r"Cartfile\.resolved"),
     re.compile(r"packages\.lock\.json"),
+]
+
+
+DEFAULT_DEPENDENCY_EXCLUSIONS: list[Pattern] = [
+    # JavaScript/TypeScript/Node.js
+    re.compile(r"package\.json"),
+    # Python
+    re.compile(r"pyproject\.toml"),
+    re.compile(r"requirements\.txt"),
+    re.compile(r"requirements-.*\.txt"),
+    re.compile(r".*requirements\.txt"),
+    # Java
+    re.compile(r"pom\.xml"),
+    re.compile(r"build\.gradle"),
+    re.compile(r"build\.gradle\.kts"),
+    # C#
+    Glob("*.csproj"),
+    re.compile(r"packages\.config"),
+    # C++
+    re.compile(r"conanfile\.txt"),
+    re.compile(r"conanfile\.py"),
+    re.compile(r"vcpkg\.json"),
+    re.compile(r"CMakeLists\.txt"),
+    # PHP
+    re.compile(r"composer\.json"),
+    # Go
+    re.compile(r"go\.mod"),
+    # Rust
+    re.compile(r"Cargo\.toml"),
+    # Swift
+    re.compile(r"Package\.swift"),
+    re.compile(r"Podfile"),
+    # Kotlin (uses Gradle/Maven like Java)
+    # Dart/Flutter
+    re.compile(r"pubspec\.yaml"),
+    # Ruby
+    re.compile(r"Gemfile"),
 ]
 
 
@@ -193,6 +249,7 @@ DEFAULT_BINARY_EXCLUSIONS: list[Pattern] = [
 DEFAULT_RUN_PATH = "."
 DEFAULT_INCLUDE_TESTS = False
 DEFAULT_INCLUDE_LOCK = False
+DEFAULT_INCLUDE_DEPENDENCIES = True
 DEFAULT_INCLUDE_BINARY = False
 DEFAULT_NO_DOCS = False
 DEFAULT_INCLUDE_EMPTY = False

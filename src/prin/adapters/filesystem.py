@@ -147,7 +147,7 @@ class FileSystemSource(SourceAdapter):
         stack: list[tuple[Path, int]] = [(start, 0)]
         while stack:
             current, current_depth = stack.pop()
-            
+
             try:
                 with os.scandir(current) as it:
                     dirs: list[os.DirEntry] = []

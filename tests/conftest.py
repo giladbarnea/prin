@@ -33,7 +33,8 @@ class VFS(NamedTuple):
     binary_files: dict[str, str]
     hidden_files: dict[str, str]
     test_files: dict[str, str]
-    dependency_files: dict[str, str]
+    build_dependency_files: dict[str, str]
+    dependency_spec_files: dict[str, str]
     artifact_files: dict[str, str]
     cache_files: dict[str, str]
     log_files: dict[str, str]
@@ -106,9 +107,23 @@ def fs_root() -> VFS:
         "app/mod.test.py": "def mod_test():\n    assert True\n",
         "tests/howto.txt": "How to run tests\n",  # Should be excluded because the tests/ dir.
     }
-    dependency_files: dict[str, str] = {
+    build_dependency_files: dict[str, str] = {
         "node_modules/pkg/index.js": "console.log('x');\n",
         ".venv/lib/python3.13/site-packages/decorator.py": "POS = inspect.Parameter.POSITIONAL_OR_KEYWORD\n",
+    }
+    dependency_spec_files: dict[str, str] = {
+        "package.json": '{"name": "test-pkg", "version": "1.0.0"}\n',
+        "pyproject.toml": '[project]\nname = "test-project"\n',
+        "requirements.txt": "requests==2.31.0\n",
+        "requirements-dev.txt": "pytest==8.0.0\n",
+        "pom.xml": '<?xml version="1.0"?>\n<project></project>\n',
+        "build.gradle": 'plugins { id "java" }\n',
+        "Cargo.toml": '[package]\nname = "test"\n',
+        "go.mod": "module example.com/test\n",
+        "Gemfile": 'source "https://rubygems.org"\n',
+        "composer.json": '{"name": "test/pkg"}\n',
+        "Podfile": 'platform :ios, "14.0"\n',
+        "pubspec.yaml": "name: test_app\n",
     }
     artifact_files: dict[str, str] = {
         "build/artifact.o": "OBJ\n",
@@ -142,7 +157,8 @@ def fs_root() -> VFS:
         binary_files,
         hidden_files,
         test_files,
-        dependency_files,
+        build_dependency_files,
+        dependency_spec_files,
         artifact_files,
         cache_files,
         log_files,
@@ -163,7 +179,8 @@ def fs_root() -> VFS:
         **binary_files,
         **hidden_files,
         **test_files,
-        **dependency_files,
+        **build_dependency_files,
+        **dependency_spec_files,
         **artifact_files,
         **cache_files,
         **log_files,
@@ -215,7 +232,8 @@ def fs_root() -> VFS:
             binary_files=binary_files,
             hidden_files=hidden_files,
             test_files=test_files,
-            dependency_files=dependency_files,
+            build_dependency_files=build_dependency_files,
+            dependency_spec_files=dependency_spec_files,
             artifact_files=artifact_files,
             cache_files=cache_files,
             log_files=log_files,

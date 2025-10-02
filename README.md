@@ -217,6 +217,8 @@ See [Development Cycle (Tight TDD Loop)](AGENTS.md) for more details.
 
 - [x] `-K`, `--include-lock`: Include lock files (e.g., package-lock.json, poetry.lock, Cargo.lock).
 
+- [x] `--no-dependencies`: Exclude dependency specification files (e.g., package.json, pyproject.toml, requirements.txt, pom.xml, Cargo.toml).
+
 - [x] `-d`, `--no-docs`: Exclude documentation files (e.g., *.md, *.rst, *.txt).
 
 - [x] `-M`, `--include-empty`: Include empty files and semantically-empty Python files.

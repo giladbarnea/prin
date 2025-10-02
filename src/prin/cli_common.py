@@ -10,12 +10,14 @@ from typing import Literal
 
 from prin.defaults import (
     DEFAULT_BINARY_EXCLUSIONS,
+    DEFAULT_DEPENDENCY_EXCLUSIONS,
     DEFAULT_DOC_EXTENSIONS,
     DEFAULT_EXACT_DEPTH,
     DEFAULT_EXCLUDE_FILTER,
     DEFAULT_EXCLUSIONS,
     DEFAULT_EXTENSIONS_FILTER,
     DEFAULT_INCLUDE_BINARY,
+    DEFAULT_INCLUDE_DEPENDENCIES,
     DEFAULT_INCLUDE_EMPTY,
     DEFAULT_INCLUDE_HIDDEN,
     DEFAULT_INCLUDE_LOCK,
@@ -68,6 +70,7 @@ class Context:
     paths: list[str] = field(default_factory=list)
     include_tests: bool = DEFAULT_INCLUDE_TESTS
     include_lock: bool = DEFAULT_INCLUDE_LOCK
+    include_dependencies: bool = DEFAULT_INCLUDE_DEPENDENCIES
     include_binary: bool = DEFAULT_INCLUDE_BINARY
     no_docs: bool = DEFAULT_NO_DOCS
     include_empty: bool = DEFAULT_INCLUDE_EMPTY
@@ -110,6 +113,9 @@ class Context:
 
         if not self.include_lock:
             exclusions.extend(DEFAULT_LOCK_EXCLUSIONS)
+
+        if not self.include_dependencies:
+            exclusions.extend(DEFAULT_DEPENDENCY_EXCLUSIONS)
 
         if not self.include_binary:
             exclusions.extend(DEFAULT_BINARY_EXCLUSIONS)
@@ -205,6 +211,13 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         action="store_true",
         help="Include lock files (e.g. package-lock.json, poetry.lock, Cargo.lock).",
         default=DEFAULT_INCLUDE_LOCK,
+    )
+    parser.add_argument(
+        "--no-dependencies",
+        action="store_false",
+        dest="include_dependencies",
+        help="Exclude dependency specification files (e.g. package.json, pyproject.toml, requirements.txt, pom.xml, Cargo.toml).",
+        default=DEFAULT_INCLUDE_DEPENDENCIES,
     )
     parser.add_argument(
         "-a",  # Deviates from 'fd' that has '-a' for '--absolute-path'. Compat with 'rg'.
@@ -335,6 +348,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         paths=list(args.paths or []),
         include_tests=bool(args.include_tests),
         include_lock=bool(args.include_lock),
+        include_dependencies=bool(args.include_dependencies),
         include_binary=bool(args.include_binary),
         no_docs=bool(args.no_docs),
         include_empty=bool(args.include_empty),

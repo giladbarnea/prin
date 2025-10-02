@@ -97,13 +97,16 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 
 #### Members
 - `src/prin/cli_common.py`: CLI flags, `Context` fields, CLI documentation in `parse_common_args`.
-- `src/prin/defaults.py`: patterns in `DEFAULT_EXCLUSIONS`, `DEFAULT_TEST_EXCLUSIONS`, `DEFAULT_LOCK_EXCLUSIONS`, `DEFAULT_BINARY_EXCLUSIONS`, `DEFAULT_DOC_EXTENSIONS`, `Hidden`; default CLI configuration by all the `DEFAULT_*` scalar constants.
-- `README.md` sections: “Sane Defaults for LLM Input”, “Output Control”, CLI Options”.
+- `src/prin/defaults.py`: patterns in `DEFAULT_EXCLUSIONS`, `DEFAULT_TEST_EXCLUSIONS`, `DEFAULT_LOCK_EXCLUSIONS`, `DEFAULT_DEPENDENCY_EXCLUSIONS`, `DEFAULT_BINARY_EXCLUSIONS`, `DEFAULT_DOC_EXTENSIONS`, `Hidden`; default CLI configuration by all the `DEFAULT_*` scalar constants.
+- `README.md` sections: "Sane Defaults for LLM Input", "Output Control", CLI Options".
+- `tests/conftest.py`: `VFS` fixture with categorized file dictionaries including `dependency_spec_files` and `build_dependency_files`.
+- `tests/test_dependency_flag.py`: tests for `--no-dependencies` flag.
 
 #### Contract
 - Filter flags exposed by the CLI in `cli_common.py` must have corresponding DEFAULT_* patterns and DEFAULT_* feature flags in `defaults.py`, `Context` fields, representation in `README.md` in specified sections, synced CLI help in `parse_common_args`, mocks in `conftest.fs_root` and a field in `conftest.VFS`.
  - Hidden category in the FS fixture is represented by files under dot-directories (e.g., `.github/config`, `app/submodule/.git/config`); directories themselves are not printed.
  - Build directory exclusion uses path-bounded regex `(^|/)build(/|$)`; minified assets are excluded by default via `*.min.*`; doc extensions include `*.1`.
+ - Dependency files category: `dependency_spec_files` contains dependency specification files (package.json, pyproject.toml, requirements.txt, pom.xml, etc.) excluded by default with `--no-dependencies`; `build_dependency_files` contains installed dependencies (node_modules/, .venv/) excluded by default via `DEFAULT_EXCLUSIONS`.
 
 #### Triggers
 - Adding/removing/renaming a filter category; changing category semantics.
