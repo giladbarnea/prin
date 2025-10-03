@@ -101,17 +101,14 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - `src/prin/cli_common.py`: `_normalize_extension_to_glob`.
 
 #### Contract
-- Inclusion/exclusion and extension matching must behave identically regardless of source type. Any change to filters must be validated across adapters. Adapters may delegate to `filters.*` to keep behavior consistent.
-- The classifier distinguishes two kinds of patterns: `regex` and `glob`.
-  * `regex`: matched by `re.search`.
-  * `glob`: matched via `fnmatch`.
-- Explicit extensions are normalized by `_normalize_extension_to_glob`. Changes to normalization rules must be reflected in `filters.is_excluded` and `filters.extension_match` behavior.
-- Changes to classifier rules must be reflected in `filters.is_excluded` and `filters.extension_match` behavior.
+- Inclusion/exclusion and extension matching must behave identically regardless of source type; adapters may delegate to `filters.*` to keep behavior consistent.
+- The classifier distinguishes two kinds of patterns: `regex` (matched by `re.search`) and `glob` (matched via `fnmatch`).
+- Explicit extensions are normalized by `_normalize_extension_to_glob`; changes propagate to `filters.is_excluded` and `filters.extension_match`.
+- Changes to classifier rules must be reflected in `filters.is_excluded` and `filters.extension_match`.
+- Category flag semantics and defaults originate in Set 1; filters must implement them faithfully. See: Set 1.
 
 #### Triggers
 - Changing matching rules, glob/regex detection, or text-token semantics. Changing extension normalization rules.
-
- 
 
 
 ## Set 6 [SOURCE-ADAPTER-INTERFACE]: Protocol and uniform adapter semantics
@@ -120,12 +117,10 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - Protocol: `src/prin/core.py`: `SourceAdapter` with `configure`, `walk_pattern`, `should_print`, `read_body_text`, `resolve`, `exists` (and `Entry`/`NodeKind` shapes).
 - Implementations: `src/prin/adapters/filesystem.py`, `src/prin/adapters/github.py`, `src/prin/adapters/website.py`.
 
-- Adapters implement a uniform interface:
-  - `configure(Context)` consumes CLI-derived config.
-  - `walk_pattern(pattern, root)` yields files matching pattern under the given root token.
-  - `should_print(entry)` applies exclusions/extensions/emptiness (`Entry.explicit` forces include).
-  - `read_body_text(entry)` returns (text, is_binary) for the printer.
-- `resolve`/`exists` keep lexical resolution rules; `is_empty` should adhere to shared definition (see Set 7).
+#### Contract
+- Adapters implement a uniform interface: `configure(Context)`, `walk_pattern`, `should_print`, `read_body_text`, `resolve`, `exists`; shared `Entry`/`NodeKind` shapes.
+- `configure(Context)` must consume the flag-derived fields defined in Set 1.
+- `resolve`/`exists` keep lexical resolution rules; `is_empty` adheres to Set 7.
 
 #### Triggers
 - Changing the protocol, method contracts, or `Entry`/`NodeKind` shapes; adding a new adapter.
@@ -139,7 +134,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - Adapter usage: filesystem and GitHub `is_empty` delegate to shared function; Website returns False at routing time and defers to shared logic post-fetch when applicable.
 
 #### Contract
-- A single definition of “semantically empty” (Python-aware today) governs all adapters. The `--include-empty` flag toggles printing of otherwise empty blobs.
+- A single definition of “semantically empty” governs all adapters; the `--include-empty` CLI flag toggles printing of otherwise empty blobs (flag mapping: Set 1).
 
 #### Triggers
 - Changing emptiness heuristics or language coverage.
@@ -168,9 +163,8 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Contract
 - Aliases must expand to semantically equivalent canonical flag sets. Keep alias table, parser declarations, and README consistent.
 
-#### Triggers
-- Adding/removing an alias; changing the flags an alias expands to.
-
+#### Contract
+- Aliases must expand to semantically equivalent canonical flag sets defined in Set 1; keep alias table, parser declarations, and README consistent.
  
 
 ## Set 12 [WEBSITE-LLMS-TXT-PARSING]: URL list parsing ↔ rendering
@@ -262,10 +256,11 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 ---
 
 ### Notes on interplay
-- Sets 4, 5, and 7 together govern filtering: category defaults, cross-source consistency, and semantic emptiness.
-- Set 1 and Set 10 together ensure CLI shape (flags, defaults, aliases) stays truthful, with Set 14 keeping README aligned.
-- Set 6 (protocol) and Set 13 (routing) ensure adapters are both selectable and interoperable once selected.
-- Set 9 (budget) must be honored by all traversal code paths, including explicit force-includes (Set 15) and website fetching (Set 12).
+- **Sets 1, 5, and 7** together govern filtering: flag/context/defaults & docs (Set 1), classifier and filter mechanics (Set 5), and semantic-emptiness toggling (Set 7).
+- **Set 1 and Set 10** together ensure the CLI shape (flags, defaults, aliases) stays truthful; formatter/output examples live in their domain sets (Set 2, Set 17/18).
+- **Set 6 (protocol)** and **Set 13 (routing)** ensure adapters are both selectable and interoperable once selected.
+- **Set 9 (budget)** must be honored by all traversal code paths, including explicit force-includes (Set 15) and website fetching (Set 12).
+
 
 -----------------------------------------
 
