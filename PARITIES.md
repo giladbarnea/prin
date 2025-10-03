@@ -40,28 +40,29 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 
 # Parity Sets
 
-## Set 1 [CLI-CTX-DEFAULTs-README]: CLI options ↔ Context fields ↔ Defaults ↔ README
+## Set 1 [FLAGS-CONTEXT-DEFAULTS-DOCS]: CLI flags ↔ Context fields ↔ Defaults ↔ Documentation & Fixtures
 
 #### Members
-- `README.md`: Options documented under "Options"/usage; pattern-then-paths syntax examples.
-- `src/prin/cli_common.py`: `parse_common_args(...)` flags and help; `Context` dataclass fields with `pattern` and `paths`; `_expand_cli_aliases`.
-- `src/prin/defaults.py`: `DEFAULT_*` used by CLI defaults and choices.
-- `src/prin/core.py`: `DepthFirstPrinter._set_from_context` minimal consumption for printing behavior.
-- `src/prin/adapters/*`: `SourceAdapter.configure(Context)` consumes CLI-derived configuration.
-- `src/prin/adapters/filesystem.py`: `FileSystemSource._walk_dfs` respects depth settings via `max_depth`, `min_depth`, `exact_depth` fields.
-- `tests/test_depth_controls.py`: Depth control feature tests.
+- `README.md`: CLI Options; Output Control; Sane Defaults for LLM Input
+- `src/prin/cli_common.py`: `parse_common_args(...)` (all flags), `_expand_cli_aliases`; `Context` dataclass (all flag-derived fields, incl. `pattern`, `paths`)
+- `src/prin/defaults.py`: CLI-related `DEFAULT_*` (choices/booleans/patterns; includes category sets such as exclusions, lock/dependency/docs/binary/test/script/stylesheets, hidden)
+- `src/prin/core.py`: `DepthFirstPrinter._set_from_context` (printing-related fields)
+- `src/prin/adapters/*`: `SourceAdapter.configure(Context)` consumes flag-derived config
+- `src/prin/adapters/filesystem.py`: depth handling in `FileSystemSource._walk_dfs`; category/ignore handling in `should_print(...)`
+- `tests/conftest.py`: `fs_root`/`VFS` fixtures with categorized file dicts (e.g., `dependency_spec_files`, `build_dependency_files`)
+- `tests/test_depth_controls.py`: depth controls behavior
+- `tests/test_dependency_flag.py`: `--no-dependencies` behavior
 
 #### Contract
-- CLI accepts: optional pattern (defaults to "") and zero or more paths (files or directories). If no paths are provided, cwd is used.
-- One-to-one mapping between CLI flags and `Context` fields, including default values from `defaults.py` and documented behavior in `README.md`.
-- If a flag affects traversal, filtering, or output, the adapter must consume it via `configure(Context)`; printer only consumes printing-related flags (e.g., `only_headers`, `tag`, `max_files`).
-- Depth controls (`--max-depth`, `--min-depth`, `--exact-depth`) are consumed by filesystem adapter; depth is counted from the search root (depth 1 = direct children).
-- `README.md` must document only implemented flags with correct semantics (no "planned" flags presented as implemented).
+- One-to-one mapping: each CLI flag maps to exactly one `Context` field and one default in `defaults.py`; `README.md` documents only implemented flags with current semantics.
+- Category toggles (e.g., hidden/lock/docs/binary/tests/dependencies/scripts/stylesheets) are backed by explicit `DEFAULT_*` entries in `defaults.py` and enforced by adapters via `configure(Context)` and `should_print(...)`. See: Set 5 for filter mechanics.
+- Depth controls (`--max-depth`, `--min-depth`, `--exact-depth`) are consumed by the filesystem adapter; depth is counted from the search root (depth 1 = direct children).
+- Aliases expand only to canonical flags defined here. See: Set 10.
 
 #### Triggers
 - Adding/removing/renaming a flag; changing a default; changing flag semantics.
+- Adding/removing a category or changing its inclusion/exclusion semantics.
 
- 
 
 ## Set 2 [FORMATTERS-CLI-TAG-OPTION]: Tag choices ↔ Formatter classes ↔ Defaults ↔ README examples
 #### Members
