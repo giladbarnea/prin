@@ -220,6 +220,7 @@ See [Development Cycle (Tight TDD Loop)](AGENTS.md) for more details.
 - [x] `--no-dependencies`: Exclude dependency specification files (e.g., package.json, pyproject.toml, requirements.txt, pom.xml, Cargo.toml).
 
 - [x] `-d`, `--no-docs`: Exclude documentation files (e.g., *.md, *.rst, *.txt).
+- [x] `--no-config`: Exclude configuration files (e.g., *.yaml, *.yml, *.toml, *.ini, *.cfg, *.conf, *.properties, *.env, *.editorconfig, *.config, *rc).
 - [x] `--no-scripts`: Exclude shell and automation scripts (e.g., *.sh, *.ps1, *.bat) and `scripts/` directories.
 - [x] `--no-style`, `--no-css`: Exclude stylesheet files (e.g., *.css, *.scss, *.sass, *.less, *.styl, *.stylus, *.pcss, *.postcss, *.sss).
 

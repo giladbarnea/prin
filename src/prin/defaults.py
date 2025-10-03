@@ -99,6 +99,21 @@ DEFAULT_STYLESHEET_EXTENSIONS: list[Glob] = [
 ]
 
 
+DEFAULT_CONFIG_EXTENSIONS: list[Glob] = [
+    Glob("*.yaml"),
+    Glob("*.yml"),
+    Glob("*.toml"),
+    Glob("*.ini"),
+    Glob("*.cfg"),
+    Glob("*.conf"),
+    Glob("*.properties"),
+    Glob("*.env"),
+    Glob("*.editorconfig"),
+    Glob("*.config"),
+    Glob("*rc"),  # Matches .bashrc, .vimrc, .zshrc, etc.
+]
+
+
 DEFAULT_SCRIPT_EXCLUSIONS: list[Pattern] = [
     re.compile(r"(^|/)scripts(/|$)"),
     # POSIX shells
@@ -273,6 +288,7 @@ DEFAULT_INCLUDE_LOCK = False
 DEFAULT_INCLUDE_DEPENDENCIES = True
 DEFAULT_INCLUDE_BINARY = False
 DEFAULT_NO_DOCS = False
+DEFAULT_NO_CONFIG = False
 DEFAULT_NO_STYLESHEETS = False
 DEFAULT_NO_SCRIPTS = False
 DEFAULT_INCLUDE_EMPTY = False
