@@ -26,10 +26,12 @@ from prin.defaults import (
     DEFAULT_MAX_DEPTH,
     DEFAULT_MIN_DEPTH,
     DEFAULT_NO_DOCS,
-    DEFAULT_NO_STYLESHEETS,
     DEFAULT_NO_EXCLUDE,
     DEFAULT_NO_IGNORE,
+    DEFAULT_NO_SCRIPTS,
+    DEFAULT_NO_STYLESHEETS,
     DEFAULT_ONLY_HEADERS,
+    DEFAULT_SCRIPT_EXCLUSIONS,
     DEFAULT_STYLESHEET_EXTENSIONS,
     DEFAULT_TAG,
     DEFAULT_TAG_CHOICES,
@@ -75,6 +77,7 @@ class Context:
     include_dependencies: bool = DEFAULT_INCLUDE_DEPENDENCIES
     include_binary: bool = DEFAULT_INCLUDE_BINARY
     no_docs: bool = DEFAULT_NO_DOCS
+    no_scripts: bool = DEFAULT_NO_SCRIPTS
     no_stylesheets: bool = DEFAULT_NO_STYLESHEETS
     include_empty: bool = DEFAULT_INCLUDE_EMPTY
     include_hidden: bool = DEFAULT_INCLUDE_HIDDEN
@@ -128,6 +131,9 @@ class Context:
 
         if self.no_docs:
             exclusions.extend(DEFAULT_DOC_EXTENSIONS)
+
+        if self.no_scripts:
+            exclusions.extend(DEFAULT_SCRIPT_EXCLUSIONS)
 
         if self.no_stylesheets:
             exclusions.extend(DEFAULT_STYLESHEET_EXTENSIONS)
@@ -241,6 +247,12 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         action="store_true",
         help=f"Exclude {', '.join(DEFAULT_DOC_EXTENSIONS)} files.",
         default=DEFAULT_NO_DOCS,
+    )
+    parser.add_argument(
+        "--no-scripts",
+        action="store_true",
+        help="Exclude shell and automation scripts (e.g. *.sh, *.ps1, *.bat) and scripts/ directories.",
+        default=DEFAULT_NO_SCRIPTS,
     )
     parser.add_argument(
         "--no-style",
@@ -365,6 +377,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         include_dependencies=bool(args.include_dependencies),
         include_binary=bool(args.include_binary),
         no_docs=bool(args.no_docs),
+        no_scripts=bool(args.no_scripts),
         no_stylesheets=bool(args.no_stylesheets),
         include_empty=bool(args.include_empty),
         only_headers=bool(args.only_headers),

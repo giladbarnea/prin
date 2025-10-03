@@ -36,6 +36,7 @@ class VFS(NamedTuple):
     build_dependency_files: dict[str, str]
     dependency_spec_files: dict[str, str]
     stylesheet_files: dict[str, str]
+    script_files: dict[str, str]
     artifact_files: dict[str, str]
     cache_files: dict[str, str]
     log_files: dict[str, str]
@@ -137,6 +138,12 @@ def fs_root() -> VFS:
         "assets/styles/postcss.postcss": ":root {\n  --font: 'Inter';\n}\n",
         "assets/styles/sugar.sss": ":root\n  color: #123\n",
     }
+    script_files: dict[str, str] = {
+        "scripts/deploy.sh": "#!/usr/bin/env bash\necho 'deploy'\n",
+        "scripts/setup.ps1": "Write-Host 'setup'\n",
+        "scripts/windows/install.bat": "@echo off\necho install\n",
+        "tools/run.nu": "echo 'nu script'\n",
+    }
     artifact_files: dict[str, str] = {
         "build/artifact.o": "OBJ\n",
         "dist/regular.js": "console.log('dist/regular.js');\n",  # Should be excluded because of the dist/ dir.
@@ -172,6 +179,7 @@ def fs_root() -> VFS:
         build_dependency_files,
         dependency_spec_files,
         stylesheet_files,
+        script_files,
         artifact_files,
         cache_files,
         log_files,
@@ -195,6 +203,7 @@ def fs_root() -> VFS:
         **build_dependency_files,
         **dependency_spec_files,
         **stylesheet_files,
+        **script_files,
         **artifact_files,
         **cache_files,
         **log_files,
@@ -249,6 +258,7 @@ def fs_root() -> VFS:
             build_dependency_files=build_dependency_files,
             dependency_spec_files=dependency_spec_files,
             stylesheet_files=stylesheet_files,
+            script_files=script_files,
             artifact_files=artifact_files,
             cache_files=cache_files,
             log_files=log_files,

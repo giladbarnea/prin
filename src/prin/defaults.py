@@ -99,6 +99,27 @@ DEFAULT_STYLESHEET_EXTENSIONS: list[Glob] = [
 ]
 
 
+DEFAULT_SCRIPT_EXCLUSIONS: list[Pattern] = [
+    re.compile(r"(^|/)scripts(/|$)"),
+    # POSIX shells
+    Glob("*.sh"),
+    Glob("*.bash"),
+    Glob("*.zsh"),
+    Glob("*.ksh"),
+    Glob("*.csh"),
+    Glob("*.tcsh"),
+    Glob("*.fish"),
+    # Windows automation
+    Glob("*.bat"),
+    Glob("*.cmd"),
+    Glob("*.ps1"),
+    Glob("*.psm1"),
+    Glob("*.psd1"),
+    # Modern cross-platform shells
+    Glob("*.nu"),
+]
+
+
 DEFAULT_TEST_EXCLUSIONS: list[Pattern] = [
     re.compile(r".*\.test(\..+)?"),
     re.compile(r"tests?/"),
@@ -253,6 +274,7 @@ DEFAULT_INCLUDE_DEPENDENCIES = True
 DEFAULT_INCLUDE_BINARY = False
 DEFAULT_NO_DOCS = False
 DEFAULT_NO_STYLESHEETS = False
+DEFAULT_NO_SCRIPTS = False
 DEFAULT_INCLUDE_EMPTY = False
 DEFAULT_ONLY_HEADERS = False
 DEFAULT_EXTENSIONS_FILTER = []
