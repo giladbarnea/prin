@@ -166,6 +166,7 @@ DEFAULT_DEPENDENCY_EXCLUSIONS: list[Pattern] = [
     re.compile(r"requirements\.txt"),
     re.compile(r"requirements-.*\.txt"),
     re.compile(r".*requirements\.txt"),
+    re.compile(r"setup\.py"),
     # Java
     re.compile(r"pom\.xml"),
     re.compile(r"build\.gradle"),
