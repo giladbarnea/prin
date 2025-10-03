@@ -98,6 +98,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Members
 - `src/prin/cli_common.py`: CLI flags, `Context` fields, CLI documentation in `parse_common_args`.
 - `src/prin/defaults.py`: patterns in `DEFAULT_EXCLUSIONS`, `DEFAULT_TEST_EXCLUSIONS`, `DEFAULT_LOCK_EXCLUSIONS`, `DEFAULT_DEPENDENCY_EXCLUSIONS`, `DEFAULT_BINARY_EXCLUSIONS`, `DEFAULT_DOC_EXTENSIONS`, `DEFAULT_STYLESHEET_EXTENSIONS`, `Hidden`; default CLI configuration by all the `DEFAULT_*` scalar constants.
+- `src/prin/defaults.py`: patterns in `DEFAULT_EXCLUSIONS`, `DEFAULT_TEST_EXCLUSIONS`, `DEFAULT_LOCK_EXCLUSIONS`, `DEFAULT_DEPENDENCY_EXCLUSIONS`, `DEFAULT_BINARY_EXCLUSIONS`, `DEFAULT_DOC_EXTENSIONS`, `DEFAULT_STYLESHEET_EXTENSIONS`, `DEFAULT_SCRIPT_EXCLUSIONS`, `Hidden`; default CLI configuration by all the `DEFAULT_*` scalar constants.
 - `README.md` sections: "Sane Defaults for LLM Input", "Output Control", CLI Options".
 - `tests/conftest.py`: `VFS` fixture with categorized file dictionaries including `dependency_spec_files` and `build_dependency_files`.
 - `tests/test_dependency_flag.py`: tests for `--no-dependencies` flag.
