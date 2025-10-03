@@ -45,17 +45,18 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Members
 - `README.md`: CLI Options; Output Control; Sane Defaults for LLM Input
 - `src/prin/cli_common.py`: `parse_common_args(...)` (all flags), `_expand_cli_aliases`; `Context` dataclass (all flag-derived fields, incl. `pattern`, `paths`)
-- `src/prin/defaults.py`: CLI-related `DEFAULT_*` (choices/booleans/patterns; includes category sets such as exclusions, lock/dependency/docs/binary/test/script/stylesheets, hidden)
+- `src/prin/defaults.py`: CLI-related `DEFAULT_*` (choices/booleans/patterns; includes category sets such as exclusions, lock/dependency/docs/config/binary/test/script/stylesheets, hidden)
 - `src/prin/core.py`: `DepthFirstPrinter._set_from_context` (printing-related fields)
 - `src/prin/adapters/*`: `SourceAdapter.configure(Context)` consumes flag-derived config
 - `src/prin/adapters/filesystem.py`: depth handling in `FileSystemSource._walk_dfs`; category/ignore handling in `should_print(...)`
-- `tests/conftest.py`: `fs_root`/`VFS` fixtures with categorized file dicts (e.g., `dependency_spec_files`, `build_dependency_files`)
+- `tests/conftest.py`: `fs_root`/`VFS` fixtures with categorized file dicts (e.g., `dependency_spec_files`, `build_dependency_files`, `config_files`)
 - `tests/test_depth_controls.py`: depth controls behavior
 - `tests/test_dependency_flag.py`: `--no-dependencies` behavior
+- `tests/test_config_flag.py`: `--no-config` behavior
 
 #### Contract
 - One-to-one mapping: each CLI flag maps to exactly one `Context` field and one default in `defaults.py`; `README.md` documents only implemented flags with current semantics.
-- Category toggles (e.g., hidden/lock/docs/binary/tests/dependencies/scripts/stylesheets) are backed by explicit `DEFAULT_*` entries in `defaults.py` and enforced by adapters via `configure(Context)` and `should_print(...)`. See: Set 5 for filter mechanics.
+- Category toggles (e.g., hidden/lock/docs/config/binary/tests/dependencies/scripts/stylesheets) are backed by explicit `DEFAULT_*` entries in `defaults.py` and enforced by adapters via `configure(Context)` and `should_print(...)`. See: Set 5 for filter mechanics.
 - Depth controls (`--max-depth`, `--min-depth`, `--exact-depth`) are consumed by the filesystem adapter; depth is counted from the search root (depth 1 = direct children).
 - Aliases expand only to canonical flags defined here. See: Set 10.
 

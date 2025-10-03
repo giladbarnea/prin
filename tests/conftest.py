@@ -37,6 +37,7 @@ class VFS(NamedTuple):
     dependency_spec_files: dict[str, str]
     stylesheet_files: dict[str, str]
     script_files: dict[str, str]
+    config_files: dict[str, str]
     artifact_files: dict[str, str]
     cache_files: dict[str, str]
     log_files: dict[str, str]
@@ -144,6 +145,18 @@ def fs_root() -> VFS:
         "scripts/windows/install.bat": "@echo off\necho install\n",
         "tools/run.nu": "echo 'nu script'\n",
     }
+    config_files: dict[str, str] = {
+        "config/settings.yaml": "database: postgres\nport: 5432\n",
+        "config/app.yml": "debug: true\nversion: 1.0.0\n",
+        "config/server.toml": "[server]\nhost = 'localhost'\nport = 8080\n",
+        "config/database.ini": "[database]\nuser = admin\npass = secret\n",
+        "config/app.cfg": "[general]\ntimeout = 30\n",
+        "config/nginx.conf": "server {\n  listen 80;\n}\n",
+        "config/app.properties": "app.name=MyApp\napp.version=1.0\n",
+        "config/envfile.env": "API_KEY=secret123\nDEBUG=true\n",
+        "config/deploy.config": "region=us-west-2\ninstance_type=t2.micro\n",
+        "config/bashrc": "export PATH=$PATH:/usr/local/bin\nalias ll='ls -la'\n",
+    }
     artifact_files: dict[str, str] = {
         "build/artifact.o": "OBJ\n",
         "dist/regular.js": "console.log('dist/regular.js');\n",  # Should be excluded because of the dist/ dir.
@@ -180,6 +193,7 @@ def fs_root() -> VFS:
         dependency_spec_files,
         stylesheet_files,
         script_files,
+        config_files,
         artifact_files,
         cache_files,
         log_files,
@@ -204,6 +218,7 @@ def fs_root() -> VFS:
         **dependency_spec_files,
         **stylesheet_files,
         **script_files,
+        **config_files,
         **artifact_files,
         **cache_files,
         **log_files,
@@ -259,6 +274,7 @@ def fs_root() -> VFS:
             dependency_spec_files=dependency_spec_files,
             stylesheet_files=stylesheet_files,
             script_files=script_files,
+            config_files=config_files,
             artifact_files=artifact_files,
             cache_files=cache_files,
             log_files=log_files,
