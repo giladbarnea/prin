@@ -114,6 +114,8 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 
 ## Set 6 [SOURCE-ADAPTER-INTERFACE]: Protocol and uniform adapter semantics
 
+**NOTE**: Website and GitHub adapters are PARKED and OUT OF DATE until Filesystem adapter reaches maturity.
+
 #### Members
 - Protocol: `src/prin/core.py`: `SourceAdapter` with `configure`, `walk_pattern`, `should_print`, `read_body_text`, `resolve`, `exists` (and `Entry`/`NodeKind` shapes).
 - Implementations: `src/prin/adapters/filesystem.py`, `src/prin/adapters/github.py`, `src/prin/adapters/website.py`.
