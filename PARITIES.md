@@ -147,16 +147,14 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Members
 - `src/prin/binary_detection.py`: `is_binary_file`, `_detect_file_fastsig`, `_is_binary_file_fallback`.
 - `src/prin/adapters/filesystem.py`: `read_body_text` uses `is_binary_file`.
-- `src/prin/core.py`: `_is_text_bytes`, `_decode_text` (legacy byte-based detection for non-filesystem adapters).
-- `src/prin/adapters/github.py`, `src/prin/adapters/website.py`: use `_is_text_bytes` for blob-based detection.
 
 #### Contract
 - Filesystem adapter uses path-based binary detection (`binary_detection.is_binary_file`) combining signature-based (fastsig) and content-based (fallback) approaches.
-- GitHub and Website adapters use legacy byte-based detection (`core._is_text_bytes`) since they operate on already-downloaded blobs.
 - Binary files return `(None, True)` from `read_body_text`; text files return `(decoded_text, False)`.
+- The two-stage detection: fast signature matching first, content analysis fallback for unknown formats.
 
 #### Triggers
-- Adding/modifying binary format signatures; changing content analysis heuristics; adapter refactoring.
+- Adding/modifying binary format signatures; changing content analysis heuristics.
 
  
 
