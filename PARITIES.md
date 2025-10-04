@@ -114,6 +114,8 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 
 ## Set 6 [SOURCE-ADAPTER-INTERFACE]: Protocol and uniform adapter semantics
 
+**NOTE**: Website and GitHub adapters are PARKED and OUT OF DATE until Filesystem adapter reaches maturity.
+
 #### Members
 - Protocol: `src/prin/core.py`: `SourceAdapter` with `configure`, `walk_pattern`, `should_print`, `read_body_text`, `resolve`, `exists` (and `Entry`/`NodeKind` shapes).
 - Implementations: `src/prin/adapters/filesystem.py`, `src/prin/adapters/github.py`, `src/prin/adapters/website.py`.
@@ -139,6 +141,22 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 
 #### Triggers
 - Changing emptiness heuristics or language coverage.
+
+ 
+
+## Set 8 [BINARY-FILE-DETECTION]: Automatic binary detection for filesystem
+
+#### Members
+- `src/prin/binary_detection.py`: `is_binary_file`, `_detect_file_fastsig`, `_is_binary_file_fallback`.
+- `src/prin/adapters/filesystem.py`: `read_body_text` uses `is_binary_file`.
+
+#### Contract
+- Filesystem adapter uses path-based binary detection (`binary_detection.is_binary_file`) combining signature-based (fastsig) and content-based (fallback) approaches.
+- Binary files return `(None, True)` from `read_body_text`; text files return `(decoded_text, False)`.
+- The two-stage detection: fast signature matching first, content analysis fallback for unknown formats.
+
+#### Triggers
+- Adding/modifying binary format signatures; changing content analysis heuristics.
 
  
 
@@ -257,7 +275,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 ---
 
 ### Notes on interplay
-- **Sets 1, 5, and 7** together govern filtering: flag/context/defaults & docs (Set 1), classifier and filter mechanics (Set 5), and semantic-emptiness toggling (Set 7).
+- **Sets 1, 5, 7, and 8** together govern filtering and content classification: flag/context/defaults & docs (Set 1), classifier and filter mechanics (Set 5), semantic-emptiness toggling (Set 7), and binary file detection (Set 8).
 - **Set 1 and Set 10** together ensure the CLI shape (flags, defaults, aliases) stays truthful; formatter/output examples live in their domain sets (Set 2, Set 17/18).
 - **Set 6 (protocol)** and **Set 13 (routing)** ensure adapters are both selectable and interoperable once selected.
 - **Set 9 (budget)** must be honored by all traversal code paths, including explicit force-includes (Set 15) and website fetching (Set 12).
