@@ -8,6 +8,7 @@ from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING, Iterable
 
 from prin import core
+from prin.binary_detection import is_binary_file
 from prin.core import Entry, NodeKind, SourceAdapter
 from prin.filters import GitIgnoreEngine, extension_match, is_excluded
 from prin.path_classifier import classify_pattern
@@ -366,8 +367,12 @@ class FileSystemSource(SourceAdapter):
 
     # Source-owned body reading and text/binary decision
     def read_body_text(self, entry: Entry) -> tuple[str | None, bool]:
+        # Use file path-based binary detection for filesystem
+        abs_path = self.resolve(entry.abs_path or entry.path)
+        if is_binary_file(str(abs_path)):
+            return None, True
+
+        # File is text - read and decode it
         blob = self.read_file_bytes(entry.abs_path or entry.path)
-        if core._is_text_bytes(blob):
-            text = core._decode_text(blob)
-            return text, False
-        return None, True
+        text = core._decode_text(blob)
+        return text, False

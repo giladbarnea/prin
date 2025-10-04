@@ -1,18 +1,21 @@
 # fastsig.py  (extended)
 from __future__ import annotations
+
+import mmap
+import pathlib
 from dataclasses import dataclass
-from typing import Optional, Iterable, Dict
-import mmap, os, importlib.util
+from typing import Dict, Iterable, Optional
 
 # Tunables
-HEAD_WINDOW = 4096                  # bytes from the start we always map/check
-ZIP_TAIL_WINDOW = 70 * 1024         # EOCD + max comment + slack
+HEAD_WINDOW = 4096  # bytes from the start we always map/check
+ZIP_TAIL_WINDOW = 70 * 1024  # EOCD + max comment + slack
 PDF_TAIL_WINDOW = 8 * 1024
-RAR_SFX_MAX = 1 * 1024 * 1024       # RAR SFX preface window
-HDF5_SCAN_LIMIT = 64 * 1024         # scan first 64 KiB for HDF5 at 512*N offsets
-ZIP_SUBTYPE_TAIL = 256 * 1024       # scan tail for central dir filenames
-ISO_PVD_OFFSET = 16 * 2048 + 1      # ECMA-119: "CD001" at sector 16, byte 1
-OLE_CFBF = b"\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1"
+RAR_SFX_MAX = 1 * 1024 * 1024  # RAR SFX preface window
+HDF5_SCAN_LIMIT = 64 * 1024  # scan first 64 KiB for HDF5 at 512*N offsets
+ZIP_SUBTYPE_TAIL = 256 * 1024  # scan tail for central dir filenames
+ISO_PVD_OFFSET = 16 * 2048 + 1  # ECMA-119: "CD001" at sector 16, byte 1
+OLE_CFBF = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
+
 
 @dataclass(frozen=True)
 class Match:
@@ -21,44 +24,57 @@ class Match:
     details: Optional[str] = None
     full: bool = True
 
+
 def _startswith(buf: memoryview, sig: bytes, offset: int = 0) -> bool:
-    if offset + len(sig) > len(buf): return False
-    return buf[offset:offset + len(sig)] == sig
+    if offset + len(sig) > len(buf):
+        return False
+    return buf[offset : offset + len(sig)] == sig
+
 
 def _equals(buf: memoryview, start: int, sig: bytes) -> bool:
     end = start + len(sig)
-    if end > len(buf): return False
+    if end > len(buf):
+        return False
     return buf[start:end] == sig
+
 
 def _find_within(buf: memoryview, sig: bytes, limit: int) -> int:
     return bytes(buf[:limit]).find(sig)
+
 
 def _rfind_within(buf: memoryview, sig: bytes, limit_from_end: int) -> int:
     tail = bytes(buf[-limit_from_end:]) if limit_from_end < len(buf) else bytes(buf)
     return tail.rfind(sig)
 
+
 def _riff_form(buf: memoryview, form: bytes) -> bool:
     # b"RIFF" + 4 size bytes + form (WAVE/AVI /WEBP)
     return _startswith(buf, b"RIFF", 0) and _startswith(buf, form, 8)
 
+
 def _u32_le(buf: memoryview, offset: int = 0) -> int:
-    if offset + 4 > len(buf): return -1
-    b0, b1, b2, b3 = buf[offset:offset+4]
+    if offset + 4 > len(buf):
+        return -1
+    b0, b1, b2, b3 = buf[offset : offset + 4]
     return b0 | (b1 << 8) | (b2 << 16) | (b3 << 24)
+
 
 def _test_pe(buf: memoryview) -> bool:
     # DOS MZ + e_lfanew -> "PE\0\0"
-    if not _startswith(buf, b"MZ", 0) or len(buf) < 0x40: return False
+    if not _startswith(buf, b"MZ", 0) or len(buf) < 0x40:
+        return False
     peoff = _u32_le(buf, 0x3C)
-    if peoff < 0 or peoff + 4 > len(buf): return False
+    if peoff < 0 or peoff + 4 > len(buf):
+        return False
     return _startswith(buf, b"PE\x00\x00", peoff)
+
 
 def detect_file(path: str) -> Optional[Match]:
     try:
-        size = os.path.getsize(path)
+        size = pathlib.Path(path).stat().st_size
         if size == 0:
             return None
-        with open(path, 'rb') as f, mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as mm:
+        with open(path, "rb") as f, mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as mm:
             mv = memoryview(mm)
 
             head_len = min(HEAD_WINDOW, len(mv))
@@ -69,7 +85,14 @@ def detect_file(path: str) -> Optional[Match]:
                 return Match("elf", 0.99, "ELF @0", True)
 
             # Mach-O (incl. fat)
-            if head_len >= 4 and _u32_le(head, 0) in (0xFEEDFACE,0xFEEDFACF,0xCEFAEDFE,0xCFFAEDFE,0xCAFEBABE,0xBEBAFECA):
+            if head_len >= 4 and _u32_le(head, 0) in (
+                0xFEEDFACE,
+                0xFEEDFACF,
+                0xCEFAEDFE,
+                0xCFFAEDFE,
+                0xCAFEBABE,
+                0xBEBAFECA,
+            ):
                 return Match("macho", 0.95, "Mach-O/FAT @0", False)
 
             # PE/COFF (Windows EXE/DLL/SYS/PYD etc.)
@@ -81,7 +104,7 @@ def detect_file(path: str) -> Optional[Match]:
                 return Match("wasm", 0.99, "WASM magic", True)
 
             # Java class
-            if _startswith(head, b"\xCA\xFE\xBA\xBE"):
+            if _startswith(head, b"\xca\xfe\xba\xbe"):
                 return Match("java-class", 0.99, "CAFEBABE", True)
 
             # Erlang BEAM (FOR1 ... BEAM)
@@ -95,11 +118,17 @@ def detect_file(path: str) -> Optional[Match]:
             # ===== 2) Archives / packages / disk images =====
             # ZIP via EOCD or Zip64 locator near end
             tail_scan = min(ZIP_TAIL_WINDOW, len(mv))
-            if _rfind_within(mv, b"PK\x05\x06", tail_scan) != -1 or _rfind_within(mv, b"PK\x06\x06", tail_scan) != -1:
+            if (
+                _rfind_within(mv, b"PK\x05\x06", tail_scan) != -1
+                or _rfind_within(mv, b"PK\x06\x06", tail_scan) != -1
+            ):
                 # Subtype hints by scanning tail for central directory filenames (no decompression)
                 sub_tail = min(ZIP_SUBTYPE_TAIL, len(mv))
                 tbytes = bytes(mv[-sub_tail:]) if sub_tail < len(mv) else bytes(mv)
-                def has(name: bytes) -> bool: return tbytes.find(name) != -1
+
+                def has(name: bytes) -> bool:
+                    return tbytes.find(name) != -1
+
                 if has(b"AndroidManifest.xml"):
                     return Match("apk", 0.98, "zip + AndroidManifest.xml", True)
                 if has(b"Payload/"):
@@ -115,35 +144,38 @@ def detect_file(path: str) -> Optional[Match]:
                 return Match("zip", 0.95, "EOCD near end", True)
 
             # 7z / gzip / xz / zstd / bzip2 / lzip / lz4
-            if _startswith(head, b"\x37\x7A\xBC\xAF\x27\x1C"):
+            if _startswith(head, b"\x37\x7a\xbc\xaf\x27\x1c"):
                 return Match("7z", 0.99, "7z header", True)
-            if _startswith(head, b"\x1F\x8B"):
+            if _startswith(head, b"\x1f\x8b"):
                 return Match("gzip", 0.99, "gzip header", True)
-            if _startswith(head, b"\xFD7zXZ\x00"):
+            if _startswith(head, b"\xfd7zXZ\x00"):
                 return Match("xz", 0.99, "xz header", True)
-            if _startswith(head, b"\x28\xB5\x2F\xFD"):
+            if _startswith(head, b"\x28\xb5\x2f\xfd"):
                 return Match("zstd", 0.99, "zstd header", True)
             if _startswith(head, b"BZh"):
                 return Match("bzip2", 0.99, "BZh", True)
             if _startswith(head, b"LZIP"):
                 return Match("lzip", 0.99, "LZIP", True)
-            if _startswith(head, b"\x04\x22\x4D\x18"):  # LZ4 Frame
+            if _startswith(head, b"\x04\x22\x4d\x18"):  # LZ4 Frame
                 return Match("lz4", 0.99, "LZ4 frame", True)
 
             # RAR4/5 (allow SFX up to 1 MiB)
             head_scan = min(RAR_SFX_MAX, len(mv))
-            if _find_within(mv, b"Rar!\x1A\x07\x00", head_scan) != -1 or _find_within(mv, b"Rar!\x1A\x07\x01\x00", head_scan) != -1:
+            if (
+                _find_within(mv, b"Rar!\x1a\x07\x00", head_scan) != -1
+                or _find_within(mv, b"Rar!\x1a\x07\x01\x00", head_scan) != -1
+            ):
                 return Match("rar", 0.95, "RAR signature within SFX window", True)
 
             # ar archive (used by .a static libs and .deb)
             if _startswith(head, b"!<arch>\n"):
-                probe = bytes(mv[:min(8192, len(mv))])
+                probe = bytes(mv[: min(8192, len(mv))])
                 if b"debian-binary" in probe:
                     return Match("deb", 0.95, "ar + debian-binary", True)
                 return Match("ar", 0.9, "Unix ar", False)
 
             # RPM
-            if _startswith(head, b"\xED\xAB\xEE\xDB"):
+            if _startswith(head, b"\xed\xab\xee\xdb"):
                 return Match("rpm", 0.99, "RPM magic", True)
 
             # CAB
@@ -151,7 +183,10 @@ def detect_file(path: str) -> Optional[Match]:
                 return Match("cab", 0.99, "MSCF", True)
 
             # ISO-9660: "CD001" at sector 16 (and usually again at sector 17)
-            if len(mv) > ISO_PVD_OFFSET + 4 and mv[ISO_PVD_OFFSET:ISO_PVD_OFFSET+5].tobytes() == b"CD001":
+            if (
+                len(mv) > ISO_PVD_OFFSET + 4
+                and mv[ISO_PVD_OFFSET : ISO_PVD_OFFSET + 5].tobytes() == b"CD001"
+            ):
                 return Match("iso9660", 0.98, "CD001 @ sector 16", True)
 
             # DMG (UDIF): 'koly' trailer 512 bytes from EOF (allow a small tail search)
@@ -166,7 +201,7 @@ def detect_file(path: str) -> Optional[Match]:
             # ===== 3) Images / design =====
             if _startswith(head, b"\x89PNG\r\n\x1a\n"):
                 return Match("png", 0.99, "PNG", True)
-            if _startswith(head, b"\xFF\xD8\xFF"):  # JPEG SOI
+            if _startswith(head, b"\xff\xd8\xff"):  # JPEG SOI
                 # light sanity: common JFIF/EXIF tags near start
                 if _find_within(mv, b"JFIF", 64) != -1 or _find_within(mv, b"Exif", 64) != -1:
                     return Match("jpeg", 0.95, "SOI + JFIF/EXIF", True)
@@ -210,7 +245,7 @@ def detect_file(path: str) -> Optional[Match]:
             lim = min(HDF5_SCAN_LIMIT, len(mv))
             off = 0
             while off + 8 <= lim:
-                if mv[off:off+8].tobytes() == HDF5_SIG:
+                if mv[off : off + 8].tobytes() == HDF5_SIG:
                     return Match("hdf5", 0.98, f"HDF5 sig @ {off}", True)
                 off += 512
             # Parquet: PAR1 at start and end
@@ -244,8 +279,8 @@ def detect_file(path: str) -> Optional[Match]:
                 return Match("mp4-family", 0.98, "ISO BMFF (ftyp)", True)
 
             # Matroska/WebM: EBML header 1A 45 DF A3; look for docType strings near head
-            if _startswith(head, b"\x1A\x45\xDF\xA3"):
-                probe = bytes(mv[:min(4096, len(mv))])
+            if _startswith(head, b"\x1a\x45\xdf\xa3"):
+                probe = bytes(mv[: min(4096, len(mv))])
                 if b"webm" in probe:
                     return Match("webm", 0.98, "EBML + DocType=webm", True)
                 if b"matroska" in probe:
@@ -284,6 +319,7 @@ def detect_file(path: str) -> Optional[Match]:
             return None
     except (OSError, ValueError):
         return None
+
 
 def detect_many(paths: Iterable[str]) -> Dict[str, Optional[Match]]:
     return {p: detect_file(p) for p in paths}

@@ -26,7 +26,7 @@ Guiding principle: maximize filesystem feature breadth and polish before investi
   * .rlib - Rust library
   * .a - Static library
   * .otc, .ttc, .pfb, .pfm - Additional font files (.otf, .ttf, .woff, .woff2, .eot already handled)
-- Detect binary files dynamically like `fd` does.
+- ~~Detect binary files dynamically like `fd` does.~~ ✅ **DONE** - Implemented automatic binary file detection combining signature-based (fastsig) and content-based (fallback) approaches for filesystem adapter.
 - `--no-web` (`html*`, stylesheets, `*js*`, `ts*`, etc.)  // This would be the first flag overlapping another flag (e.g., `--no-style`). I don't know if this hurts product precision.
 
 ## P1 — Filesystem features breadth (core)
