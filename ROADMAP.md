@@ -9,25 +9,6 @@ authority rank: Has high authority over immediate plans as well as future plans.
 
 Guiding principle: maximize filesystem feature breadth and polish before investing in network adapters (GitHub/Website). SPEC.md governs existing behavior; this doc captures plans and priorities.
 
-## P0 — Critical UX and bugs
-
-### Features
-- Ignore (binary formats):
-  * .webp, .tif, .tiff - Additional image formats
-  * .tgz - Compressed archive
-  * .ogg, .webm, .flv - Additional media formats
-  * .m4a, .aac, .flac - Audio formats
-  * .mkv, .wmv, .m4v - Video formats
-  * .eps, .ai, .psd - Design/graphics files
-  * .sketch - Sketch design files
-  * .fig - Figma files (though these are usually cloud-based)
-  * .cab, .iso - Package/disk image formats (.deb and .rpm already handled)
-  * .beam - Erlang/Elixir bytecode
-  * .rlib - Rust library
-  * .a - Static library
-  * .otc, .ttc, .pfb, .pfm - Additional font files (.otf, .ttf, .woff, .woff2, .eot already handled)
-- ~~Detect binary files dynamically like `fd` does.~~ ✅ **DONE** - Implemented automatic binary file detection combining signature-based (fastsig) and content-based (fallback) approaches for filesystem adapter.
-- `--no-web` (`html*`, stylesheets, `*js*`, `ts*`, etc.)  // This would be the first flag overlapping another flag (e.g., `--no-style`). I don't know if this hurts product precision.
 
 ## P1 — Filesystem features breadth (core)
 
