@@ -197,6 +197,7 @@ DEFAULT_DEPENDENCY_EXCLUSIONS: list[Pattern] = [
 
 
 DEFAULT_BINARY_EXCLUSIONS: list[Pattern] = [
+    #  Performance tip : If you process millions of files, separate directory walk (single thread with os.scandir) from I/O detection (thread pool) to reduce lock contention on the GIL.
     # Binary files
     Glob("*.pyc"),
     Glob("*.pyo"),
