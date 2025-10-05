@@ -49,10 +49,6 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 - `src/prin/core.py`: `DepthFirstPrinter._set_from_context` (printing-related fields)
 - `src/prin/adapters/*`: `SourceAdapter.configure(Context)` consumes flag-derived config
 - `src/prin/adapters/filesystem.py`: depth handling in `FileSystemSource._walk_dfs`; category/ignore handling in `should_print(...)`
-- `tests/conftest.py`: `fs_root`/`VFS` fixtures with categorized file dicts (e.g., `dependency_spec_files`, `build_dependency_files`, `config_files`)
-- `tests/test_depth_controls.py`: depth controls behavior
-- `tests/test_dependency_flag.py`: `--no-dependencies` behavior
-- `tests/test_config_flag.py`: `--no-config` behavior
 
 #### Contract
 - One-to-one mapping: each CLI flag maps to exactly one `Context` field and one default in `defaults.py`; `README.md` documents only implemented flags with current semantics.

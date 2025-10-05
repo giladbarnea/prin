@@ -89,6 +89,8 @@ Run the dedicated script:
 - NEVER use Pytest's `tmp_path` fixture. Use the custom `prin_tmp_path` instead.
 - Type annotation and mypy linter errors are not important unless they point out a real problem. Do not modify type annotations just to make the linter happy.
 
+- Do not write tests. Verify changes with short ad hoc scripts and delete them after use.
+
 ---
 
 ## Important: Development Cycle
