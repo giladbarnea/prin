@@ -85,11 +85,37 @@ The filesystem adapter is feature-complete with:
 
 **GitHub:** Needs `max_depth`, `min_depth`, `exact_depth` in `configure()` and `_walk_dfs()`
 
-**Website:** N/A (URLs are flat), but should gracefully ignore these options
+**Website:** N/A (URLs are flat), but should gracefully ignore these option​s
+
+**User comment**: CORRECTION: Websites often have multiple pages organized in a tree structure. For example, the base URL `https://ai.pydantic.dev/` has many sub-URLs, including `ai.pydantic.dev/agents/index.html`, `ai.pydantic.dev/common-tools/index.html`, `ai.pydantic.dev/models/anthropic/index.html`, etc.  Given a website url and given that url has an accessible `/llms.txt`, `prin` should use the information it contains to map out the site tree and treat it as a tree for all intents and purposes.
 
 **Question:** For GitHub, when user specifies `github.com/owner/repo/src`:
+
 - Is `src/` considered depth 0 (root) or depth 1?
 - Should `--max-depth 1` show only files directly in `src/`, or one level deeper?
+
+**Answer:**
+
+Depth handling is consistent across adapters and matches fd. Depth starts at 1 at the search root: items directly inside the root are depth 1.
+
+Examples:
+- `prin --exact-depth=1 . mydir` lists only the files directly in `mydir/`. (If you omit `mydir`, it lists files directly in `$PWD`.)
+- `prin --max-depth=1 . mydir` also lists only the files directly in `mydir/`.
+- `prin --exact-depth=1 . mydir/subdir` lists only the files directly in `mydir/subdir/`.
+- `prin --exact-depth=2 . mydir` lists only the files exactly one level below `mydir/` (e.g., files in `mydir/subdir/` and other immediate child directories).
+
+The same applies to other depth options:
+- `prin --min-depth=1 . mydir` lists files in `mydir/` and deeper. This is the default, so `--min-depth=1` is redundant.
+- `prin --min-depth=2 . mydir` lists files one level below mydir and deeper (e.g., files in `mydir/subdir/` and beyond).
+
+This matches the current filesystem adapter behavior. No changes to depth logic are needed.
+
+Direct answers about running `prin` with `github.com/owner/repo/src`:
+- The specified directory is depth 1. Therefore, in this case, `src/` is depth 1. If `github.com/owner/repo/src/foo` was specified, than `src/foo/` was depth 1.
+- `prin . github.com/owner/repo/src --max-depth 1` prints only the files directly in `src/`, not deeper.
+
+Mental model: The GitHub adapter should behave as if you cloned the repo (`git clone owner/repo`), cd’d into its root (`cd repo`), and ran prin with `github.com/owner/repo` stripped from the path: `prin . src --max-depth 1`
+
 
 #### 1.2 Category Filtering Integration
 
@@ -101,10 +127,23 @@ Both adapters have `configure()` but don't consume category flags from `Context`
 - File extension/name patterns only? 
 - Directory names (e.g., `tests/`, `scripts/`) as well?
 
+**Answer**: For GitHub, apply the same category filtering as in the file system. The only quirk is that remote repositories, by definition, don’t have .gitignore'd files. Therefore, honoring .gitignore on GitHub should be hard-coded off.
+
 **Question:** For Website, should we:
 - Apply extension-based filters only?
 - Skip directory-based rules entirely?
 - Parse URL paths for directory patterns?
+
+**Answer**: 
+We're statying consistent with my depiction of a website as a tree of pages, but there is a nuance: since a filter category may consist of directorypath-based patterns and file/extension-based patterns, the Website adapter uniquely only uses the file/extension-based patterns of each category, not the directorypath patterns.
+- `no_docs`: entirely unsupported. scraping documentation websites is a common use case.
+- `no_config`: 100% supported because all its patterns are extension-based.
+- `no_scripts`: only extension patterns are respected. This is to exclude `www.example.com/foo/bar.sh` but include `www.example.com/scripts/bar.html`
+- `no_stylesheets`: 100% supported because all its patterns are extension-based.
+- `include_tests`: entirely unsupported.
+- `include_lock`: entirely unsupported
+- `include_dependencies`: entirely unsupported
+- `include_hidden`: entirely unsupported
 
 #### 1.3 Binary Detection Upgrade
 
@@ -112,11 +151,15 @@ Both adapters have `configure()` but don't consume category flags from `Context`
 - Website: Same - detect after download
 
 **Challenge:** GitHub API provides `encoding` field - should we trust it or verify ourselves?
+**Answer**: Trust it.
 
 **Question:** Should we:
 - Use filesystem's `binary_detection.is_binary_file()` on fetched bytes?
 - Trust remote hints (GitHub `encoding`, website `Content-Type`)?
 - Skip binary detection for websites (assume all text)?
+**Answer:** we should use filesystem's `binary_detection.is_binary_file()` on fetched bytes, only if they “survive” the first layer of checking GitHub `encoding` website `Content-Type` (which we trust). We aren't skipping binary detection for websites. 
+Currently, binary detection is performed by first trying a fast signature-based check, then a generic and thorough content (bytes) check (termed ‘fallback’ in `binary_detection.py`.) GitHub will check `encoding` before the signature-based check, and website will check `Content-Type` before signature-based. This is a nice optimization because it will be done **before** the file is downloaded or read. Only if `encoding` or `Content-Type` passes, should `prin` download the bytes and perform a fast sig -> fallback logic.
+
 
 ### Priority 2: Display Path Semantics
 
@@ -138,6 +181,8 @@ prin "*.py" github.com/torvalds/linux/drivers
 # Option B: net/ethernet/... (relative to drivers/)
 # Option C: github.com/torvalds/linux/drivers/net/ethernet/...
 ```
+
+**Answer:** Neither. GitHub display paths are always "absolute". So the display paths for `prin "*.py" github.com/torvalds/linux/drivers` should be e.g. `torvalds/linux/drivers/net/ethernet/...`. This is a diversion from file system which, if `linux/drivers` is specified, prints everything with `linux/drivers` as displayed root, 
 
 #### 2.2 Website Display Paths
 
