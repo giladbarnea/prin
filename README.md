@@ -157,44 +157,21 @@ In both cases, the `prin` executable should be available in your shell.
 
 ### Development
 - Install `uv` if needed: `curl -LsSf https://astral.sh/uv/install.sh | sh`
-- Test: `./test.sh` [pytest options...]
 - Lint and format: `./lint.sh` and `./format.sh`.
 - To add or remove a dependency, use `uv add` or `uv remove`.
 
-##### Testing adapter-specific suites
-
-You can focus or skip tests for specific adapters via pytest flags:
-
-```sh
-# Run only website adapter tests
-./test.sh --website
-
-# Run only GitHub repo adapter tests
-./test.sh --repo
-
-# Skip website adapter tests
-./test.sh --no-website
-
-# Skip GitHub repo adapter tests
-./test.sh --no-repo
-
-# Combine with network control
-./test.sh --website --no-network
-```
+> Note: We do not maintain automated tests. Verify changes using short ad hoc scripts during development and delete them afterward.
 
 #### Task Completion Checklist (create internal todo list)
 
 1. **Prep** (before any code)
 - [ ] Read AGENTS.md, PARITIES.md, and SPEC.md.
 - [ ] Recognize sets in PARITIES.md relevant to your plan.
-- [ ] Run ./test.sh.
-- [ ] Write TDD tests.
 
 2. **The loop**
-- [ ] Iterate until tests pass
+- [ ] Iterate until the change behaves as intended
 
 3. **After the loop**
-- [ ] Run ./test.sh.
 - [ ] Update PARITIES.md as instructed in [Important: Working Against and Updating PARITIES.md](AGENTS.md) and in [Maintaining PARITIES.md](PARITIES.md).
 - [ ] Review root-level `*.md` files for discrepancies across README.md, SPEC.md, AGENTS.md, PARITIES.md, and ROADMAP.md.
 - [ ] Run `uv run src/internal/parities_check.py`.
