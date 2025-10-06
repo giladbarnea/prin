@@ -1,0 +1,4679 @@
+complexity:
+  functions:
+    - name: Context.__post_init__
+      filepath: src/prin/cli_common.py
+      metrics:
+        complexity: 11
+        nodes: 21
+        edges: 32
+        ifstatements: 10
+        loopstatements: 0
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: medium
+    - name: DepthFirstPrinter._handle_file
+      filepath: src/prin/core.py
+      metrics:
+        complexity: 6
+        nodes: 13
+        edges: 19
+        ifstatements: 5
+        loopstatements: 0
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: low
+    - name: FileSystemSource._walk_dfs
+      filepath: src/prin/adapters/filesystem.py
+      metrics:
+        complexity: 18
+        nodes: 46
+        edges: 64
+        ifstatements: 13
+        loopstatements: 4
+        exceptionhandlers: 4
+        switchcases: 0
+      risklevel: medium
+    - name: FileSystemSource.list_dir
+      filepath: src/prin/adapters/filesystem.py
+      metrics:
+        complexity: 5
+        nodes: 13
+        edges: 18
+        ifstatements: 3
+        loopstatements: 1
+        exceptionhandlers: 1
+        switchcases: 0
+      risklevel: low
+    - name: FileSystemSource.should_print
+      filepath: src/prin/adapters/filesystem.py
+      metrics:
+        complexity: 10
+        nodes: 21
+        edges: 31
+        ifstatements: 8
+        loopstatements: 1
+        exceptionhandlers: 1
+        switchcases: 0
+      risklevel: medium
+    - name: FileSystemSource.walk_pattern
+      filepath: src/prin/adapters/filesystem.py
+      metrics:
+        complexity: 14
+        nodes: 35
+        edges: 49
+        ifstatements: 12
+        loopstatements: 2
+        exceptionhandlers: 1
+        switchcases: 0
+      risklevel: medium
+    - name: GitHubRepoSource._walk_dfs
+      filepath: src/prin/adapters/github.py
+      metrics:
+        complexity: 9
+        nodes: 21
+        edges: 30
+        ifstatements: 6
+        loopstatements: 4
+        exceptionhandlers: 2
+        switchcases: 0
+      risklevel: low
+    - name: GitHubRepoSource.list_dir
+      filepath: src/prin/adapters/github.py
+      metrics:
+        complexity: 19
+        nodes: 32
+        edges: 46
+        ifstatements: 11
+        loopstatements: 2
+        exceptionhandlers: 7
+        switchcases: 0
+      risklevel: medium
+    - name: GitHubRepoSource.read_file_bytes
+      filepath: src/prin/adapters/github.py
+      metrics:
+        complexity: 9
+        nodes: 20
+        edges: 29
+        ifstatements: 6
+        loopstatements: 0
+        exceptionhandlers: 2
+        switchcases: 0
+      risklevel: low
+    - name: GitHubRepoSource.walk_pattern
+      filepath: src/prin/adapters/github.py
+      metrics:
+        complexity: 9
+        nodes: 23
+        edges: 32
+        ifstatements: 6
+        loopstatements: 2
+        exceptionhandlers: 2
+        switchcases: 0
+      risklevel: low
+    - name: GitIgnoreEngine._load_dir_spec
+      filepath: src/prin/filters.py
+      metrics:
+        complexity: 5
+        nodes: 11
+        edges: 16
+        ifstatements: 3
+        loopstatements: 0
+        exceptionhandlers: 1
+        switchcases: 0
+      risklevel: low
+    - name: GitIgnoreEngine._prefixed_lines
+      filepath: src/prin/filters.py
+      metrics:
+        complexity: 5
+        nodes: 10
+        edges: 15
+        ifstatements: 4
+        loopstatements: 1
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: low
+    - name: SetBlock._extract_cli_flags_from_lines
+      filepath: src/internal/parities_check.py
+      metrics:
+        complexity: 6
+        nodes: 15
+        edges: 21
+        ifstatements: 5
+        loopstatements: 4
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: low
+    - name: SetBlock.file_paths_all_sections
+      filepath: src/internal/parities_check.py
+      metrics:
+        complexity: 7
+        nodes: 18
+        edges: 25
+        ifstatements: 6
+        loopstatements: 4
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: low
+    - name: SetBlock.member_paths
+      filepath: src/internal/parities_check.py
+      metrics:
+        complexity: 8
+        nodes: 17
+        edges: 25
+        ifstatements: 7
+        loopstatements: 2
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: low
+    - name: SetBlock.pytest_specs_all_sections
+      filepath: src/internal/parities_check.py
+      metrics:
+        complexity: 7
+        nodes: 17
+        edges: 24
+        ifstatements: 6
+        loopstatements: 4
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: low
+    - name: SetBlock.test_specs
+      filepath: src/internal/parities_check.py
+      metrics:
+        complexity: 6
+        nodes: 13
+        edges: 19
+        ifstatements: 5
+        loopstatements: 2
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: low
+    - name: WebsiteSource._ensure_ctx
+      filepath: src/prin/adapters/website.py
+      metrics:
+        complexity: 9
+        nodes: 17
+        edges: 25
+        ifstatements: 7
+        loopstatements: 2
+        exceptionhandlers: 1
+        switchcases: 0
+      risklevel: low
+    - name: WebsiteSource.walk_pattern
+      filepath: src/prin/adapters/website.py
+      metrics:
+        complexity: 7
+        nodes: 17
+        edges: 24
+        ifstatements: 5
+        loopstatements: 2
+        exceptionhandlers: 1
+        switchcases: 0
+      risklevel: low
+    - name: _chunk_is_text
+      filepath: src/prin/binary_detection.py
+      metrics:
+        complexity: 6
+        nodes: 11
+        edges: 17
+        ifstatements: 5
+        loopstatements: 0
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: low
+    - name: _detect_file_fastsig
+      filepath: src/prin/binary_detection.py
+      metrics:
+        complexity: 73
+        nodes: 151
+        edges: 224
+        ifstatements: 69
+        loopstatements: 1
+        exceptionhandlers: 3
+        switchcases: 0
+      risklevel: high
+    - name: _get
+      filepath: src/prin/adapters/website.py
+      metrics:
+        complexity: 15
+        nodes: 47
+        edges: 62
+        ifstatements: 4
+        loopstatements: 0
+        exceptionhandlers: 10
+        switchcases: 0
+      risklevel: medium
+    - name: _get
+      filepath: src/prin/adapters/github.py
+      metrics:
+        complexity: 20
+        nodes: 56
+        edges: 75
+        ifstatements: 8
+        loopstatements: 1
+        exceptionhandlers: 11
+        switchcases: 0
+      risklevel: high
+    - name: _is_binary_file_fallback
+      filepath: src/prin/binary_detection.py
+      metrics:
+        complexity: 6
+        nodes: 14
+        edges: 20
+        ifstatements: 3
+        loopstatements: 0
+        exceptionhandlers: 2
+        switchcases: 0
+      risklevel: low
+    - name: _is_file_like_token
+      filepath: src/internal/parities_check.py
+      metrics:
+        complexity: 6
+        nodes: 11
+        edges: 17
+        ifstatements: 5
+        loopstatements: 0
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: low
+    - name: _is_text_semantically_empty
+      filepath: src/prin/core.py
+      metrics:
+        complexity: 6
+        nodes: 13
+        edges: 19
+        ifstatements: 4
+        loopstatements: 0
+        exceptionhandlers: 1
+        switchcases: 0
+      risklevel: low
+    - name: _looks_like_utf32
+      filepath: src/prin/binary_detection.py
+      metrics:
+        complexity: 5
+        nodes: 15
+        edges: 20
+        ifstatements: 4
+        loopstatements: 2
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: low
+    - name: _normalize_extension_to_glob
+      filepath: src/prin/cli_common.py
+      metrics:
+        complexity: 5
+        nodes: 7
+        edges: 11
+        ifstatements: 3
+        loopstatements: 0
+        exceptionhandlers: 1
+        switchcases: 0
+      risklevel: low
+    - name: _parse_llms_txt
+      filepath: src/prin/adapters/website.py
+      metrics:
+        complexity: 8
+        nodes: 17
+        edges: 25
+        ifstatements: 7
+        loopstatements: 2
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: low
+    - name: _parse_rate_limit_wait_seconds
+      filepath: src/prin/adapters/github.py
+      metrics:
+        complexity: 5
+        nodes: 13
+        edges: 18
+        ifstatements: 2
+        loopstatements: 0
+        exceptionhandlers: 2
+        switchcases: 0
+      risklevel: low
+    - name: canonical_key
+      filepath: src/internal/map_crawl.py
+      metrics:
+        complexity: 6
+        nodes: 12
+        edges: 18
+        ifstatements: 4
+        loopstatements: 0
+        exceptionhandlers: 1
+        switchcases: 0
+      risklevel: low
+    - name: clean_mapping_assets
+      filepath: src/internal/map_crawl.py
+      metrics:
+        complexity: 7
+        nodes: 17
+        edges: 24
+        ifstatements: 6
+        loopstatements: 3
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: low
+    - name: crawl
+      filepath: src/internal/map_crawl.py
+      metrics:
+        complexity: 20
+        nodes: 47
+        edges: 67
+        ifstatements: 19
+        loopstatements: 6
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: high
+    - name: extension_match
+      filepath: src/prin/filters.py
+      metrics:
+        complexity: 6
+        nodes: 13
+        edges: 19
+        ifstatements: 5
+        loopstatements: 1
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: low
+    - name: extract_ast_tokens_from_members
+      filepath: src/internal/parities_check.py
+      metrics:
+        complexity: 6
+        nodes: 13
+        edges: 19
+        ifstatements: 5
+        loopstatements: 2
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: low
+    - name: extract_constant_tokens_from_members
+      filepath: src/internal/parities_check.py
+      metrics:
+        complexity: 7
+        nodes: 16
+        edges: 23
+        ifstatements: 6
+        loopstatements: 3
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: low
+    - name: extract_links
+      filepath: src/internal/map_crawl.py
+      metrics:
+        complexity: 7
+        nodes: 15
+        edges: 22
+        ifstatements: 6
+        loopstatements: 2
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: low
+    - name: fetch_html
+      filepath: src/internal/map_crawl.py
+      metrics:
+        complexity: 5
+        nodes: 10
+        edges: 15
+        ifstatements: 3
+        loopstatements: 0
+        exceptionhandlers: 1
+        switchcases: 0
+      risklevel: low
+    - name: is_excluded
+      filepath: src/prin/filters.py
+      metrics:
+        complexity: 6
+        nodes: 13
+        edges: 19
+        ifstatements: 4
+        loopstatements: 1
+        exceptionhandlers: 1
+        switchcases: 0
+      risklevel: low
+    - name: is_extension
+      filepath: src/prin/path_classifier.py
+      metrics:
+        complexity: 5
+        nodes: 9
+        edges: 13
+        ifstatements: 2
+        loopstatements: 0
+        exceptionhandlers: 2
+        switchcases: 0
+      risklevel: low
+    - name: load_store
+      filepath: src/internal/map_crawl.py
+      metrics:
+        complexity: 8
+        nodes: 22
+        edges: 30
+        ifstatements: 4
+        loopstatements: 1
+        exceptionhandlers: 3
+        switchcases: 0
+      risklevel: low
+    - name: main
+      filepath: src/internal/parities_check.py
+      metrics:
+        complexity: 10
+        nodes: 23
+        edges: 33
+        ifstatements: 8
+        loopstatements: 1
+        exceptionhandlers: 1
+        switchcases: 0
+      risklevel: medium
+    - name: main
+      filepath: src/prin/prin.py
+      metrics:
+        complexity: 13
+        nodes: 30
+        edges: 43
+        ifstatements: 9
+        loopstatements: 1
+        exceptionhandlers: 3
+        switchcases: 0
+      risklevel: medium
+    - name: parse_github_url
+      filepath: src/prin/adapters/github.py
+      metrics:
+        complexity: 11
+        nodes: 24
+        edges: 34
+        ifstatements: 9
+        loopstatements: 1
+        exceptionhandlers: 1
+        switchcases: 0
+      risklevel: medium
+    - name: parse_parities
+      filepath: src/internal/parities_check.py
+      metrics:
+        complexity: 14
+        nodes: 32
+        edges: 46
+        ifstatements: 13
+        loopstatements: 5
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: medium
+    - name: pick_fetch_urls
+      filepath: src/internal/map_crawl.py
+      metrics:
+        complexity: 5
+        nodes: 10
+        edges: 15
+        ifstatements: 4
+        loopstatements: 1
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: low
+    - name: read_gitignore_file
+      filepath: src/prin/filters.py
+      metrics:
+        complexity: 5
+        nodes: 13
+        edges: 18
+        ifstatements: 2
+        loopstatements: 1
+        exceptionhandlers: 2
+        switchcases: 0
+      risklevel: low
+    - name: rule_cross_ref
+      filepath: src/internal/parities_check.py
+      metrics:
+        complexity: 5
+        nodes: 11
+        edges: 16
+        ifstatements: 4
+        loopstatements: 2
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: low
+    - name: rule_dangling_refs
+      filepath: src/internal/parities_check.py
+      metrics:
+        complexity: 6
+        nodes: 14
+        edges: 20
+        ifstatements: 5
+        loopstatements: 3
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: low
+    - name: rule_merge_opportunities
+      filepath: src/internal/parities_check.py
+      metrics:
+        complexity: 10
+        nodes: 24
+        edges: 34
+        ifstatements: 9
+        loopstatements: 4
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: medium
+    - name: rule_tests
+      filepath: src/internal/parities_check.py
+      metrics:
+        complexity: 10
+        nodes: 22
+        edges: 32
+        ifstatements: 8
+        loopstatements: 2
+        exceptionhandlers: 1
+        switchcases: 0
+      risklevel: medium
+    - name: strip_www_and_port
+      filepath: src/internal/map_crawl.py
+      metrics:
+        complexity: 5
+        nodes: 9
+        edges: 14
+        ifstatements: 4
+        loopstatements: 0
+        exceptionhandlers: 0
+        switchcases: 0
+      risklevel: low
+  summary:
+    totalfunctions: 52
+    averagecomplexity: 9.653846153846153
+    maxcomplexity: 73
+    mincomplexity: 5
+    filesanalyzed: 16
+    lowriskfunctions: 37
+    mediumriskfunctions: 12
+    highriskfunctions: 3
+    complexitydistribution:
+      2-5: 12
+      6-10: 29
+      11-20: 10
+      21+: 1
+  warnings: []
+  errors: []
+  generatedat: "2025-10-06T19:58:05Z"
+  version: 1.0.0
+  config:
+    exclude_patterns:
+      - test_*.py
+      - '*_test.py'
+    include_patterns:
+      - '*.py'
+    low_threshold: 9
+    max_complexity: 0
+    medium_threshold: 19
+    min_complexity: 5
+    output_format: json
+    recursive: false
+    show_details: false
+    sort_by: name
+dead_code:
+  files:
+    - filepath: src/prin/types.py
+      functions:
+        - name: _describe_predicate
+          filepath: src/prin/types.py
+          findings:
+            - location:
+                filepath: src/prin/types.py
+                startline: 40
+                endline: 43
+                startcolumn: 0
+                endcolumn: 0
+              functionname: _describe_predicate
+              code: |-
+                assignment
+                if
+              reason: unreachable_after_return
+              severity: critical
+              description: Code appears after a return statement and will never be executed
+              context: []
+              blockid: bb9
+            - location:
+                filepath: src/prin/types.py
+                startline: 42
+                endline: 43
+                startcolumn: 0
+                endcolumn: 0
+              functionname: _describe_predicate
+              code: |-
+                assignment
+                return
+              reason: unreachable_after_raise
+              severity: critical
+              description: Code appears after a raise statement and will never be executed
+              context: []
+              blockid: bb10
+            - location:
+                filepath: src/prin/types.py
+                startline: 44
+                endline: 46
+                startcolumn: 0
+                endcolumn: 0
+              functionname: _describe_predicate
+              code: if
+              reason: unreachable_after_raise
+              severity: critical
+              description: Code appears after a raise statement and will never be executed
+              context: []
+              blockid: bb11
+            - location:
+                filepath: src/prin/types.py
+                startline: 45
+                endline: 46
+                startcolumn: 0
+                endcolumn: 0
+              functionname: _describe_predicate
+              code: |-
+                assignment
+                return
+              reason: unreachable_after_return
+              severity: critical
+              description: Code appears after a return statement and will never be executed
+              context: []
+              blockid: bb13
+            - location:
+                filepath: src/prin/types.py
+                startline: 47
+                endline: 49
+                startcolumn: 0
+                endcolumn: 0
+              functionname: _describe_predicate
+              code: if
+              reason: unreachable_after_return
+              severity: critical
+              description: Code appears after a return statement and will never be executed
+              context: []
+              blockid: bb14
+            - location:
+                filepath: src/prin/types.py
+                startline: 48
+                endline: 49
+                startcolumn: 0
+                endcolumn: 0
+              functionname: _describe_predicate
+              code: |-
+                assignment
+                return
+              reason: unreachable_after_return
+              severity: critical
+              description: Code appears after a return statement and will never be executed
+              context: []
+              blockid: bb16
+            - location:
+                filepath: src/prin/types.py
+                startline: 50
+                endline: 51
+                startcolumn: 0
+                endcolumn: 0
+              functionname: _describe_predicate
+              code: |-
+                assignment
+                raise
+              reason: unreachable_after_return
+              severity: critical
+              description: Code appears after a return statement and will never be executed
+              context: []
+              blockid: bb17
+          totalblocks: 20
+          deadblocks: 7
+          reachableratio: 0.35
+          criticalcount: 7
+          warningcount: 0
+          infocount: 0
+      totalfindings: 7
+      totalfunctions: 1
+      affectedfunctions: 1
+      deadcoderatio: 0.35
+  summary:
+    totalfiles: 16
+    totalfunctions: 1
+    totalfindings: 7
+    fileswithdeadcode: 1
+    functionswithdeadcode: 1
+    criticalfindings: 7
+    warningfindings: 0
+    infofindings: 0
+    findingsbyreason:
+      unreachable_after_raise: 2
+      unreachable_after_return: 5
+    totalblocks: 20
+    deadblocks: 7
+    overalldeadratio: 0.35
+  warnings: []
+  errors: []
+  generatedat: "2025-10-06T19:58:05Z"
+  version: 1.0.0
+  config:
+    context_lines: 0
+    detect_after_break: false
+    detect_after_continue: false
+    detect_after_raise: false
+    detect_after_return: false
+    detect_unreachable_branches: false
+    exclude_patterns:
+      - test_*.py
+      - '*_test.py'
+    ignore_patterns: []
+    include_patterns:
+      - '*.py'
+    min_severity: warning
+    show_context: false
+    sort_by: severity
+clone:
+  clones:
+    - id: 1
+      type: 0
+      location:
+        file_path: src/internal/map_crawl.py
+        start_line: 120
+        end_line: 134
+        start_col: 0
+        end_col: 15
+      hash: ""
+      size: 11
+      line_count: 15
+      complexity: 0
+    - id: 2
+      type: 0
+      location:
+        file_path: src/internal/map_crawl.py
+        start_line: 137
+        end_line: 166
+        start_col: 0
+        end_col: 26
+      hash: ""
+      size: 17
+      line_count: 30
+      complexity: 0
+    - id: 3
+      type: 0
+      location:
+        file_path: src/internal/map_crawl.py
+        start_line: 176
+        end_line: 188
+        start_col: 0
+        end_col: 28
+      hash: ""
+      size: 11
+      line_count: 13
+      complexity: 0
+    - id: 4
+      type: 0
+      location:
+        file_path: src/internal/map_crawl.py
+        start_line: 191
+        end_line: 215
+        start_col: 0
+        end_col: 14
+      hash: ""
+      size: 44
+      line_count: 25
+      complexity: 0
+    - id: 5
+      type: 0
+      location:
+        file_path: src/internal/map_crawl.py
+        start_line: 196
+        end_line: 206
+        start_col: 4
+        end_col: 43
+      hash: ""
+      size: 10
+      line_count: 11
+      complexity: 0
+    - id: 6
+      type: 0
+      location:
+        file_path: src/internal/map_crawl.py
+        start_line: 218
+        end_line: 238
+        start_col: 0
+        end_col: 17
+      hash: ""
+      size: 11
+      line_count: 21
+      complexity: 0
+    - id: 7
+      type: 0
+      location:
+        file_path: src/internal/map_crawl.py
+        start_line: 241
+        end_line: 260
+        start_col: 0
+        end_col: 35
+      hash: ""
+      size: 31
+      line_count: 20
+      complexity: 0
+    - id: 8
+      type: 0
+      location:
+        file_path: src/internal/map_crawl.py
+        start_line: 273
+        end_line: 287
+        start_col: 0
+        end_col: 18
+      hash: ""
+      size: 47
+      line_count: 15
+      complexity: 0
+    - id: 9
+      type: 0
+      location:
+        file_path: src/internal/map_crawl.py
+        start_line: 275
+        end_line: 286
+        start_col: 4
+        end_col: 25
+      hash: ""
+      size: 27
+      line_count: 12
+      complexity: 0
+    - id: 10
+      type: 0
+      location:
+        file_path: src/internal/map_crawl.py
+        start_line: 290
+        end_line: 309
+        start_col: 0
+        end_col: 14
+      hash: ""
+      size: 41
+      line_count: 20
+      complexity: 0
+    - id: 11
+      type: 0
+      location:
+        file_path: src/internal/map_crawl.py
+        start_line: 312
+        end_line: 324
+        start_col: 0
+        end_col: 15
+      hash: ""
+      size: 11
+      line_count: 13
+      complexity: 0
+    - id: 12
+      type: 0
+      location:
+        file_path: src/internal/map_crawl.py
+        start_line: 327
+        end_line: 436
+        start_col: 0
+        end_col: 19
+      hash: ""
+      size: 119
+      line_count: 110
+      complexity: 0
+    - id: 13
+      type: 0
+      location:
+        file_path: src/internal/map_crawl.py
+        start_line: 374
+        end_line: 424
+        start_col: 4
+        end_col: 22
+      hash: ""
+      size: 49
+      line_count: 51
+      complexity: 0
+    - id: 14
+      type: 0
+      location:
+        file_path: src/internal/map_crawl.py
+        start_line: 375
+        end_line: 422
+        start_col: 8
+        end_col: 39
+      hash: ""
+      size: 48
+      line_count: 48
+      complexity: 0
+    - id: 15
+      type: 0
+      location:
+        file_path: src/internal/map_crawl.py
+        start_line: 403
+        end_line: 413
+        start_col: 12
+        end_col: 42
+      hash: ""
+      size: 11
+      line_count: 11
+      complexity: 0
+    - id: 16
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 48
+        end_line: 54
+        start_col: 0
+        end_col: 60
+      hash: ""
+      size: 12
+      line_count: 7
+      complexity: 0
+    - id: 17
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 96
+        end_line: 118
+        start_col: 0
+        end_col: 17
+      hash: ""
+      size: 23
+      line_count: 23
+      complexity: 0
+    - id: 18
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 104
+        end_line: 117
+        start_col: 4
+        end_col: 32
+      hash: ""
+      size: 11
+      line_count: 14
+      complexity: 0
+    - id: 19
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 121
+        end_line: 143
+        start_col: 0
+        end_col: 27
+      hash: ""
+      size: 35
+      line_count: 23
+      complexity: 0
+    - id: 20
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 146
+        end_line: 174
+        start_col: 0
+        end_col: 16
+      hash: ""
+      size: 14
+      line_count: 29
+      complexity: 0
+    - id: 21
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 178
+        end_line: 340
+        start_col: 0
+        end_col: 19
+      hash: ""
+      size: 298
+      line_count: 163
+      complexity: 0
+    - id: 22
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 194
+        end_line: 216
+        start_col: 4
+        end_col: 20
+      hash: ""
+      size: 26
+      line_count: 23
+      complexity: 0
+    - id: 23
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 196
+        end_line: 215
+        start_col: 8
+        end_col: 37
+      hash: ""
+      size: 15
+      line_count: 20
+      complexity: 0
+    - id: 24
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 200
+        end_line: 215
+        start_col: 12
+        end_col: 37
+      hash: ""
+      size: 12
+      line_count: 16
+      complexity: 0
+    - id: 25
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 218
+        end_line: 234
+        start_col: 4
+        end_col: 20
+      hash: ""
+      size: 38
+      line_count: 17
+      complexity: 0
+    - id: 26
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 220
+        end_line: 233
+        start_col: 8
+        end_col: 82
+      hash: ""
+      size: 12
+      line_count: 14
+      complexity: 0
+    - id: 27
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 223
+        end_line: 233
+        start_col: 12
+        end_col: 82
+      hash: ""
+      size: 10
+      line_count: 11
+      complexity: 0
+    - id: 28
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 236
+        end_line: 243
+        start_col: 4
+        end_col: 21
+      hash: ""
+      size: 16
+      line_count: 8
+      complexity: 0
+    - id: 29
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 245
+        end_line: 277
+        start_col: 4
+        end_col: 19
+      hash: ""
+      size: 46
+      line_count: 33
+      complexity: 0
+    - id: 30
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 249
+        end_line: 261
+        start_col: 8
+        end_col: 38
+      hash: ""
+      size: 13
+      line_count: 13
+      complexity: 0
+    - id: 31
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 279
+        end_line: 284
+        start_col: 4
+        end_col: 56
+      hash: ""
+      size: 13
+      line_count: 6
+      complexity: 0
+    - id: 32
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 289
+        end_line: 308
+        start_col: 4
+        end_col: 19
+      hash: ""
+      size: 75
+      line_count: 20
+      complexity: 0
+    - id: 33
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 310
+        end_line: 340
+        start_col: 4
+        end_col: 19
+      hash: ""
+      size: 50
+      line_count: 31
+      complexity: 0
+    - id: 34
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 350
+        end_line: 404
+        start_col: 0
+        end_col: 70
+      hash: ""
+      size: 116
+      line_count: 55
+      complexity: 0
+    - id: 35
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 364
+        end_line: 388
+        start_col: 4
+        end_col: 94
+      hash: ""
+      size: 36
+      line_count: 25
+      complexity: 0
+    - id: 36
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 376
+        end_line: 387
+        start_col: 8
+        end_col: 76
+      hash: ""
+      size: 12
+      line_count: 12
+      complexity: 0
+    - id: 37
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 392
+        end_line: 402
+        start_col: 4
+        end_col: 67
+      hash: ""
+      size: 11
+      line_count: 11
+      complexity: 0
+    - id: 38
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 410
+        end_line: 432
+        start_col: 0
+        end_col: 15
+      hash: ""
+      size: 21
+      line_count: 23
+      complexity: 0
+    - id: 39
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 435
+        end_line: 451
+        start_col: 0
+        end_col: 15
+      hash: ""
+      size: 30
+      line_count: 17
+      complexity: 0
+    - id: 40
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 454
+        end_line: 469
+        start_col: 0
+        end_col: 15
+      hash: ""
+      size: 18
+      line_count: 16
+      complexity: 0
+    - id: 41
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 476
+        end_line: 497
+        start_col: 0
+        end_col: 16
+      hash: ""
+      size: 13
+      line_count: 22
+      complexity: 0
+    - id: 42
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 500
+        end_line: 515
+        start_col: 0
+        end_col: 15
+      hash: ""
+      size: 37
+      line_count: 16
+      complexity: 0
+    - id: 43
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 518
+        end_line: 553
+        start_col: 0
+        end_col: 15
+      hash: ""
+      size: 30
+      line_count: 36
+      complexity: 0
+    - id: 44
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 520
+        end_line: 550
+        start_col: 4
+        end_col: 21
+      hash: ""
+      size: 17
+      line_count: 31
+      complexity: 0
+    - id: 45
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 522
+        end_line: 550
+        start_col: 8
+        end_col: 21
+      hash: ""
+      size: 16
+      line_count: 29
+      complexity: 0
+    - id: 46
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 556
+        end_line: 585
+        start_col: 0
+        end_col: 15
+      hash: ""
+      size: 41
+      line_count: 30
+      complexity: 0
+    - id: 47
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 625
+        end_line: 702
+        start_col: 0
+        end_col: 32
+      hash: ""
+      size: 62
+      line_count: 78
+      complexity: 0
+    - id: 48
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 656
+        end_line: 681
+        start_col: 4
+        end_col: 90
+      hash: ""
+      size: 19
+      line_count: 26
+      complexity: 0
+    - id: 49
+      type: 0
+      location:
+        file_path: src/internal/parities_check.py
+        start_line: 659
+        end_line: 673
+        start_col: 8
+        end_col: 17
+      hash: ""
+      size: 10
+      line_count: 15
+      complexity: 0
+    - id: 50
+      type: 0
+      location:
+        file_path: src/prin/adapters/filesystem.py
+        start_line: 20
+        end_line: 33
+        start_col: 0
+        end_col: 20
+      hash: ""
+      size: 10
+      line_count: 14
+      complexity: 0
+    - id: 51
+      type: 0
+      location:
+        file_path: src/prin/adapters/filesystem.py
+        start_line: 49
+        end_line: 378
+        start_col: 0
+        end_col: 26
+      hash: ""
+      size: 253
+      line_count: 330
+      complexity: 0
+    - id: 52
+      type: 0
+      location:
+        file_path: src/prin/adapters/filesystem.py
+        start_line: 64
+        end_line: 73
+        start_col: 4
+        end_col: 26
+      hash: ""
+      size: 10
+      line_count: 10
+      complexity: 0
+    - id: 53
+      type: 0
+      location:
+        file_path: src/prin/adapters/filesystem.py
+        start_line: 88
+        end_line: 105
+        start_col: 4
+        end_col: 22
+      hash: ""
+      size: 21
+      line_count: 18
+      complexity: 0
+    - id: 54
+      type: 0
+      location:
+        file_path: src/prin/adapters/filesystem.py
+        start_line: 90
+        end_line: 104
+        start_col: 8
+        end_col: 17
+      hash: ""
+      size: 10
+      line_count: 15
+      complexity: 0
+    - id: 55
+      type: 0
+      location:
+        file_path: src/prin/adapters/filesystem.py
+        start_line: 123
+        end_line: 202
+        start_col: 4
+        end_col: 24
+      hash: ""
+      size: 76
+      line_count: 80
+      complexity: 0
+    - id: 56
+      type: 0
+      location:
+        file_path: src/prin/adapters/filesystem.py
+        start_line: 149
+        end_line: 202
+        start_col: 8
+        end_col: 24
+      hash: ""
+      size: 49
+      line_count: 54
+      complexity: 0
+    - id: 57
+      type: 0
+      location:
+        file_path: src/prin/adapters/filesystem.py
+        start_line: 152
+        end_line: 202
+        start_col: 12
+        end_col: 24
+      hash: ""
+      size: 47
+      line_count: 51
+      complexity: 0
+    - id: 58
+      type: 0
+      location:
+        file_path: src/prin/adapters/filesystem.py
+        start_line: 153
+        end_line: 166
+        start_col: 16
+        end_col: 36
+      hash: ""
+      size: 28
+      line_count: 14
+      complexity: 0
+    - id: 59
+      type: 0
+      location:
+        file_path: src/prin/adapters/filesystem.py
+        start_line: 213
+        end_line: 319
+        start_col: 4
+        end_col: 30
+      hash: ""
+      size: 57
+      line_count: 107
+      complexity: 0
+    - id: 60
+      type: 0
+      location:
+        file_path: src/prin/adapters/filesystem.py
+        start_line: 234
+        end_line: 249
+        start_col: 8
+        end_col: 42
+      hash: ""
+      size: 11
+      line_count: 16
+      complexity: 0
+    - id: 61
+      type: 0
+      location:
+        file_path: src/prin/adapters/filesystem.py
+        start_line: 264
+        end_line: 290
+        start_col: 8
+        end_col: 18
+      hash: ""
+      size: 12
+      line_count: 27
+      complexity: 0
+    - id: 62
+      type: 0
+      location:
+        file_path: src/prin/adapters/filesystem.py
+        start_line: 265
+        end_line: 289
+        start_col: 12
+        end_col: 34
+      hash: ""
+      size: 10
+      line_count: 25
+      complexity: 0
+    - id: 63
+      type: 0
+      location:
+        file_path: src/prin/adapters/filesystem.py
+        start_line: 296
+        end_line: 319
+        start_col: 8
+        end_col: 30
+      hash: ""
+      size: 14
+      line_count: 24
+      complexity: 0
+    - id: 64
+      type: 0
+      location:
+        file_path: src/prin/adapters/filesystem.py
+        start_line: 322
+        end_line: 333
+        start_col: 4
+        end_col: 38
+      hash: ""
+      size: 11
+      line_count: 12
+      complexity: 0
+    - id: 65
+      type: 0
+      location:
+        file_path: src/prin/adapters/filesystem.py
+        start_line: 335
+        end_line: 366
+        start_col: 4
+        end_col: 91
+      hash: ""
+      size: 24
+      line_count: 32
+      complexity: 0
+    - id: 66
+      type: 0
+      location:
+        file_path: src/prin/adapters/github.py
+        start_line: 38
+        end_line: 43
+        start_col: 0
+        end_col: 22
+      hash: ""
+      size: 19
+      line_count: 6
+      complexity: 0
+    - id: 67
+      type: 0
+      location:
+        file_path: src/prin/adapters/github.py
+        start_line: 46
+        end_line: 151
+        start_col: 0
+        end_col: 15
+      hash: ""
+      size: 76
+      line_count: 106
+      complexity: 0
+    - id: 68
+      type: 0
+      location:
+        file_path: src/prin/adapters/github.py
+        start_line: 64
+        end_line: 86
+        start_col: 4
+        end_col: 61
+      hash: ""
+      size: 16
+      line_count: 23
+      complexity: 0
+    - id: 69
+      type: 0
+      location:
+        file_path: src/prin/adapters/github.py
+        start_line: 154
+        end_line: 165
+        start_col: 0
+        end_col: 15
+      hash: ""
+      size: 14
+      line_count: 12
+      complexity: 0
+    - id: 70
+      type: 0
+      location:
+        file_path: src/prin/adapters/github.py
+        start_line: 182
+        end_line: 240
+        start_col: 0
+        end_col: 15
+      hash: ""
+      size: 50
+      line_count: 59
+      complexity: 0
+    - id: 71
+      type: 0
+      location:
+        file_path: src/prin/adapters/github.py
+        start_line: 189
+        end_line: 210
+        start_col: 4
+        end_col: 40
+      hash: ""
+      size: 19
+      line_count: 22
+      complexity: 0
+    - id: 72
+      type: 0
+      location:
+        file_path: src/prin/adapters/github.py
+        start_line: 190
+        end_line: 210
+        start_col: 8
+        end_col: 40
+      hash: ""
+      size: 18
+      line_count: 21
+      complexity: 0
+    - id: 73
+      type: 0
+      location:
+        file_path: src/prin/adapters/github.py
+        start_line: 212
+        end_line: 239
+        start_col: 4
+        end_col: 31
+      hash: ""
+      size: 24
+      line_count: 28
+      complexity: 0
+    - id: 74
+      type: 0
+      location:
+        file_path: src/prin/adapters/github.py
+        start_line: 214
+        end_line: 223
+        start_col: 8
+        end_col: 28
+      hash: ""
+      size: 10
+      line_count: 10
+      complexity: 0
+    - id: 75
+      type: 0
+      location:
+        file_path: src/prin/adapters/github.py
+        start_line: 224
+        end_line: 238
+        start_col: 8
+        end_col: 23
+      hash: ""
+      size: 11
+      line_count: 15
+      complexity: 0
+    - id: 76
+      type: 0
+      location:
+        file_path: src/prin/adapters/github.py
+        start_line: 250
+        end_line: 514
+        start_col: 0
+        end_col: 58
+      hash: ""
+      size: 218
+      line_count: 265
+      complexity: 0
+    - id: 77
+      type: 0
+      location:
+        file_path: src/prin/adapters/github.py
+        start_line: 251
+        end_line: 267
+        start_col: 4
+        end_col: 41
+      hash: ""
+      size: 34
+      line_count: 17
+      complexity: 0
+    - id: 78
+      type: 0
+      location:
+        file_path: src/prin/adapters/github.py
+        start_line: 291
+        end_line: 351
+        start_col: 4
+        end_col: 17
+      hash: ""
+      size: 26
+      line_count: 61
+      complexity: 0
+    - id: 79
+      type: 0
+      location:
+        file_path: src/prin/adapters/github.py
+        start_line: 332
+        end_line: 351
+        start_col: 8
+        end_col: 17
+      hash: ""
+      size: 11
+      line_count: 20
+      complexity: 0
+    - id: 80
+      type: 0
+      location:
+        file_path: src/prin/adapters/github.py
+        start_line: 353
+        end_line: 394
+        start_col: 4
+        end_col: 17
+      hash: ""
+      size: 44
+      line_count: 42
+      complexity: 0
+    - id: 81
+      type: 0
+      location:
+        file_path: src/prin/adapters/github.py
+        start_line: 359
+        end_line: 394
+        start_col: 8
+        end_col: 17
+      hash: ""
+      size: 33
+      line_count: 36
+      complexity: 0
+    - id: 82
+      type: 0
+      location:
+        file_path: src/prin/adapters/github.py
+        start_line: 414
+        end_line: 471
+        start_col: 4
+        end_col: 22
+      hash: ""
+      size: 57
+      line_count: 58
+      complexity: 0
+    - id: 83
+      type: 0
+      location:
+        file_path: src/prin/adapters/github.py
+        start_line: 417
+        end_line: 435
+        start_col: 8
+        end_col: 26
+      hash: ""
+      size: 26
+      line_count: 19
+      complexity: 0
+    - id: 84
+      type: 0
+      location:
+        file_path: src/prin/adapters/github.py
+        start_line: 424
+        end_line: 434
+        start_col: 12
+        end_col: 84
+      hash: ""
+      size: 10
+      line_count: 11
+      complexity: 0
+    - id: 85
+      type: 0
+      location:
+        file_path: src/prin/adapters/github.py
+        start_line: 461
+        end_line: 470
+        start_col: 8
+        end_col: 87
+      hash: ""
+      size: 10
+      line_count: 10
+      complexity: 0
+    - id: 86
+      type: 0
+      location:
+        file_path: src/prin/adapters/github.py
+        start_line: 473
+        end_line: 507
+        start_col: 4
+        end_col: 18
+      hash: ""
+      size: 25
+      line_count: 35
+      complexity: 0
+    - id: 87
+      type: 0
+      location:
+        file_path: src/prin/adapters/website.py
+        start_line: 43
+        end_line: 94
+        start_col: 0
+        end_col: 15
+      hash: ""
+      size: 41
+      line_count: 52
+      complexity: 0
+    - id: 88
+      type: 0
+      location:
+        file_path: src/prin/adapters/website.py
+        start_line: 54
+        end_line: 75
+        start_col: 4
+        end_col: 40
+      hash: ""
+      size: 19
+      line_count: 22
+      complexity: 0
+    - id: 89
+      type: 0
+      location:
+        file_path: src/prin/adapters/website.py
+        start_line: 55
+        end_line: 75
+        start_col: 8
+        end_col: 40
+      hash: ""
+      size: 18
+      line_count: 21
+      complexity: 0
+    - id: 90
+      type: 0
+      location:
+        file_path: src/prin/adapters/website.py
+        start_line: 78
+        end_line: 92
+        start_col: 4
+        end_col: 19
+      hash: ""
+      size: 12
+      line_count: 15
+      complexity: 0
+    - id: 91
+      type: 0
+      location:
+        file_path: src/prin/adapters/website.py
+        start_line: 79
+        end_line: 91
+        start_col: 8
+        end_col: 40
+      hash: ""
+      size: 10
+      line_count: 13
+      complexity: 0
+    - id: 92
+      type: 0
+      location:
+        file_path: src/prin/adapters/website.py
+        start_line: 97
+        end_line: 122
+        start_col: 0
+        end_col: 15
+      hash: ""
+      size: 31
+      line_count: 26
+      complexity: 0
+    - id: 93
+      type: 0
+      location:
+        file_path: src/prin/adapters/website.py
+        start_line: 102
+        end_line: 121
+        start_col: 4
+        end_col: 20
+      hash: ""
+      size: 18
+      line_count: 20
+      complexity: 0
+    - id: 94
+      type: 0
+      location:
+        file_path: src/prin/adapters/website.py
+        start_line: 132
+        end_line: 286
+        start_col: 0
+        end_col: 20
+      hash: ""
+      size: 146
+      line_count: 155
+      complexity: 0
+    - id: 95
+      type: 0
+      location:
+        file_path: src/prin/adapters/website.py
+        start_line: 141
+        end_line: 148
+        start_col: 4
+        end_col: 41
+      hash: ""
+      size: 27
+      line_count: 8
+      complexity: 0
+    - id: 96
+      type: 0
+      location:
+        file_path: src/prin/adapters/website.py
+        start_line: 150
+        end_line: 185
+        start_col: 4
+        end_col: 24
+      hash: ""
+      size: 49
+      line_count: 36
+      complexity: 0
+    - id: 97
+      type: 0
+      location:
+        file_path: src/prin/adapters/website.py
+        start_line: 170
+        end_line: 182
+        start_col: 8
+        end_col: 35
+      hash: ""
+      size: 11
+      line_count: 13
+      complexity: 0
+    - id: 98
+      type: 0
+      location:
+        file_path: src/prin/adapters/website.py
+        start_line: 198
+        end_line: 240
+        start_col: 4
+        end_col: 17
+      hash: ""
+      size: 19
+      line_count: 43
+      complexity: 0
+    - id: 99
+      type: 0
+      location:
+        file_path: src/prin/adapters/website.py
+        start_line: 222
+        end_line: 240
+        start_col: 8
+        end_col: 17
+      hash: ""
+      size: 10
+      line_count: 19
+      complexity: 0
+    - id: 100
+      type: 0
+      location:
+        file_path: src/prin/adapters/website.py
+        start_line: 261
+        end_line: 271
+        start_col: 4
+        end_col: 22
+      hash: ""
+      size: 17
+      line_count: 11
+      complexity: 0
+    - id: 101
+      type: 0
+      location:
+        file_path: src/prin/binary_detection.py
+        start_line: 57
+        end_line: 63
+        start_col: 0
+        end_col: 21
+      hash: ""
+      size: 20
+      line_count: 7
+      complexity: 0
+    - id: 102
+      type: 0
+      location:
+        file_path: src/prin/binary_detection.py
+        start_line: 110
+        end_line: 377
+        start_col: 0
+        end_col: 19
+      hash: ""
+      size: 162
+      line_count: 268
+      complexity: 0
+    - id: 103
+      type: 0
+      location:
+        file_path: src/prin/binary_detection.py
+        start_line: 118
+        end_line: 377
+        start_col: 4
+        end_col: 19
+      hash: ""
+      size: 160
+      line_count: 260
+      complexity: 0
+    - id: 104
+      type: 0
+      location:
+        file_path: src/prin/binary_detection.py
+        start_line: 173
+        end_line: 196
+        start_col: 8
+        end_col: 60
+      hash: ""
+      size: 18
+      line_count: 24
+      complexity: 0
+    - id: 105
+      type: 0
+      location:
+        file_path: src/prin/binary_detection.py
+        start_line: 277
+        end_line: 286
+        start_col: 8
+        end_col: 58
+      hash: ""
+      size: 10
+      line_count: 10
+      complexity: 0
+    - id: 106
+      type: 0
+      location:
+        file_path: src/prin/binary_detection.py
+        start_line: 434
+        end_line: 443
+        start_col: 0
+        end_col: 89
+      hash: ""
+      size: 10
+      line_count: 10
+      complexity: 0
+    - id: 107
+      type: 0
+      location:
+        file_path: src/prin/binary_detection.py
+        start_line: 459
+        end_line: 472
+        start_col: 0
+        end_col: 80
+      hash: ""
+      size: 12
+      line_count: 14
+      complexity: 0
+    - id: 108
+      type: 0
+      location:
+        file_path: src/prin/binary_detection.py
+        start_line: 475
+        end_line: 488
+        start_col: 0
+        end_col: 21
+      hash: ""
+      size: 10
+      line_count: 14
+      complexity: 0
+    - id: 109
+      type: 0
+      location:
+        file_path: src/prin/binary_detection.py
+        start_line: 491
+        end_line: 517
+        start_col: 0
+        end_col: 20
+      hash: ""
+      size: 15
+      line_count: 27
+      complexity: 0
+    - id: 110
+      type: 0
+      location:
+        file_path: src/prin/binary_detection.py
+        start_line: 501
+        end_line: 517
+        start_col: 4
+        end_col: 20
+      hash: ""
+      size: 13
+      line_count: 17
+      complexity: 0
+    - id: 111
+      type: 0
+      location:
+        file_path: src/prin/binary_detection.py
+        start_line: 502
+        end_line: 515
+        start_col: 8
+        end_col: 24
+      hash: ""
+      size: 12
+      line_count: 14
+      complexity: 0
+    - id: 112
+      type: 0
+      location:
+        file_path: src/prin/cli_common.py
+        start_line: 52
+        end_line: 69
+        start_col: 0
+        end_col: 19
+      hash: ""
+      size: 20
+      line_count: 18
+      complexity: 0
+    - id: 113
+      type: 0
+      location:
+        file_path: src/prin/cli_common.py
+        start_line: 73
+        end_line: 151
+        start_col: 0
+        end_col: 50
+      hash: ""
+      size: 123
+      line_count: 79
+      complexity: 0
+    - id: 114
+      type: 0
+      location:
+        file_path: src/prin/cli_common.py
+        start_line: 102
+        end_line: 147
+        start_col: 4
+        end_col: 36
+      hash: ""
+      size: 26
+      line_count: 46
+      complexity: 0
+    - id: 115
+      type: 0
+      location:
+        file_path: src/prin/cli_common.py
+        start_line: 154
+        end_line: 175
+        start_col: 0
+        end_col: 27
+      hash: ""
+      size: 10
+      line_count: 22
+      complexity: 0
+    - id: 116
+      type: 0
+      location:
+        file_path: src/prin/cli_common.py
+        start_line: 178
+        end_line: 407
+        start_col: 0
+        end_col: 5
+      hash: ""
+      size: 28
+      line_count: 230
+      complexity: 0
+    - id: 117
+      type: 0
+      location:
+        file_path: src/prin/core.py
+        start_line: 22
+        end_line: 34
+        start_col: 0
+        end_col: 35
+      hash: ""
+      size: 22
+      line_count: 13
+      complexity: 0
+    - id: 118
+      type: 0
+      location:
+        file_path: src/prin/core.py
+        start_line: 41
+        end_line: 57
+        start_col: 0
+        end_col: 80
+      hash: ""
+      size: 18
+      line_count: 17
+      complexity: 0
+    - id: 119
+      type: 0
+      location:
+        file_path: src/prin/core.py
+        start_line: 60
+        end_line: 98
+        start_col: 0
+        end_col: 15
+      hash: ""
+      size: 15
+      line_count: 39
+      complexity: 0
+    - id: 120
+      type: 0
+      location:
+        file_path: src/prin/core.py
+        start_line: 118
+        end_line: 128
+        start_col: 0
+        end_col: 44
+      hash: ""
+      size: 11
+      line_count: 11
+      complexity: 0
+    - id: 121
+      type: 0
+      location:
+        file_path: src/prin/core.py
+        start_line: 136
+        end_line: 151
+        start_col: 0
+        end_col: 35
+      hash: ""
+      size: 16
+      line_count: 16
+      complexity: 0
+    - id: 122
+      type: 0
+      location:
+        file_path: src/prin/core.py
+        start_line: 154
+        end_line: 173
+        start_col: 0
+        end_col: 32
+      hash: ""
+      size: 13
+      line_count: 20
+      complexity: 0
+    - id: 123
+      type: 0
+      location:
+        file_path: src/prin/core.py
+        start_line: 176
+        end_line: 256
+        start_col: 0
+        end_col: 36
+      hash: ""
+      size: 70
+      line_count: 81
+      complexity: 0
+    - id: 124
+      type: 0
+      location:
+        file_path: src/prin/core.py
+        start_line: 189
+        end_line: 203
+        start_col: 4
+        end_col: 45
+      hash: ""
+      size: 16
+      line_count: 15
+      complexity: 0
+    - id: 125
+      type: 0
+      location:
+        file_path: src/prin/core.py
+        start_line: 226
+        end_line: 256
+        start_col: 4
+        end_col: 36
+      hash: ""
+      size: 21
+      line_count: 31
+      complexity: 0
+    - id: 126
+      type: 0
+      location:
+        file_path: src/prin/filters.py
+        start_line: 18
+        end_line: 29
+        start_col: 0
+        end_col: 21
+      hash: ""
+      size: 11
+      line_count: 12
+      complexity: 0
+    - id: 127
+      type: 0
+      location:
+        file_path: src/prin/filters.py
+        start_line: 32
+        end_line: 145
+        start_col: 0
+        end_col: 41
+      hash: ""
+      size: 94
+      line_count: 114
+      complexity: 0
+    - id: 128
+      type: 0
+      location:
+        file_path: src/prin/filters.py
+        start_line: 62
+        end_line: 83
+        start_col: 4
+        end_col: 18
+      hash: ""
+      size: 25
+      line_count: 22
+      complexity: 0
+    - id: 129
+      type: 0
+      location:
+        file_path: src/prin/filters.py
+        start_line: 71
+        end_line: 82
+        start_col: 8
+        end_col: 60
+      hash: ""
+      size: 11
+      line_count: 12
+      complexity: 0
+    - id: 130
+      type: 0
+      location:
+        file_path: src/prin/filters.py
+        start_line: 85
+        end_line: 125
+        start_col: 4
+        end_col: 19
+      hash: ""
+      size: 32
+      line_count: 41
+      complexity: 0
+    - id: 131
+      type: 0
+      location:
+        file_path: src/prin/filters.py
+        start_line: 127
+        end_line: 145
+        start_col: 4
+        end_col: 41
+      hash: ""
+      size: 11
+      line_count: 19
+      complexity: 0
+    - id: 132
+      type: 0
+      location:
+        file_path: src/prin/filters.py
+        start_line: 148
+        end_line: 175
+        start_col: 0
+        end_col: 16
+      hash: ""
+      size: 24
+      line_count: 28
+      complexity: 0
+    - id: 133
+      type: 0
+      location:
+        file_path: src/prin/filters.py
+        start_line: 152
+        end_line: 173
+        start_col: 4
+        end_col: 13
+      hash: ""
+      size: 20
+      line_count: 22
+      complexity: 0
+    - id: 134
+      type: 0
+      location:
+        file_path: src/prin/filters.py
+        start_line: 178
+        end_line: 195
+        start_col: 0
+        end_col: 16
+      hash: ""
+      size: 14
+      line_count: 18
+      complexity: 0
+    - id: 135
+      type: 0
+      location:
+        file_path: src/prin/path_classifier.py
+        start_line: 70
+        end_line: 81
+        start_col: 0
+        end_col: 16
+      hash: ""
+      size: 10
+      line_count: 12
+      complexity: 0
+    - id: 136
+      type: 0
+      location:
+        file_path: src/prin/prin.py
+        start_line: 14
+        end_line: 87
+        start_col: 0
+        end_col: 77
+      hash: ""
+      size: 48
+      line_count: 74
+      complexity: 0
+    - id: 137
+      type: 0
+      location:
+        file_path: src/prin/prin.py
+        start_line: 28
+        end_line: 44
+        start_col: 4
+        end_col: 14
+      hash: ""
+      size: 10
+      line_count: 17
+      complexity: 0
+    - id: 138
+      type: 0
+      location:
+        file_path: src/prin/prin.py
+        start_line: 60
+        end_line: 87
+        start_col: 4
+        end_col: 77
+      hash: ""
+      size: 21
+      line_count: 28
+      complexity: 0
+    - id: 139
+      type: 0
+      location:
+        file_path: src/prin/types.py
+        start_line: 32
+        end_line: 51
+        start_col: 0
+        end_col: 25
+      hash: ""
+      size: 18
+      line_count: 20
+      complexity: 0
+  clone_pairs:
+    - id: 1
+      clone1:
+        id: 0
+        type: 0
+        location:
+          file_path: src/internal/map_crawl.py
+          start_line: 196
+          end_line: 206
+          start_col: 4
+          end_col: 43
+        hash: ""
+        size: 10
+        line_count: 11
+        complexity: 0
+      clone2:
+        id: 0
+        type: 0
+        location:
+          file_path: src/internal/parities_check.py
+          start_line: 104
+          end_line: 117
+          start_col: 4
+          end_col: 32
+        hash: ""
+        size: 11
+        line_count: 14
+        complexity: 0
+      similarity: 1
+      distance: 0
+      type: 1
+      confidence: 1
+    - id: 2
+      clone1:
+        id: 0
+        type: 0
+        location:
+          file_path: src/internal/map_crawl.py
+          start_line: 196
+          end_line: 206
+          start_col: 4
+          end_col: 43
+        hash: ""
+        size: 10
+        line_count: 11
+        complexity: 0
+      clone2:
+        id: 0
+        type: 0
+        location:
+          file_path: src/internal/parities_check.py
+          start_line: 220
+          end_line: 233
+          start_col: 8
+          end_col: 82
+        hash: ""
+        size: 12
+        line_count: 14
+        complexity: 0
+      similarity: 1
+      distance: 0
+      type: 1
+      confidence: 1
+    - id: 3
+      clone1:
+        id: 0
+        type: 0
+        location:
+          file_path: src/internal/parities_check.py
+          start_line: 104
+          end_line: 117
+          start_col: 4
+          end_col: 32
+        hash: ""
+        size: 11
+        line_count: 14
+        complexity: 0
+      clone2:
+        id: 0
+        type: 0
+        location:
+          file_path: src/internal/parities_check.py
+          start_line: 220
+          end_line: 233
+          start_col: 8
+          end_col: 82
+        hash: ""
+        size: 12
+        line_count: 14
+        complexity: 0
+      similarity: 1
+      distance: 0
+      type: 1
+      confidence: 1
+    - id: 4
+      clone1:
+        id: 0
+        type: 0
+        location:
+          file_path: src/internal/parities_check.py
+          start_line: 196
+          end_line: 215
+          start_col: 8
+          end_col: 37
+        hash: ""
+        size: 15
+        line_count: 20
+        complexity: 0
+      clone2:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/website.py
+          start_line: 222
+          end_line: 240
+          start_col: 8
+          end_col: 17
+        hash: ""
+        size: 10
+        line_count: 19
+        complexity: 0
+      similarity: 1
+      distance: 0
+      type: 1
+      confidence: 1
+    - id: 5
+      clone1:
+        id: 0
+        type: 0
+        location:
+          file_path: src/internal/parities_check.py
+          start_line: 200
+          end_line: 215
+          start_col: 12
+          end_col: 37
+        hash: ""
+        size: 12
+        line_count: 16
+        complexity: 0
+      clone2:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/filesystem.py
+          start_line: 296
+          end_line: 319
+          start_col: 8
+          end_col: 30
+        hash: ""
+        size: 14
+        line_count: 24
+        complexity: 0
+      similarity: 1
+      distance: 0
+      type: 1
+      confidence: 1
+    - id: 6
+      clone1:
+        id: 0
+        type: 0
+        location:
+          file_path: src/internal/parities_check.py
+          start_line: 200
+          end_line: 215
+          start_col: 12
+          end_col: 37
+        hash: ""
+        size: 12
+        line_count: 16
+        complexity: 0
+      clone2:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/github.py
+          start_line: 332
+          end_line: 351
+          start_col: 8
+          end_col: 17
+        hash: ""
+        size: 11
+        line_count: 20
+        complexity: 0
+      similarity: 1
+      distance: 0
+      type: 1
+      confidence: 1
+    - id: 7
+      clone1:
+        id: 0
+        type: 0
+        location:
+          file_path: src/internal/parities_check.py
+          start_line: 223
+          end_line: 233
+          start_col: 12
+          end_col: 82
+        hash: ""
+        size: 10
+        line_count: 11
+        complexity: 0
+      clone2:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/github.py
+          start_line: 461
+          end_line: 470
+          start_col: 8
+          end_col: 87
+        hash: ""
+        size: 10
+        line_count: 10
+        complexity: 0
+      similarity: 1
+      distance: 0
+      type: 1
+      confidence: 1
+    - id: 8
+      clone1:
+        id: 0
+        type: 0
+        location:
+          file_path: src/internal/parities_check.py
+          start_line: 223
+          end_line: 233
+          start_col: 12
+          end_col: 82
+        hash: ""
+        size: 10
+        line_count: 11
+        complexity: 0
+      clone2:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/website.py
+          start_line: 170
+          end_line: 182
+          start_col: 8
+          end_col: 35
+        hash: ""
+        size: 11
+        line_count: 13
+        complexity: 0
+      similarity: 1
+      distance: 0
+      type: 1
+      confidence: 1
+    - id: 9
+      clone1:
+        id: 0
+        type: 0
+        location:
+          file_path: src/internal/parities_check.py
+          start_line: 522
+          end_line: 550
+          start_col: 8
+          end_col: 21
+        hash: ""
+        size: 16
+        line_count: 29
+        complexity: 0
+      clone2:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/github.py
+          start_line: 212
+          end_line: 239
+          start_col: 4
+          end_col: 31
+        hash: ""
+        size: 24
+        line_count: 28
+        complexity: 0
+      similarity: 1
+      distance: 0
+      type: 1
+      confidence: 1
+    - id: 10
+      clone1:
+        id: 0
+        type: 0
+        location:
+          file_path: src/internal/parities_check.py
+          start_line: 656
+          end_line: 681
+          start_col: 4
+          end_col: 90
+        hash: ""
+        size: 19
+        line_count: 26
+        complexity: 0
+      clone2:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/github.py
+          start_line: 64
+          end_line: 86
+          start_col: 4
+          end_col: 61
+        hash: ""
+        size: 16
+        line_count: 23
+        complexity: 0
+      similarity: 1
+      distance: 0
+      type: 1
+      confidence: 1
+    - id: 11
+      clone1:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/filesystem.py
+          start_line: 90
+          end_line: 104
+          start_col: 8
+          end_col: 17
+        hash: ""
+        size: 10
+        line_count: 15
+        complexity: 0
+      clone2:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/github.py
+          start_line: 424
+          end_line: 434
+          start_col: 12
+          end_col: 84
+        hash: ""
+        size: 10
+        line_count: 11
+        complexity: 0
+      similarity: 1
+      distance: 0
+      type: 1
+      confidence: 1
+    - id: 12
+      clone1:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/filesystem.py
+          start_line: 234
+          end_line: 249
+          start_col: 8
+          end_col: 42
+        hash: ""
+        size: 11
+        line_count: 16
+        complexity: 0
+      clone2:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/github.py
+          start_line: 214
+          end_line: 223
+          start_col: 8
+          end_col: 28
+        hash: ""
+        size: 10
+        line_count: 10
+        complexity: 0
+      similarity: 1
+      distance: 0
+      type: 1
+      confidence: 1
+    - id: 13
+      clone1:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/filesystem.py
+          start_line: 265
+          end_line: 289
+          start_col: 12
+          end_col: 34
+        hash: ""
+        size: 10
+        line_count: 25
+        complexity: 0
+      clone2:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/github.py
+          start_line: 64
+          end_line: 86
+          start_col: 4
+          end_col: 61
+        hash: ""
+        size: 16
+        line_count: 23
+        complexity: 0
+      similarity: 1
+      distance: 0
+      type: 1
+      confidence: 1
+    - id: 14
+      clone1:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/filesystem.py
+          start_line: 296
+          end_line: 319
+          start_col: 8
+          end_col: 30
+        hash: ""
+        size: 14
+        line_count: 24
+        complexity: 0
+      clone2:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/github.py
+          start_line: 332
+          end_line: 351
+          start_col: 8
+          end_col: 17
+        hash: ""
+        size: 11
+        line_count: 20
+        complexity: 0
+      similarity: 1
+      distance: 0
+      type: 1
+      confidence: 1
+    - id: 15
+      clone1:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/github.py
+          start_line: 189
+          end_line: 210
+          start_col: 4
+          end_col: 40
+        hash: ""
+        size: 19
+        line_count: 22
+        complexity: 0
+      clone2:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/website.py
+          start_line: 54
+          end_line: 75
+          start_col: 4
+          end_col: 40
+        hash: ""
+        size: 19
+        line_count: 22
+        complexity: 0
+      similarity: 1
+      distance: 0
+      type: 1
+      confidence: 1
+    - id: 16
+      clone1:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/github.py
+          start_line: 190
+          end_line: 210
+          start_col: 8
+          end_col: 40
+        hash: ""
+        size: 18
+        line_count: 21
+        complexity: 0
+      clone2:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/website.py
+          start_line: 55
+          end_line: 75
+          start_col: 8
+          end_col: 40
+        hash: ""
+        size: 18
+        line_count: 21
+        complexity: 0
+      similarity: 1
+      distance: 0
+      type: 1
+      confidence: 1
+    - id: 17
+      clone1:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/github.py
+          start_line: 461
+          end_line: 470
+          start_col: 8
+          end_col: 87
+        hash: ""
+        size: 10
+        line_count: 10
+        complexity: 0
+      clone2:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/website.py
+          start_line: 170
+          end_line: 182
+          start_col: 8
+          end_col: 35
+        hash: ""
+        size: 11
+        line_count: 13
+        complexity: 0
+      similarity: 1
+      distance: 0
+      type: 1
+      confidence: 1
+    - id: 18
+      clone1:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/filters.py
+          start_line: 71
+          end_line: 82
+          start_col: 8
+          end_col: 60
+        hash: ""
+        size: 11
+        line_count: 12
+        complexity: 0
+      clone2:
+        id: 0
+        type: 0
+        location:
+          file_path: src/prin/adapters/website.py
+          start_line: 102
+          end_line: 121
+          start_col: 4
+          end_col: 20
+        hash: ""
+        size: 18
+        line_count: 20
+        complexity: 0
+      similarity: 1
+      distance: 0
+      type: 1
+      confidence: 1
+  clone_groups:
+    - id: 0
+      clones:
+        - id: 0
+          type: 0
+          location:
+            file_path: src/internal/map_crawl.py
+            start_line: 196
+            end_line: 206
+            start_col: 4
+            end_col: 43
+          hash: ""
+          size: 10
+          line_count: 11
+          complexity: 0
+        - id: 0
+          type: 0
+          location:
+            file_path: src/internal/parities_check.py
+            start_line: 104
+            end_line: 117
+            start_col: 4
+            end_col: 32
+          hash: ""
+          size: 11
+          line_count: 14
+          complexity: 0
+        - id: 0
+          type: 0
+          location:
+            file_path: src/internal/parities_check.py
+            start_line: 220
+            end_line: 233
+            start_col: 8
+            end_col: 82
+          hash: ""
+          size: 12
+          line_count: 14
+          complexity: 0
+      type: 1
+      similarity: 1
+      size: 3
+    - id: 1
+      clones:
+        - id: 0
+          type: 0
+          location:
+            file_path: src/internal/parities_check.py
+            start_line: 200
+            end_line: 215
+            start_col: 12
+            end_col: 37
+          hash: ""
+          size: 12
+          line_count: 16
+          complexity: 0
+        - id: 0
+          type: 0
+          location:
+            file_path: src/prin/adapters/filesystem.py
+            start_line: 296
+            end_line: 319
+            start_col: 8
+            end_col: 30
+          hash: ""
+          size: 14
+          line_count: 24
+          complexity: 0
+        - id: 0
+          type: 0
+          location:
+            file_path: src/prin/adapters/github.py
+            start_line: 332
+            end_line: 351
+            start_col: 8
+            end_col: 17
+          hash: ""
+          size: 11
+          line_count: 20
+          complexity: 0
+      type: 1
+      similarity: 1
+      size: 3
+    - id: 2
+      clones:
+        - id: 0
+          type: 0
+          location:
+            file_path: src/internal/parities_check.py
+            start_line: 223
+            end_line: 233
+            start_col: 12
+            end_col: 82
+          hash: ""
+          size: 10
+          line_count: 11
+          complexity: 0
+        - id: 0
+          type: 0
+          location:
+            file_path: src/prin/adapters/github.py
+            start_line: 461
+            end_line: 470
+            start_col: 8
+            end_col: 87
+          hash: ""
+          size: 10
+          line_count: 10
+          complexity: 0
+        - id: 0
+          type: 0
+          location:
+            file_path: src/prin/adapters/website.py
+            start_line: 170
+            end_line: 182
+            start_col: 8
+            end_col: 35
+          hash: ""
+          size: 11
+          line_count: 13
+          complexity: 0
+      type: 1
+      similarity: 1
+      size: 3
+  statistics:
+    total_clones: 139
+    total_clone_pairs: 18
+    total_clone_groups: 3
+    clones_by_type:
+      Type-1: 18
+    average_similarity: 1
+    lines_analyzed: 4341
+    files_analyzed: 16
+  request:
+    paths:
+      - src/internal/map_crawl.py
+      - src/internal/parities_check.py
+      - src/prin/__init__.py
+      - src/prin/adapters/filesystem.py
+      - src/prin/adapters/github.py
+      - src/prin/adapters/website.py
+      - src/prin/binary_detection.py
+      - src/prin/cli_common.py
+      - src/prin/core.py
+      - src/prin/defaults.py
+      - src/prin/filters.py
+      - src/prin/formatters.py
+      - src/prin/path_classifier.py
+      - src/prin/prin.py
+      - src/prin/types.py
+      - src/prin/util.py
+    recursive: false
+    includepatterns:
+      - '*.py'
+    excludepatterns:
+      - test_*.py
+      - '*_test.py'
+    minlines: 5
+    minnodes: 10
+    similaritythreshold: 0.8
+    maxeditdistance: 0
+    ignoreliterals: false
+    ignoreidentifiers: false
+    type1threshold: 0.95
+    type2threshold: 0.85
+    type3threshold: 0.8
+    type4threshold: 0.75
+    outputformat: json
+    outputwriter: {}
+    outputpath: ""
+    noopen: false
+    showdetails: false
+    showcontent: false
+    sortby: ""
+    groupclones: true
+    groupmode: ""
+    groupthreshold: 0
+    kcorek: 0
+    minsimilarity: 0
+    maxsimilarity: 1
+    clonetypes:
+      - 1
+      - 2
+      - 3
+      - 4
+    configpath: ""
+    timeout: 0s
+    lshenabled: auto
+    lshautothreshold: 500
+    lshsimilaritythreshold: 0.5
+    lshbands: 32
+    lshrows: 4
+    lshhashes: 128
+  duration_ms: 20555
+  success: true
+cbo:
+  classes:
+    - name: GitHubRepoSource
+      filepath: src/prin/adapters/github.py
+      startline: 250
+      endline: 514
+      metrics:
+        couplingcount: 6
+        inheritancedependencies: 1
+        typehintdependencies: 8
+        instantiationdependencies: 2
+        attributeaccessdependencies: 0
+        importdependencies: 0
+        dependentclasses:
+          - GitHubURL
+          - Pattern
+          - PurePosixPath
+          - Entry
+          - _Ctx
+          - SourceAdapter
+      risklevel: medium
+      isabstract: false
+      baseclasses:
+        - SourceAdapter
+    - name: WebsiteSource
+      filepath: src/prin/adapters/website.py
+      startline: 132
+      endline: 286
+      metrics:
+        couplingcount: 4
+        inheritancedependencies: 1
+        typehintdependencies: 3
+        instantiationdependencies: 2
+        attributeaccessdependencies: 0
+        importdependencies: 0
+        dependentclasses:
+          - Pattern
+          - Entry
+          - _Ctx
+          - SourceAdapter
+      risklevel: low
+      isabstract: false
+      baseclasses:
+        - SourceAdapter
+    - name: FileSystemSource
+      filepath: src/prin/adapters/filesystem.py
+      startline: 49
+      endline: 378
+      metrics:
+        couplingcount: 3
+        inheritancedependencies: 1
+        typehintdependencies: 3
+        instantiationdependencies: 0
+        attributeaccessdependencies: 0
+        importdependencies: 0
+        dependentclasses:
+          - SourceAdapter
+          - Path
+          - Entry
+      risklevel: low
+      isabstract: false
+      baseclasses:
+        - SourceAdapter
+    - name: Entry
+      filepath: src/prin/core.py
+      startline: 22
+      endline: 34
+      metrics:
+        couplingcount: 2
+        inheritancedependencies: 0
+        typehintdependencies: 2
+        instantiationdependencies: 0
+        attributeaccessdependencies: 0
+        importdependencies: 0
+        dependentclasses:
+          - PurePosixPath
+          - NodeKind
+      risklevel: low
+      isabstract: false
+      baseclasses: []
+    - name: GitIgnoreEngine
+      filepath: src/prin/filters.py
+      startline: 32
+      endline: 145
+      metrics:
+        couplingcount: 2
+        inheritancedependencies: 0
+        typehintdependencies: 2
+        instantiationdependencies: 0
+        attributeaccessdependencies: 0
+        importdependencies: 0
+        dependentclasses:
+          - Path
+          - GitIgnoreSpec
+      risklevel: low
+      isabstract: false
+      baseclasses: []
+    - name: DepthFirstPrinter
+      filepath: src/prin/core.py
+      startline: 176
+      endline: 256
+      metrics:
+        couplingcount: 2
+        inheritancedependencies: 0
+        typehintdependencies: 2
+        instantiationdependencies: 0
+        attributeaccessdependencies: 0
+        importdependencies: 0
+        dependentclasses:
+          - SourceAdapter
+          - Formatter
+      risklevel: low
+      isabstract: false
+      baseclasses: []
+    - name: Writer
+      filepath: src/prin/core.py
+      startline: 37
+      endline: 38
+      metrics:
+        couplingcount: 1
+        inheritancedependencies: 1
+        typehintdependencies: 0
+        instantiationdependencies: 0
+        attributeaccessdependencies: 0
+        importdependencies: 0
+        dependentclasses:
+          - Protocol
+      risklevel: low
+      isabstract: false
+      baseclasses:
+        - Protocol
+    - name: SourceAdapter
+      filepath: src/prin/core.py
+      startline: 41
+      endline: 57
+      metrics:
+        couplingcount: 1
+        inheritancedependencies: 1
+        typehintdependencies: 0
+        instantiationdependencies: 0
+        attributeaccessdependencies: 0
+        importdependencies: 0
+        dependentclasses:
+          - Protocol
+      risklevel: low
+      isabstract: false
+      baseclasses:
+        - Protocol
+    - name: StdoutWriter
+      filepath: src/prin/core.py
+      startline: 131
+      endline: 133
+      metrics:
+        couplingcount: 1
+        inheritancedependencies: 1
+        typehintdependencies: 0
+        instantiationdependencies: 0
+        attributeaccessdependencies: 0
+        importdependencies: 0
+        dependentclasses:
+          - Writer
+      risklevel: low
+      isabstract: false
+      baseclasses:
+        - Writer
+    - name: StringWriter
+      filepath: src/prin/core.py
+      startline: 136
+      endline: 151
+      metrics:
+        couplingcount: 1
+        inheritancedependencies: 1
+        typehintdependencies: 0
+        instantiationdependencies: 0
+        attributeaccessdependencies: 0
+        importdependencies: 0
+        dependentclasses:
+          - Writer
+      risklevel: low
+      isabstract: false
+      baseclasses:
+        - Writer
+    - name: Context
+      filepath: src/prin/cli_common.py
+      startline: 73
+      endline: 151
+      metrics:
+        couplingcount: 1
+        inheritancedependencies: 0
+        typehintdependencies: 2
+        instantiationdependencies: 0
+        attributeaccessdependencies: 0
+        importdependencies: 0
+        dependentclasses:
+          - Pattern
+      risklevel: low
+      isabstract: false
+      baseclasses: []
+    - name: NodeKind
+      filepath: src/prin/core.py
+      startline: 15
+      endline: 18
+      metrics:
+        couplingcount: 1
+        inheritancedependencies: 1
+        typehintdependencies: 0
+        instantiationdependencies: 0
+        attributeaccessdependencies: 0
+        importdependencies: 0
+        dependentclasses:
+          - Enum
+      risklevel: low
+      isabstract: false
+      baseclasses:
+        - Enum
+    - name: ParsedParities
+      filepath: src/internal/parities_check.py
+      startline: 344
+      endline: 347
+      metrics:
+        couplingcount: 1
+        inheritancedependencies: 0
+        typehintdependencies: 1
+        instantiationdependencies: 0
+        attributeaccessdependencies: 0
+        importdependencies: 0
+        dependentclasses:
+          - SetBlock
+      risklevel: low
+      isabstract: false
+      baseclasses: []
+    - name: GitHubURL
+      filepath: src/prin/adapters/github.py
+      startline: 38
+      endline: 43
+      metrics:
+        couplingcount: 1
+        inheritancedependencies: 1
+        typehintdependencies: 0
+        instantiationdependencies: 0
+        attributeaccessdependencies: 0
+        importdependencies: 0
+        dependentclasses:
+          - TypedDict
+      risklevel: low
+      isabstract: false
+      baseclasses:
+        - TypedDict
+    - name: XmlFormatter
+      filepath: src/prin/formatters.py
+      startline: 11
+      endline: 19
+      metrics:
+        couplingcount: 1
+        inheritancedependencies: 1
+        typehintdependencies: 0
+        instantiationdependencies: 0
+        attributeaccessdependencies: 0
+        importdependencies: 0
+        dependentclasses:
+          - Formatter
+      risklevel: low
+      isabstract: false
+      baseclasses:
+        - Formatter
+    - name: MarkdownFormatter
+      filepath: src/prin/formatters.py
+      startline: 22
+      endline: 32
+      metrics:
+        couplingcount: 1
+        inheritancedependencies: 1
+        typehintdependencies: 0
+        instantiationdependencies: 0
+        attributeaccessdependencies: 0
+        importdependencies: 0
+        dependentclasses:
+          - Formatter
+      risklevel: low
+      isabstract: false
+      baseclasses:
+        - Formatter
+    - name: HeaderFormatter
+      filepath: src/prin/formatters.py
+      startline: 35
+      endline: 42
+      metrics:
+        couplingcount: 1
+        inheritancedependencies: 1
+        typehintdependencies: 0
+        instantiationdependencies: 0
+        attributeaccessdependencies: 0
+        importdependencies: 0
+        dependentclasses:
+          - Formatter
+      risklevel: low
+      isabstract: false
+      baseclasses:
+        - Formatter
+    - name: Formatter
+      filepath: src/prin/formatters.py
+      startline: 6
+      endline: 8
+      metrics:
+        couplingcount: 1
+        inheritancedependencies: 1
+        typehintdependencies: 0
+        instantiationdependencies: 0
+        attributeaccessdependencies: 0
+        importdependencies: 0
+        dependentclasses:
+          - Protocol
+      risklevel: low
+      isabstract: false
+      baseclasses:
+        - Protocol
+  summary:
+    totalclasses: 18
+    averagecbo: 1.7222222222222223
+    maxcbo: 6
+    mincbo: 1
+    classesanalyzed: 18
+    filesanalyzed: 16
+    lowriskclasses: 17
+    mediumriskclasses: 1
+    highriskclasses: 0
+    cbodistribution:
+      1-5: 17
+      6-10: 1
+    mostcoupledclasses:
+      - name: GitHubRepoSource
+        filepath: src/prin/adapters/github.py
+        startline: 250
+        endline: 514
+        metrics:
+          couplingcount: 6
+          inheritancedependencies: 1
+          typehintdependencies: 8
+          instantiationdependencies: 2
+          attributeaccessdependencies: 0
+          importdependencies: 0
+          dependentclasses:
+            - GitHubURL
+            - Pattern
+            - PurePosixPath
+            - Entry
+            - _Ctx
+            - SourceAdapter
+        risklevel: medium
+        isabstract: false
+        baseclasses:
+          - SourceAdapter
+      - name: WebsiteSource
+        filepath: src/prin/adapters/website.py
+        startline: 132
+        endline: 286
+        metrics:
+          couplingcount: 4
+          inheritancedependencies: 1
+          typehintdependencies: 3
+          instantiationdependencies: 2
+          attributeaccessdependencies: 0
+          importdependencies: 0
+          dependentclasses:
+            - Pattern
+            - Entry
+            - _Ctx
+            - SourceAdapter
+        risklevel: low
+        isabstract: false
+        baseclasses:
+          - SourceAdapter
+      - name: FileSystemSource
+        filepath: src/prin/adapters/filesystem.py
+        startline: 49
+        endline: 378
+        metrics:
+          couplingcount: 3
+          inheritancedependencies: 1
+          typehintdependencies: 3
+          instantiationdependencies: 0
+          attributeaccessdependencies: 0
+          importdependencies: 0
+          dependentclasses:
+            - SourceAdapter
+            - Path
+            - Entry
+        risklevel: low
+        isabstract: false
+        baseclasses:
+          - SourceAdapter
+      - name: Entry
+        filepath: src/prin/core.py
+        startline: 22
+        endline: 34
+        metrics:
+          couplingcount: 2
+          inheritancedependencies: 0
+          typehintdependencies: 2
+          instantiationdependencies: 0
+          attributeaccessdependencies: 0
+          importdependencies: 0
+          dependentclasses:
+            - PurePosixPath
+            - NodeKind
+        risklevel: low
+        isabstract: false
+        baseclasses: []
+      - name: GitIgnoreEngine
+        filepath: src/prin/filters.py
+        startline: 32
+        endline: 145
+        metrics:
+          couplingcount: 2
+          inheritancedependencies: 0
+          typehintdependencies: 2
+          instantiationdependencies: 0
+          attributeaccessdependencies: 0
+          importdependencies: 0
+          dependentclasses:
+            - Path
+            - GitIgnoreSpec
+        risklevel: low
+        isabstract: false
+        baseclasses: []
+      - name: DepthFirstPrinter
+        filepath: src/prin/core.py
+        startline: 176
+        endline: 256
+        metrics:
+          couplingcount: 2
+          inheritancedependencies: 0
+          typehintdependencies: 2
+          instantiationdependencies: 0
+          attributeaccessdependencies: 0
+          importdependencies: 0
+          dependentclasses:
+            - SourceAdapter
+            - Formatter
+        risklevel: low
+        isabstract: false
+        baseclasses: []
+      - name: Writer
+        filepath: src/prin/core.py
+        startline: 37
+        endline: 38
+        metrics:
+          couplingcount: 1
+          inheritancedependencies: 1
+          typehintdependencies: 0
+          instantiationdependencies: 0
+          attributeaccessdependencies: 0
+          importdependencies: 0
+          dependentclasses:
+            - Protocol
+        risklevel: low
+        isabstract: false
+        baseclasses:
+          - Protocol
+      - name: SourceAdapter
+        filepath: src/prin/core.py
+        startline: 41
+        endline: 57
+        metrics:
+          couplingcount: 1
+          inheritancedependencies: 1
+          typehintdependencies: 0
+          instantiationdependencies: 0
+          attributeaccessdependencies: 0
+          importdependencies: 0
+          dependentclasses:
+            - Protocol
+        risklevel: low
+        isabstract: false
+        baseclasses:
+          - Protocol
+      - name: StdoutWriter
+        filepath: src/prin/core.py
+        startline: 131
+        endline: 133
+        metrics:
+          couplingcount: 1
+          inheritancedependencies: 1
+          typehintdependencies: 0
+          instantiationdependencies: 0
+          attributeaccessdependencies: 0
+          importdependencies: 0
+          dependentclasses:
+            - Writer
+        risklevel: low
+        isabstract: false
+        baseclasses:
+          - Writer
+      - name: StringWriter
+        filepath: src/prin/core.py
+        startline: 136
+        endline: 151
+        metrics:
+          couplingcount: 1
+          inheritancedependencies: 1
+          typehintdependencies: 0
+          instantiationdependencies: 0
+          attributeaccessdependencies: 0
+          importdependencies: 0
+          dependentclasses:
+            - Writer
+        risklevel: low
+        isabstract: false
+        baseclasses:
+          - Writer
+    mostdependeduponclasses: []
+  warnings:
+    - '[src/internal/map_crawl.py] No classes found in file'
+    - '[src/prin/__init__.py] No classes found in file'
+    - '[src/prin/defaults.py] No classes found in file'
+    - '[src/prin/path_classifier.py] No classes found in file'
+    - '[src/prin/prin.py] No classes found in file'
+    - '[src/prin/util.py] No classes found in file'
+  errors: []
+  generatedat: "2025-10-06T19:58:05Z"
+  version: 1.0.0
+  config:
+    includeBuiltins: false
+    includeImports: false
+    lowThreshold: 5
+    maxCBO: 0
+    mediumThreshold: 10
+    minCBO: 0
+    outputFormat: json
+    showZeros: false
+    sortBy: coupling
+system:
+  dependencyanalysis:
+    totalmodules: 16
+    totaldependencies: 23
+    rootmodules:
+      - src.internal.map_crawl
+      - src.internal.parities_check
+      - src.prin
+      - src.prin.binary_detection
+      - src.prin.formatters
+      - src.prin.types
+      - src.prin.util
+    leafmodules:
+      - src.internal.map_crawl
+      - src.internal.parities_check
+      - src.prin
+      - src.prin.binary_detection
+      - src.prin.util
+    modulemetrics:
+      src.internal.map_crawl:
+        modulename: src.internal.map_crawl
+        package: src
+        filepath: /workspace/prin/src/internal/map_crawl.py
+        ispackage: false
+        linesofcode: 456
+        functioncount: 13
+        classcount: 0
+        publicinterface:
+          - strip_www_and_port
+          - canonical_key
+          - same_domain
+          - resolve_and_strip
+          - extract_links
+          - load_store
+          - write_store
+          - is_page_like_canon
+          - clean_mapping_assets
+          - pick_fetch_urls
+          - fetch_html
+          - crawl
+          - main
+        afferentcoupling: 0
+        efferentcoupling: 0
+        instability: 0
+        abstractness: 0
+        distance: 1
+        maintainability: 0
+        technicaldebt: 0
+        risklevel: high
+        directdependencies: []
+        transitivedependencies: []
+        dependents: []
+      src.internal.parities_check:
+        modulename: src.internal.parities_check
+        package: src
+        filepath: /workspace/prin/src/internal/parities_check.py
+        ispackage: false
+        linesofcode: 707
+        functioncount: 31
+        classcount: 3
+        publicinterface:
+          - Message
+          - normalize_symbol_token
+          - extract_ast_tokens_from_members
+          - extract_constant_tokens_from_members
+          - SetBlock
+          - members_text
+          - tests_text
+          - member_paths
+          - test_specs
+          - backtick_tokens_in_sections
+          - cli_flags_all_sections
+          - cli_flags_in_tests
+          - pytest_specs_all_sections
+          - file_paths_all_sections
+          - ParsedParities
+          - parse_parities
+          - rule_line_growth
+          - rule_id_uniqueness
+          - rule_cross_ref
+          - rule_dangling_refs
+          - rule_tests
+          - rule_merge_opportunities
+          - read_file_text
+          - git_current_branch
+          - read_git_blob_spec
+          - read_git_blob_rev_path
+          - main
+        afferentcoupling: 0
+        efferentcoupling: 0
+        instability: 0
+        abstractness: 0
+        distance: 1
+        maintainability: 0
+        technicaldebt: 0
+        risklevel: high
+        directdependencies: []
+        transitivedependencies: []
+        dependents: []
+      src.prin:
+        modulename: src.prin
+        package: src
+        filepath: /workspace/prin/src/prin/__init__.py
+        ispackage: true
+        linesofcode: 1
+        functioncount: 0
+        classcount: 0
+        publicinterface: []
+        afferentcoupling: 0
+        efferentcoupling: 0
+        instability: 0
+        abstractness: 0
+        distance: 1
+        maintainability: 0
+        technicaldebt: 0
+        risklevel: high
+        directdependencies: []
+        transitivedependencies: []
+        dependents: []
+      src.prin.adapters.filesystem:
+        modulename: src.prin.adapters.filesystem
+        package: src
+        filepath: /workspace/prin/src/prin/adapters/filesystem.py
+        ispackage: false
+        linesofcode: 379
+        functioncount: 17
+        classcount: 1
+        publicinterface:
+          - settrace_if_returns
+          - decorator
+          - wrapper
+          - FileSystemSource
+          - resolve
+          - list_dir
+          - read_file_bytes
+          - exists
+          - is_empty
+          - walk_pattern
+          - make_display_path
+          - configure
+          - should_print
+          - read_body_text
+        afferentcoupling: 1
+        efferentcoupling: 1
+        instability: 0.5
+        abstractness: 0
+        distance: 0.5
+        maintainability: 0
+        technicaldebt: 0
+        risklevel: medium
+        directdependencies:
+          - src.prin.prin
+        transitivedependencies:
+          - src.prin.adapters.github
+          - src.prin.adapters.website
+          - src.prin.cli_common
+          - src.prin.core
+          - src.prin.defaults
+          - src.prin.filters
+          - src.prin.formatters
+          - src.prin.path_classifier
+          - src.prin.prin
+          - src.prin.types
+        dependents:
+          - src.prin.prin
+      src.prin.adapters.github:
+        modulename: src.prin.adapters.github
+        package: src
+        filepath: /workspace/prin/src/prin/adapters/github.py
+        ispackage: false
+        linesofcode: 515
+        functioncount: 18
+        classcount: 3
+        publicinterface:
+          - GitHubURL
+          - parse_github_url
+          - GitHubRepoSource
+          - resolve
+          - configure
+          - walk_pattern
+          - should_print
+          - read_body_text
+          - list_dir
+          - read_file_bytes
+          - is_empty
+        afferentcoupling: 1
+        efferentcoupling: 3
+        instability: 0.75
+        abstractness: 0
+        distance: 0.25
+        maintainability: 0
+        technicaldebt: 0
+        risklevel: low
+        directdependencies:
+          - src.prin.core
+          - src.prin.filters
+          - src.prin.path_classifier
+        transitivedependencies:
+          - src.prin.cli_common
+          - src.prin.core
+          - src.prin.defaults
+          - src.prin.filters
+          - src.prin.formatters
+          - src.prin.path_classifier
+          - src.prin.types
+        dependents:
+          - src.prin.prin
+      src.prin.adapters.website:
+        modulename: src.prin.adapters.website
+        package: src
+        filepath: /workspace/prin/src/prin/adapters/website.py
+        ispackage: false
+        linesofcode: 287
+        functioncount: 15
+        classcount: 2
+        publicinterface:
+          - WebsiteSource
+          - resolve
+          - configure
+          - walk_pattern
+          - should_print
+          - read_body_text
+          - list_dir
+          - read_file_bytes
+          - is_empty
+        afferentcoupling: 1
+        efferentcoupling: 3
+        instability: 0.75
+        abstractness: 0
+        distance: 0.25
+        maintainability: 0
+        technicaldebt: 0
+        risklevel: low
+        directdependencies:
+          - src.prin.core
+          - src.prin.filters
+          - src.prin.path_classifier
+        transitivedependencies:
+          - src.prin.cli_common
+          - src.prin.core
+          - src.prin.defaults
+          - src.prin.filters
+          - src.prin.formatters
+          - src.prin.path_classifier
+          - src.prin.types
+        dependents:
+          - src.prin.prin
+      src.prin.binary_detection:
+        modulename: src.prin.binary_detection
+        package: src
+        filepath: /workspace/prin/src/prin/binary_detection.py
+        ispackage: false
+        linesofcode: 518
+        functioncount: 18
+        classcount: 1
+        publicinterface:
+          - is_binary_file
+          - Match
+          - has
+        afferentcoupling: 0
+        efferentcoupling: 0
+        instability: 0
+        abstractness: 0
+        distance: 1
+        maintainability: 0
+        technicaldebt: 0
+        risklevel: high
+        directdependencies: []
+        transitivedependencies: []
+        dependents: []
+      src.prin.cli_common:
+        modulename: src.prin.cli_common
+        package: src
+        filepath: /workspace/prin/src/prin/cli_common.py
+        ispackage: false
+        linesofcode: 408
+        functioncount: 5
+        classcount: 1
+        publicinterface:
+          - Context
+          - replace
+          - parse_common_args
+        afferentcoupling: 3
+        efferentcoupling: 2
+        instability: 0.4
+        abstractness: 0
+        distance: 0.6
+        maintainability: 0
+        technicaldebt: 0
+        risklevel: medium
+        directdependencies:
+          - src.prin.defaults
+          - src.prin.types
+        transitivedependencies:
+          - src.prin.defaults
+          - src.prin.types
+        dependents:
+          - src.prin.core
+          - src.prin.path_classifier
+          - src.prin.prin
+      src.prin.core:
+        modulename: src.prin.core
+        package: src
+        filepath: /workspace/prin/src/prin/core.py
+        ispackage: false
+        linesofcode: 257
+        functioncount: 25
+        classcount: 8
+        publicinterface:
+          - NodeKind
+          - Entry
+          - Writer
+          - write
+          - SourceAdapter
+          - resolve
+          - list_dir
+          - read_file_bytes
+          - is_empty
+          - configure
+          - walk_pattern
+          - should_print
+          - read_body_text
+          - is_blob_semantically_empty
+          - StdoutWriter
+          - write
+          - StringWriter
+          - write
+          - text
+          - FileBudget
+          - spent
+          - available
+          - consume
+          - DepthFirstPrinter
+          - run_pattern
+        afferentcoupling: 4
+        efferentcoupling: 2
+        instability: 0.3333333333333333
+        abstractness: 0
+        distance: 0.6666666666666667
+        maintainability: 0
+        technicaldebt: 0
+        risklevel: medium
+        directdependencies:
+          - src.prin.cli_common
+          - src.prin.formatters
+        transitivedependencies:
+          - src.prin.cli_common
+          - src.prin.defaults
+          - src.prin.formatters
+          - src.prin.types
+        dependents:
+          - src.prin.adapters.github
+          - src.prin.adapters.website
+          - src.prin.filters
+          - src.prin.prin
+      src.prin.defaults:
+        modulename: src.prin.defaults
+        package: src
+        filepath: /workspace/prin/src/prin/defaults.py
+        ispackage: false
+        linesofcode: 314
+        functioncount: 0
+        classcount: 0
+        publicinterface: []
+        afferentcoupling: 1
+        efferentcoupling: 1
+        instability: 0.5
+        abstractness: 0
+        distance: 0.5
+        maintainability: 0
+        technicaldebt: 0
+        risklevel: medium
+        directdependencies:
+          - src.prin.types
+        transitivedependencies:
+          - src.prin.types
+        dependents:
+          - src.prin.cli_common
+      src.prin.filters:
+        modulename: src.prin.filters
+        package: src
+        filepath: /workspace/prin/src/prin/filters.py
+        ispackage: false
+        linesofcode: 196
+        functioncount: 9
+        classcount: 1
+        publicinterface:
+          - read_gitignore_file
+          - GitIgnoreEngine
+          - read_lines
+          - is_ignored
+          - is_excluded
+          - extension_match
+        afferentcoupling: 2
+        efferentcoupling: 3
+        instability: 0.6
+        abstractness: 0
+        distance: 0.4
+        maintainability: 0
+        technicaldebt: 0
+        risklevel: low
+        directdependencies:
+          - src.prin.core
+          - src.prin.path_classifier
+          - src.prin.types
+        transitivedependencies:
+          - src.prin.cli_common
+          - src.prin.core
+          - src.prin.defaults
+          - src.prin.formatters
+          - src.prin.path_classifier
+          - src.prin.types
+        dependents:
+          - src.prin.adapters.github
+          - src.prin.adapters.website
+      src.prin.formatters:
+        modulename: src.prin.formatters
+        package: src
+        filepath: /workspace/prin/src/prin/formatters.py
+        ispackage: false
+        linesofcode: 43
+        functioncount: 9
+        classcount: 4
+        publicinterface:
+          - Formatter
+          - format
+          - binary
+          - XmlFormatter
+          - format
+          - binary
+          - MarkdownFormatter
+          - format
+          - binary
+          - HeaderFormatter
+          - format
+          - binary
+        afferentcoupling: 2
+        efferentcoupling: 0
+        instability: 0
+        abstractness: 0
+        distance: 1
+        maintainability: 0
+        technicaldebt: 0
+        risklevel: high
+        directdependencies: []
+        transitivedependencies: []
+        dependents:
+          - src.prin.core
+          - src.prin.prin
+      src.prin.path_classifier:
+        modulename: src.prin.path_classifier
+        package: src
+        filepath: /workspace/prin/src/prin/path_classifier.py
+        ispackage: false
+        linesofcode: 82
+        functioncount: 4
+        classcount: 0
+        publicinterface:
+          - classify_pattern
+          - is_regex
+          - is_glob
+          - is_extension
+        afferentcoupling: 3
+        efferentcoupling: 2
+        instability: 0.4
+        abstractness: 0
+        distance: 0.6
+        maintainability: 0
+        technicaldebt: 0
+        risklevel: medium
+        directdependencies:
+          - src.prin.cli_common
+          - src.prin.types
+        transitivedependencies:
+          - src.prin.cli_common
+          - src.prin.defaults
+          - src.prin.types
+        dependents:
+          - src.prin.adapters.github
+          - src.prin.adapters.website
+          - src.prin.filters
+      src.prin.prin:
+        modulename: src.prin.prin
+        package: src
+        filepath: /workspace/prin/src/prin/prin.py
+        ispackage: false
+        linesofcode: 92
+        functioncount: 1
+        classcount: 0
+        publicinterface:
+          - main
+        afferentcoupling: 1
+        efferentcoupling: 6
+        instability: 0.8571428571428571
+        abstractness: 0
+        distance: 0.1428571428571429
+        maintainability: 0
+        technicaldebt: 0
+        risklevel: low
+        directdependencies:
+          - src.prin.adapters.filesystem
+          - src.prin.adapters.github
+          - src.prin.adapters.website
+          - src.prin.cli_common
+          - src.prin.core
+          - src.prin.formatters
+        transitivedependencies:
+          - src.prin.adapters.filesystem
+          - src.prin.adapters.github
+          - src.prin.adapters.website
+          - src.prin.cli_common
+          - src.prin.core
+          - src.prin.defaults
+          - src.prin.filters
+          - src.prin.formatters
+          - src.prin.path_classifier
+          - src.prin.types
+        dependents:
+          - src.prin.adapters.filesystem
+      src.prin.types:
+        modulename: src.prin.types
+        package: src
+        filepath: /workspace/prin/src/prin/types.py
+        ispackage: false
+        linesofcode: 52
+        functioncount: 1
+        classcount: 2
+        publicinterface:
+          - TReCompilable
+          - Glob
+        afferentcoupling: 4
+        efferentcoupling: 0
+        instability: 0
+        abstractness: 0
+        distance: 1
+        maintainability: 0
+        technicaldebt: 0
+        risklevel: high
+        directdependencies: []
+        transitivedependencies: []
+        dependents:
+          - src.prin.cli_common
+          - src.prin.defaults
+          - src.prin.filters
+          - src.prin.path_classifier
+      src.prin.util:
+        modulename: src.prin.util
+        package: src
+        filepath: /workspace/prin/src/prin/util.py
+        ispackage: false
+        linesofcode: 34
+        functioncount: 3
+        classcount: 0
+        publicinterface:
+          - is_github_url
+          - is_http_url
+          - find_github_url
+        afferentcoupling: 0
+        efferentcoupling: 0
+        instability: 0
+        abstractness: 0
+        distance: 1
+        maintainability: 0
+        technicaldebt: 0
+        risklevel: high
+        directdependencies: []
+        transitivedependencies: []
+        dependents: []
+    dependencymatrix:
+      src.internal.map_crawl: {}
+      src.internal.parities_check: {}
+      src.prin: {}
+      src.prin.adapters.filesystem:
+        src.prin.prin: true
+      src.prin.adapters.github:
+        src.prin.core: true
+        src.prin.filters: true
+        src.prin.path_classifier: true
+      src.prin.adapters.website:
+        src.prin.core: true
+        src.prin.filters: true
+        src.prin.path_classifier: true
+      src.prin.binary_detection: {}
+      src.prin.cli_common:
+        src.prin.defaults: true
+        src.prin.types: true
+      src.prin.core:
+        src.prin.cli_common: true
+        src.prin.formatters: true
+      src.prin.defaults:
+        src.prin.types: true
+      src.prin.filters:
+        src.prin.core: true
+        src.prin.path_classifier: true
+        src.prin.types: true
+      src.prin.formatters: {}
+      src.prin.path_classifier:
+        src.prin.cli_common: true
+        src.prin.types: true
+      src.prin.prin:
+        src.prin.adapters.filesystem: true
+        src.prin.adapters.github: true
+        src.prin.adapters.website: true
+        src.prin.cli_common: true
+        src.prin.core: true
+        src.prin.formatters: true
+      src.prin.types: {}
+      src.prin.util: {}
+    circulardependencies:
+      hascirculardependencies: true
+      totalcycles: 1
+      totalmodulesincycles: 2
+      circulardependencies:
+        - modules:
+            - src.prin.adapters.filesystem
+            - src.prin.prin
+          dependencies:
+            - from: src.prin.adapters.filesystem
+              to: src.prin.prin
+              path: []
+              length: 2
+            - from: src.prin.prin
+              to: src.prin.adapters.filesystem
+              path: []
+              length: 2
+          severity: low
+          size: 2
+          description: Direct circular dependency between src.prin.adapters.filesystem and src.prin.prin
+      cyclebreakingsuggestions:
+        - Consider introducing interfaces or abstract base classes to invert dependencies
+        - Break cycle between src.prin.adapters.filesystem and src.prin.prin by introducing a third module or using dependency injection
+        - Review your architecture to ensure proper layer separation (e.g., presentation → application → domain → infrastructure)
+        - Consider using event-driven patterns to decouple tightly coupled modules
+      coreinfrastructure: []
+    couplinganalysis:
+      averagecoupling: 2.875
+      couplingdistribution: {}
+      highlycoupledmodules:
+        - src.internal.parities_check
+        - src.prin.formatters
+        - src.prin.types
+        - src.prin
+        - src.prin.binary_detection
+        - src.prin.util
+        - src.internal.map_crawl
+        - src.prin.core
+        - src.prin.cli_common
+        - src.prin.path_classifier
+      looselycoupledmodules: []
+      averageinstability: 0.3181547619047619
+      stablemodules: []
+      instablemodules: []
+      mainsequencedeviation: 0.6818452380952381
+      zoneofpain:
+        - src.internal.parities_check
+        - src.prin.formatters
+        - src.prin.types
+      zoneofuselessness: []
+      mainsequence: []
+    longestchains:
+      - from: src.prin.adapters.filesystem
+        to: src.prin.types
+        path:
+          - src.prin.adapters.filesystem
+          - src.prin.prin
+          - src.prin.adapters.github
+          - src.prin.core
+          - src.prin.cli_common
+          - src.prin.defaults
+          - src.prin.types
+        length: 7
+      - from: src.prin.adapters.filesystem
+        to: src.prin.types
+        path:
+          - src.prin.adapters.filesystem
+          - src.prin.prin
+          - src.prin.adapters.github
+          - src.prin.core
+          - src.prin.cli_common
+          - src.prin.types
+        length: 6
+      - from: src.prin.adapters.github
+        to: src.prin.types
+        path:
+          - src.prin.adapters.github
+          - src.prin.filters
+          - src.prin.path_classifier
+          - src.prin.cli_common
+          - src.prin.defaults
+          - src.prin.types
+        length: 6
+      - from: src.prin.prin
+        to: src.prin.types
+        path:
+          - src.prin.prin
+          - src.prin.adapters.github
+          - src.prin.path_classifier
+          - src.prin.cli_common
+          - src.prin.defaults
+          - src.prin.types
+        length: 6
+      - from: src.prin.adapters.filesystem
+        to: src.prin.defaults
+        path:
+          - src.prin.adapters.filesystem
+          - src.prin.prin
+          - src.prin.adapters.github
+          - src.prin.core
+          - src.prin.cli_common
+          - src.prin.defaults
+        length: 6
+      - from: src.prin.adapters.website
+        to: src.prin.types
+        path:
+          - src.prin.adapters.website
+          - src.prin.core
+          - src.prin.cli_common
+          - src.prin.defaults
+          - src.prin.types
+        length: 5
+      - from: src.prin.prin
+        to: src.prin.types
+        path:
+          - src.prin.prin
+          - src.prin.adapters.github
+          - src.prin.path_classifier
+          - src.prin.cli_common
+          - src.prin.types
+        length: 5
+      - from: src.prin.adapters.github
+        to: src.prin.types
+        path:
+          - src.prin.adapters.github
+          - src.prin.filters
+          - src.prin.path_classifier
+          - src.prin.cli_common
+          - src.prin.types
+        length: 5
+      - from: src.prin.filters
+        to: src.prin.types
+        path:
+          - src.prin.filters
+          - src.prin.path_classifier
+          - src.prin.cli_common
+          - src.prin.defaults
+          - src.prin.types
+        length: 5
+      - from: src.prin.adapters.github
+        to: src.prin.defaults
+        path:
+          - src.prin.adapters.github
+          - src.prin.filters
+          - src.prin.path_classifier
+          - src.prin.cli_common
+          - src.prin.defaults
+        length: 5
+    maxdepth: 7
+  architectureanalysis:
+    compliancescore: 0.782608695652174
+    totalviolations: 5
+    totalrules: 23
+    layeranalysis:
+      layersanalyzed: 3
+      layerviolations:
+        - frommodule: src.prin.adapters.github
+          tomodule: src.prin.core
+          fromlayer: infrastructure
+          tolayer: presentation
+          rule: infrastructure -> {infrastructure,domain,application}
+          severity: error
+          description: Dependency from 'infrastructure' to 'presentation' not allowed
+          suggestion: Refactor dependency or update architecture rules if intentional
+        - frommodule: src.prin.adapters.website
+          tomodule: src.prin.core
+          fromlayer: infrastructure
+          tolayer: presentation
+          rule: infrastructure -> {infrastructure,domain,application}
+          severity: error
+          description: Dependency from 'infrastructure' to 'presentation' not allowed
+          suggestion: Refactor dependency or update architecture rules if intentional
+        - frommodule: src.prin.filters
+          tomodule: src.prin.core
+          fromlayer: infrastructure
+          tolayer: presentation
+          rule: infrastructure -> {infrastructure,domain,application}
+          severity: error
+          description: Dependency from 'infrastructure' to 'presentation' not allowed
+          suggestion: Refactor dependency or update architecture rules if intentional
+        - frommodule: src.prin.prin
+          tomodule: src.prin.core
+          fromlayer: domain
+          tolayer: presentation
+          rule: domain !> presentation
+          severity: error
+          description: Dependency from 'domain' to 'presentation' is denied by rule
+          suggestion: Introduce an interface or move code to respect layer boundaries
+        - frommodule: src.prin.prin
+          tomodule: src.prin.formatters
+          fromlayer: domain
+          tolayer: presentation
+          rule: domain !> presentation
+          severity: error
+          description: Dependency from 'domain' to 'presentation' is denied by rule
+          suggestion: Introduce an interface or move code to respect layer boundaries
+      layercoupling:
+        domain:
+          infrastructure: 4
+          presentation: 2
+        infrastructure:
+          domain: 1
+          infrastructure: 11
+          presentation: 3
+        presentation:
+          infrastructure: 1
+          presentation: 1
+      layercohesion:
+        domain: 0
+        infrastructure: 0.7333333333333333
+        presentation: 0.5
+      problematiclayers:
+        - domain
+    cohesionanalysis: null
+    responsibilityanalysis: null
+    violations:
+      - type: layer
+        severity: error
+        module: src.prin.adapters.github
+        target: src.prin.core
+        rule: infrastructure -> {infrastructure,domain,application}
+        description: Dependency from 'infrastructure' to 'presentation' not allowed
+        suggestion: Refactor dependency or update architecture rules if intentional
+        location: null
+      - type: layer
+        severity: error
+        module: src.prin.adapters.website
+        target: src.prin.core
+        rule: infrastructure -> {infrastructure,domain,application}
+        description: Dependency from 'infrastructure' to 'presentation' not allowed
+        suggestion: Refactor dependency or update architecture rules if intentional
+        location: null
+      - type: layer
+        severity: error
+        module: src.prin.filters
+        target: src.prin.core
+        rule: infrastructure -> {infrastructure,domain,application}
+        description: Dependency from 'infrastructure' to 'presentation' not allowed
+        suggestion: Refactor dependency or update architecture rules if intentional
+        location: null
+      - type: layer
+        severity: error
+        module: src.prin.prin
+        target: src.prin.core
+        rule: domain !> presentation
+        description: Dependency from 'domain' to 'presentation' is denied by rule
+        suggestion: Introduce an interface or move code to respect layer boundaries
+        location: null
+      - type: layer
+        severity: error
+        module: src.prin.prin
+        target: src.prin.formatters
+        rule: domain !> presentation
+        description: Dependency from 'domain' to 'presentation' is denied by rule
+        suggestion: Introduce an interface or move code to respect layer boundaries
+        location: null
+    severitybreakdown:
+      error: 5
+    recommendations:
+      - type: restructure
+        priority: medium
+        title: Improve Cohesion in domain Layer
+        description: Layer 'domain' has low cohesion (0.00), indicating mixed responsibilities
+        benefits:
+          - Better separation of concerns
+          - Increased code reusability
+          - Easier to understand and maintain
+        effort: medium
+        modules: []
+        steps:
+          - Review the responsibilities of modules in this layer
+          - Group related functionality together
+          - Consider splitting the layer if it has multiple distinct responsibilities
+      - type: interface
+        priority: low
+        title: Introduce Dependency Injection
+        description: Use dependency injection to reduce coupling between layers
+        benefits:
+          - Better testability with mock dependencies
+          - Reduced coupling between components
+          - More flexible and maintainable code
+        effort: medium
+        modules: []
+        steps:
+          - Identify tightly coupled components
+          - Create interfaces for dependencies
+          - Inject dependencies rather than creating them directly
+    refactoringtargets:
+      - src.prin.prin
+      - src.prin.adapters.github
+      - src.prin.adapters.website
+      - src.prin.filters
+  summary:
+    totalmodules: 0
+    totalpackages: 0
+    totaldependencies: 0
+    projectroot: ""
+    overallqualityscore: 0
+    maintainabilityscore: 0
+    architecturescore: 0
+    modularityscore: 0
+    technicaldebthours: 0
+    averagecoupling: 0
+    averageinstability: 0
+    cyclicdependencies: 0
+    architectureviolations: 0
+    highriskmodules: 0
+    criticalissues: 0
+    refactoringcandidates: 0
+    architectureimprovements: 0
+  issues: []
+  recommendations: []
+  warnings: []
+  errors: []
+  generatedat: 2025-10-06T19:58:05.806568007Z
+  duration: 424
+  version: 1.0.0
+  config: null
+summary:
+  total_files: 16
+  analyzed_files: 16
+  skipped_files: 0
+  complexity_enabled: true
+  dead_code_enabled: true
+  clone_enabled: true
+  cbo_enabled: true
+  deps_enabled: true
+  arch_enabled: true
+  deps_total_modules: 16
+  deps_modules_in_cycles: 2
+  deps_max_depth: 7
+  deps_main_sequence_deviation: 0.6818452380952381
+  arch_compliance: 0.782608695652174
+  total_functions: 52
+  average_complexity: 9.653846153846153
+  high_complexity_count: 3
+  dead_code_count: 7
+  critical_dead_code: 7
+  total_clones: 139
+  clone_pairs: 18
+  clone_groups: 3
+  code_duplication_percentage: 9.076249712047915
+  cbo_classes: 18
+  high_coupling_classes: 0
+  medium_coupling_classes: 1
+  average_coupling: 1.7222222222222223
+  health_score: 78
+  grade: B
+  complexity_score: 70
+  dead_code_score: 75
+  duplication_score: 70
+  coupling_score: 100
+  dependency_score: 75
+  architecture_score: 75
+generated_at: 2025-10-06T19:58:25.940360496Z
+duration_ms: 20559
+version: 1.0.0

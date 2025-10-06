@@ -1,0 +1,29 @@
+Downloading pyscn (4.5MiB)
+ Downloading pyscn
+Installed 1 package in 7ms
+Error: no Python files found in the specified paths
+Usage:
+  pyscn analyze [files...] [flags]
+
+Flags:
+      --clone-threshold float   Minimum similarity for clone detection (0.0-1.0) (default 0.8)
+  -c, --config string           Configuration file path
+      --csv                     Generate CSV report file
+  -h, --help                    help for analyze
+      --html                    Generate HTML report file
+      --json                    Generate JSON report file
+      --min-cbo int             Minimum CBO to report
+      --min-complexity int      Minimum complexity to report (default 5)
+      --min-severity string     Minimum dead code severity (critical, warning, info) (default "warning")
+      --no-open                 Don't auto-open HTML in browser
+      --select strings          Only run specified analyses (complexity,deadcode,clones,cbo,deps)
+      --skip-cbo                Skip class coupling (CBO) analysis
+      --skip-clones             Skip clone detection
+      --skip-complexity         Skip complexity analysis
+      --skip-deadcode           Skip dead code detection
+      --skip-deps               Skip module dependencies and architecture analysis
+      --yaml                    Generate YAML report file
+
+Global Flags:
+  -v, --verbose   Enable verbose output
+
