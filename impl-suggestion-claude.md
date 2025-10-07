@@ -132,9 +132,9 @@ Both adapters have `configure()` but don't consume category flags from `Context`
 - Parse URL paths for directory patterns?
 
 ❗️**Answer**:
-The website adapter ignores all default category filters and user provided filter patterns unless `--filter-websites` is explicitly provided.
+**The website adapter ignores all default category filters and user provided filter patterns unless `--filter-websites` is explicitly provided.**
 Note that unlike a file system or a GitHub repo, where we are given a predetermined file tree, the website adapter builds the tree ahead of time from the links in llms.txt, selecting only URLs with textual content. As a result, in the vast majority of cases the user ends up with a tree of plain, Markdown-converted pages. And even if a subtree happens to be `example.com/node_modules/`, it’s more likely documentation or articles the user is interested in, so excluding it by default would be surprising.
-For this reason, applying filters on websites is opt-in and explicit with `--filter-websites`.
+For this reason, applying filters on websites is opt-in and explicit with `--filter-websites`. (`--filter-websites` was not discussed until now)
 
 
 #### 1.3 Binary Detection Upgrade
@@ -200,15 +200,42 @@ For `prin github.com/torvalds/linux`:
 </path="fs/aio.c" source="github.com/torvalds/linux">
 ```
 
-Specifying a child path in the CLI (rather than the root)  only narrows the search scope; it does not affect the display path. Another example:
+Specifying a child path in the CLI (rather than the root)  only narrows the search scope; it does not affect the display path.
+Compared to the file system behavior, only the display path is different. Matching and traversal semantics are completely the same.
+Examples:
 
-`prin https://github.com/torvalds/linux/tree/master/kernel/power`:
+Example 1:
+`prin https://github.com/torvalds/linux/tree/master/kernel/power`
 
 ```xml
 <path="kernel/power/autosleep.c" source="github.com/torvalds/linux">
 ...
 </path="kernel/power/autosleep.c" source="github.com/torvalds/linux">
 ```
+
+Example 2: the pattern matches a directory
+
+`prin power https://github.com/torvalds/linux`
+
+```xml
+<path="kernel/power/autosleep.c" source="github.com/torvalds/linux">
+...
+</path="kernel/power/autosleep.c" source="github.com/torvalds/linux">
+```
+
+Example 3:
+`prin "io" https://github.com/torvalds/linux`
+
+```xml
+<path="io_uring/advise.c" source="github.com/torvalds/linux">
+...
+</path="io_uring/advise.c" source="github.com/torvalds/linux">
+<path="drivers/iommu/apple-dart.c" source="github.com/torvalds/linux">
+...
+</path="drivers/iommu/apple-dart.c" source="github.com/torvalds/linux">
+```
+
+Again, besides the display path with XML attributes, this is 100% consistent with how the file system adapter traverses and matches entries.
 
 #### 2.2 Website Display Paths
 
@@ -259,19 +286,25 @@ AGENTS.md says: "Subpaths may include literal segments and a trailing pattern se
 
 **Current implementation:** Pattern is separate from URL, applied to traversal results
 
-❗️**Answer:** This phrase in AGENTS.md is OUTDATED and INCORRECT. Mixing patterns and paths is invalid globally, for all adapters. This means that all of the following are invalid:
+❗️**Answer:** This phrase in AGENTS.md is OUTDATED and INCORRECT. Mixing patterns and paths is invalid globally, for all adapters. Moreover, as stated in an earlier answer, filters are ignored for websites until `--filter-websites` is specified.
+
+This means that all of the following are invalid:
 <invalid examples mixing path and pattern>
+
 - `prin "" github.com/owner/repo/src/*.py`
 - `prin "" ./my/local/dir/*.c`
 - `prin "" www.example.com/*.rs`
 </invalid examples mixing path and pattern>
 
+This is also invalid, because it does not have `--filter-websites`:
+
+- `prin "*.rs" www.example.com/`
+
 Instead, pattern and path should be specified separately and clearly:
 <valid examples separating path and pattern>
 
 - `prin "*.py" github.com/owner/repo/src/`
-- `prin "*.c" ./my/local/dir/*.py`
-- `prin "*.rs" www.example.com/`
+- `prin "*.c" ./my/local/dir/`
 
 </valid examples separating path and pattern>
 
@@ -284,7 +317,23 @@ Currently matches against keys only.
 **Example:** If `llms.txt` lists `https://docs.example.com/api/auth`, should:
 
 - `prin "api" example.com` match (key might be `auth` or `api`)?
-- `prin "docs.example" example.com` match (full URL)?
+- `prin "docs.example" example.com` match (full URL)?  // ← nonsensical
+
+❗️**Answer:** consistent with earlier answers, filters are ignored for websites until `--filter-websites` is specified.
+
+##### Website Pattern Matching WITH `--filter-websites`
+
+Should behave like GitHub pattern matching.
+
+If `llms.txt` lists `https://www.example.com/api/auth`:  (I've replaced `docs.` with `www.` for simplicity)
+
+- `prin "api" example.com` would match `https://www.example.com/api` and all of `/api` 's child pages: `https://www.example.com/api/auth`, `https://www.example.com/auth/foo/bar`, etc.
+- This is consistent with File system adapter: given a local file tree `./example-com/api/auth/foo/bar`, with a `file1.txt`  in every level, running `prin api example-com` matches everything in `example-com/api/` and below: 
+  `example-com/api/file1.txt`, `example-com/api/auth/file1.txt`, `example-com/api/auth/foo/file1.txt`, `example-com/api/auth/foo/bar/file1.txt`.
+  `example-com/file1.txt` does not match, because there's no `api` in that path.
+- The above is equally true for GitHub repos. `prin "api" github.com/owner/repo` would match a `api` dir if it exists, including its children. 
+- `prin "docs.example" example.com` doesn't work. Both `docs` and `docs.example` belong in the “where” argument. This is because base urls and subdomains are the “where”. Patterns (“what”) filter components belonging to the base URL.
+- This is consistent with with the other two adapters: with a local file tree `./www-example-com/api/auth`, running `prin "docs-example" ./www-example-com` would match nothing (unless a child path matches this string). Even the simpler case is nonsensical and would match nothing: with a local file tree `./example-com/api/auth`, running `prin "example" ./example-com` would match nothing. It should always be `prin WHAT WHERE`.
 
 ### Priority 4: Edge Cases & Special Behaviors
 
@@ -300,6 +349,8 @@ Currently matches against keys only.
 
 **My assessment:** Keep `no_ignore=True` - it's a remote source, no local VCS context.
 
+❗️**Answer:** Keep it disabled (current behavior). 
+
 #### 4.2 Explicit File Force-Include
 
 - Filesystem: Works via `Entry.explicit=True` when file is passed directly
@@ -312,12 +363,23 @@ prin github.com/owner/repo/blob/main/.env  # Force-print despite hidden?
 prin https://docs.example.com/secret.html  # Force-print?
 ```
 
+❗️**Answer:** `Entry.explicit=True` should be supported by all adapters. GitHub should force-print despite filters, and Website should print despite `--filter-websites`.
+
+```bash
+prin github.com/owner/repo/blob/main/.env  # Force-print despite hidden
+prin --exclude html https://docs.example.com/index.html --filter-websites  # Force-print despite ‘html’ exclusion
+```
+
+
+
 #### 4.3 Empty Files
 
 - Filesystem: Semantic emptiness works (Python-specific)
 - GitHub/Website: Same logic exists but should it apply?
 
 **Edge case:** What if a repo has `__init__.py` files that are just `"""Module."""\nimport x\n__all__ = []`? Exclude by default?
+
+❗️**Answer:** Semantic emptiness has actually been REMOVED from the project. There is no such thing any more.
 
 #### 4.4 Budget Exhaustion
 
@@ -326,6 +388,8 @@ prin https://docs.example.com/secret.html  # Force-print?
 - Website: Should stop downloading from `llms.txt` list?
 
 **Current behavior:** Budget is global, checked per file print.
+
+❗️**Answer:** Listing operations don't count against budget, regardless of adapter. Only printing files consumes the budget. The user-specified budget number is the maximum number of files (or pages, in the case of websites) printed.
 
 ---
 
@@ -341,6 +405,8 @@ prin https://docs.example.com/secret.html  # Force-print?
 
 **Complexity:** Subpaths complicate this. If user says `github.com/owner/repo/src`, is `src/` depth 0 or 1?
 
+❗️**Answer:** Option A. Like filesystem. See  2. FEATURE GAPS TO CLOSE >  Priority 1: Core Protocol Alignment >  1.1 Depth Controls for detailed depth control spec in this case.
+
 ### Challenge 2: Binary Detection for Remote Files
 
 **Problem:** Fetching file content to detect binary status is expensive.
@@ -354,6 +420,8 @@ prin https://docs.example.com/secret.html  # Force-print?
 - Trust GitHub's API `encoding` field?
 - Implement a header-only check with fallback?
 
+❗️**Answer:** Filesystem: keep as-is. GitHub/Website: do not download the file. Rely on metadata: Content-Type, GitHub's API `encoding`, and file extension.
+
 ### Challenge 3: Category Filters Without Filesystem Context
 
 **Problem:** Categories like "tests" and "scripts" are defined by:
@@ -361,8 +429,20 @@ prin https://docs.example.com/secret.html  # Force-print?
 - File patterns (`test_*.py`, `*.test.js`)
 
 **For remote sources:**
+
 - GitHub: Can match paths against patterns
 - Website: Keys might not preserve directory structure
+
+❗️**Answer:** GitHub:  indeed should match paths against patterns. Website: as specified above, default category filters don't apply to websites. Only NON-category patterns and exclusions are applied to websites if and only if `--filter-websites` is also specified.
+
+E.g., given that these two pages exist (and for the sake of example, only they exist):
+
+1. `www.ai.pydantic.dev/models/anthropic`
+2. `www.ai.pydantic.dev/models/openai`
+
+Running `prin --filter-websites --exclude=openai ai.pydantic.dev` would skip the `/openai` branch and only match the `/anthropic` branch.
+
+
 
 ### Challenge 4: Pattern-as-File Behavior
 
