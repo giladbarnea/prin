@@ -87,34 +87,31 @@ The filesystem adapter is feature-complete with:
 
 **Website:** N/A (URLs are flat), but should gracefully ignore these option​s
 
-**User comment**: CORRECTION: Websites often have multiple pages organized in a tree structure. For example, the base URL `https://ai.pydantic.dev/` has many sub-URLs, including `ai.pydantic.dev/agents/index.html`, `ai.pydantic.dev/common-tools/index.html`, `ai.pydantic.dev/models/anthropic/index.html`, etc.  Given a website url and given that url has an accessible `/llms.txt`, `prin` should use the information it contains to map out the site tree and treat it as a tree for all intents and purposes.
+❗️ **User comment**: CORRECTION: Websites often have multiple pages organized in a tree structure. For example, the base URL `https://ai.pydantic.dev/` has many sub-URLs, including `ai.pydantic.dev/agents/index.html`, `ai.pydantic.dev/common-tools/index.html`, `ai.pydantic.dev/models/anthropic/index.html`, etc.  Given a website url and given that the base url has an accessible `/llms.txt`, `prin` should use the information it contains to map out the site tree and treat it as a tree for all intents and purposes.
 
 **Question:** For GitHub, when user specifies `github.com/owner/repo/src`:
 
 - Is `src/` considered depth 0 (root) or depth 1?
 - Should `--max-depth 1` show only files directly in `src/`, or one level deeper?
 
-**Answer:**
-
-Depth handling is consistent across adapters and matches fd. Depth starts at 1 at the search root: items directly inside the root are depth 1.
+❗️**Answer:**
+Depth handling should be consistent across adapters and matches how `fd` does it. Depth starts at 1 at the search root: items directly inside the root are depth 1.
 
 Examples:
-- `prin --exact-depth=1 . mydir` lists only the files directly in `mydir/`. (If you omit `mydir`, it lists files directly in `$PWD`.)
-- `prin --max-depth=1 . mydir` also lists only the files directly in `mydir/`.
-- `prin --exact-depth=1 . mydir/subdir` lists only the files directly in `mydir/subdir/`.
-- `prin --exact-depth=2 . mydir` lists only the files exactly one level below `mydir/` (e.g., files in `mydir/subdir/` and other immediate child directories).
+- `prin --exact-depth=1 . mydir` prints only the files directly in `mydir/`. (If you omit `mydir`, it prints files directly in `$PWD`.)
+- `prin --max-depth=1 . mydir` also prints **only** the files directly in `mydir/`.
+- `prin --min-depth=1 . mydir` prints files in `mydir/` and deeper. Just to connect the dots for you, this is the default depth control, so `--min-depth=1` is redundant. 
+- `prin --exact-depth=1 . mydir/subdir` prints only the files directly in `mydir/subdir/`.
+- `prin --exact-depth=2 . mydir` prints only the files exactly one level below `mydir/` (e.g., files in `mydir/subdir/` and other immediate child directories of `mydir/`).
+- `prin --min-depth=2 . mydir` prints files one level below `mydir/` and deeper (e.g., files in `mydir/subdir/` and beyond).
 
-The same applies to other depth options:
-- `prin --min-depth=1 . mydir` lists files in `mydir/` and deeper. This is the default, so `--min-depth=1` is redundant.
-- `prin --min-depth=2 . mydir` lists files one level below mydir and deeper (e.g., files in `mydir/subdir/` and beyond).
-
-This matches the current filesystem adapter behavior. No changes to depth logic are needed.
+This existing depth control also behaves like this with the filesystem adapter. No changes to depth logic are needed. Only to integrate the other adaptors.
 
 Direct answers about running `prin` with `github.com/owner/repo/src`:
-- The specified directory is depth 1. Therefore, in this case, `src/` is depth 1. If `github.com/owner/repo/src/foo` was specified, than `src/foo/` was depth 1.
+- The specified directory is depth 1. Therefore, in this case, `src/` is depth 1. If `github.com/owner/repo/src/foo` was specified, then `src/foo/` was depth 1. If `github.com/owner/repo` was specified, then `/` — the root of the repo — was depth 1.
 - `prin . github.com/owner/repo/src --max-depth 1` prints only the files directly in `src/`, not deeper.
 
-Mental model: The GitHub adapter should behave as if you cloned the repo (`git clone owner/repo`), cd’d into its root (`cd repo`), and ran prin with `github.com/owner/repo` stripped from the path: `prin . src --max-depth 1`
+Mental model for depth control in The GitHub adapter: should behave as if you cloned the repo (`git clone owner/repo`), cd’d into its root (`cd repo`), and ran prin with `github.com/owner/repo` stripped from the path: `prin . src --max-depth 1`, `prin . . --min-depth 3`, etc. Note that, unlike depth control, the displayed paths in the GitHub Adapter don’t behave like file system. More on this below.
 
 
 #### 1.2 Category Filtering Integration
@@ -127,23 +124,18 @@ Both adapters have `configure()` but don't consume category flags from `Context`
 - File extension/name patterns only? 
 - Directory names (e.g., `tests/`, `scripts/`) as well?
 
-**Answer**: For GitHub, apply the same category filtering as in the file system. The only quirk is that remote repositories, by definition, don’t have .gitignore'd files. Therefore, honoring .gitignore on GitHub should be hard-coded off.
+❗️**Answer**: both. For GitHub, apply the same category filtering as in the file system. The only quirk is that remote repositories, by definition, don’t have .gitignore'd files. Therefore, honoring .gitignore on GitHub is nonsensical and should be hard-coded off.
 
 **Question:** For Website, should we:
 - Apply extension-based filters only?
 - Skip directory-based rules entirely?
 - Parse URL paths for directory patterns?
 
-**Answer**: 
-We're statying consistent with my depiction of a website as a tree of pages, but there is a nuance: since a filter category may consist of directorypath-based patterns and file/extension-based patterns, the Website adapter uniquely only uses the file/extension-based patterns of each category, not the directorypath patterns.
-- `no_docs`: entirely unsupported. scraping documentation websites is a common use case.
-- `no_config`: 100% supported because all its patterns are extension-based.
-- `no_scripts`: only extension patterns are respected. This is to exclude `www.example.com/foo/bar.sh` but include `www.example.com/scripts/bar.html`
-- `no_stylesheets`: 100% supported because all its patterns are extension-based.
-- `include_tests`: entirely unsupported.
-- `include_lock`: entirely unsupported
-- `include_dependencies`: entirely unsupported
-- `include_hidden`: entirely unsupported
+❗️**Answer**:
+The website adapter ignores all default category filters and user provided filter patterns unless `--filter-websites` is explicitly provided.
+Note that unlike a file system or a GitHub repo, where we are given a predetermined file tree, the website adapter builds the tree ahead of time from the links in llms.txt, selecting only URLs with textual content. As a result, in the vast majority of cases the user ends up with a tree of plain, Markdown-converted pages. And even if a subtree happens to be `example.com/node_modules/`, it’s more likely documentation or articles the user is interested in, so excluding it by default would be surprising.
+For this reason, applying filters on websites is opt-in and explicit with `--filter-websites`.
+
 
 #### 1.3 Binary Detection Upgrade
 
@@ -151,14 +143,17 @@ We're statying consistent with my depiction of a website as a tree of pages, but
 - Website: Same - detect after download
 
 **Challenge:** GitHub API provides `encoding` field - should we trust it or verify ourselves?
-**Answer**: Trust it.
+❗️**Answer**: Trust it.
 
 **Question:** Should we:
 - Use filesystem's `binary_detection.is_binary_file()` on fetched bytes?
 - Trust remote hints (GitHub `encoding`, website `Content-Type`)?
 - Skip binary detection for websites (assume all text)?
-**Answer:** we should use filesystem's `binary_detection.is_binary_file()` on fetched bytes, only if they “survive” the first layer of checking GitHub `encoding` website `Content-Type` (which we trust). We aren't skipping binary detection for websites. 
-Currently, binary detection is performed by first trying a fast signature-based check, then a generic and thorough content (bytes) check (termed ‘fallback’ in `binary_detection.py`.) GitHub will check `encoding` before the signature-based check, and website will check `Content-Type` before signature-based. This is a nice optimization because it will be done **before** the file is downloaded or read. Only if `encoding` or `Content-Type` passes, should `prin` download the bytes and perform a fast sig -> fallback logic.
+
+❗️**Answer:** 
+For websites: Skip binary detection for websites.
+For GitHub: we should use filesystem's `binary_detection.is_binary_file()` on fetched bytes, only if they “survive” the first layer of checking GitHub `encoding` (which we trust).
+Currently, binary detection is performed by first trying a fast signature-based check, then a generic and thorough content (bytes) check (termed ‘fallback’ in `binary_detection.py`.) GitHub should check `encoding` before the signature-based check. This is a nice optimization because it will be done **before** the file is downloaded or read. Only if `encoding` passes, should `prin` download the bytes and perform a fast sig -> fallback logic. In general, if there's a way to quickly get file metadata for cheap pre-filtering, we should do so.
 
 
 ### Priority 2: Display Path Semantics
@@ -182,7 +177,38 @@ prin "*.py" github.com/torvalds/linux/drivers
 # Option C: github.com/torvalds/linux/drivers/net/ethernet/...
 ```
 
-**Answer:** Neither. GitHub display paths are always "absolute". So the display paths for `prin "*.py" github.com/torvalds/linux/drivers` should be e.g. `torvalds/linux/drivers/net/ethernet/...`. This is a diversion from file system which, if `linux/drivers` is specified, prints everything with `linux/drivers` as displayed root, 
+❗️**Answer:** Neither. 
+For both website and GitHub, we should display the full (“absolute”) path, but split it across two XML attributes: `path` and `source`. `path` represents the absolute path from the root. `source` represents the URL. 
+
+For `prin github.com/torvalds/linux`:
+
+```xml
+<path="MAINTAINERS" source="github.com/torvalds/linux">
+...
+</path="MAINTAINERS" source="github.com/torvalds/linux">
+<path="fs/aio.c" source="github.com/torvalds/linux">
+...
+</path="fs/aio.c" source="github.com/torvalds/linux">
+```
+
+**the display path would be the same even if the argument pointed at the a child directory:** for `prin "*.c" github.com/torvalds/linux/fs`: 
+
+```xml
+# Display paths are the same as prin github.com/torvalds/linux
+<path="fs/aio.c" source="github.com/torvalds/linux">
+...
+</path="fs/aio.c" source="github.com/torvalds/linux">
+```
+
+Specifying a child path in the CLI (rather than the root)  only narrows the search scope; it does not affect the display path. Another example:
+
+`prin https://github.com/torvalds/linux/tree/master/kernel/power`:
+
+```xml
+<path="kernel/power/autosleep.c" source="github.com/torvalds/linux">
+...
+</path="kernel/power/autosleep.c" source="github.com/torvalds/linux">
+```
 
 #### 2.2 Website Display Paths
 
@@ -193,6 +219,34 @@ Currently uses deduped keys (basenames, or `domain.name`)
 - Full URLs?
 - Simplified URLs (strip protocol/domain)?
 
+❗️**Answer:** Same principle as GitHub. For `prin https://ai.pydantic.dev/models/`:
+
+```xml
+<path="models" source="ai.pydantic.dev">
+...
+</path="models" source="ai.pydantic.dev">
+<path="models/anthropic" source="ai.pydantic.dev">
+...
+</path="models/anthropic" source="ai.pydantic.dev">
+<path="models/openai" source="ai.pydantic.dev">
+...
+</path="models/openai" source="ai.pydantic.dev">
+```
+
+For `prin ai.pydantic.dev`:
+
+```xml
+<path="/" source="ai.pydantic.dev">
+...
+</path="/" source="ai.pydantic.dev">
+<path="a2a" source="ai.pydantic.dev">
+...
+</path="a2a" source="ai.pydantic.dev">
+<path="models/anthropic" source="ai.pydantic.dev">
+...
+</path="models/anthropic" source="ai.pydantic.dev">
+```
+
 ### Priority 3: Pattern Matching Consistency
 
 #### 3.1 GitHub Subpath + Pattern
@@ -200,10 +254,26 @@ Currently uses deduped keys (basenames, or `domain.name`)
 AGENTS.md says: "Subpaths may include literal segments and a trailing pattern segment"
 
 **Question:** How do we distinguish between:
-- `prin "*.py" github.com/owner/repo/src` (src is literal path, *.py is pattern)
-- `prin "" github.com/owner/repo/src/*.py` (src/*.py is subpath with pattern?)
+- `prin "*.py" github.com/owner/repo/src` (src is literal path, `*.py` is pattern)
+- `prin "" github.com/owner/repo/src/*.py` (`src/*.py` is subpath with pattern?)
 
 **Current implementation:** Pattern is separate from URL, applied to traversal results
+
+❗️**Answer:** This phrase in AGENTS.md is OUTDATED and INCORRECT. Mixing patterns and paths is invalid globally, for all adapters. This means that all of the following are invalid:
+<invalid examples mixing path and pattern>
+- `prin "" github.com/owner/repo/src/*.py`
+- `prin "" ./my/local/dir/*.c`
+- `prin "" www.example.com/*.rs`
+</invalid examples mixing path and pattern>
+
+Instead, pattern and path should be specified separately and clearly:
+<valid examples separating path and pattern>
+
+- `prin "*.py" github.com/owner/repo/src/`
+- `prin "*.c" ./my/local/dir/*.py`
+- `prin "*.rs" www.example.com/`
+
+</valid examples separating path and pattern>
 
 #### 3.2 Website Pattern Matching
 
@@ -212,6 +282,7 @@ Currently matches against keys only.
 **Should it also match:** Full URLs? URL paths? Both?
 
 **Example:** If `llms.txt` lists `https://docs.example.com/api/auth`, should:
+
 - `prin "api" example.com` match (key might be `auth` or `api`)?
 - `prin "docs.example" example.com` match (full URL)?
 
@@ -748,3 +819,5 @@ Key methods to reference when implementing:
 ---
 
 **End of Analysis Document**
+
+❗️**User thought:** we should talk about fetching llms.txt when given a `example.com/sub/something` 

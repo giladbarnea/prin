@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+# /// script
+# dependencies = [
+#     "httpx",
+#     "beautifulsoup4",
+# ]
+# ///
+
 """
 I’ll outline reliable metadata sources and a concrete, non-ML graph approach you can implement quickly.
 
