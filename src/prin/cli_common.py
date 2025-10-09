@@ -278,7 +278,7 @@ def parse_common_args(argv: list[str] | None = None) -> Context:
         "-M",
         "--include-empty",
         action="store_true",
-        help="Include empty files and Python files that only contain imports and __all__=... expressions.",
+        help="Include empty files.",
         default=DEFAULT_INCLUDE_EMPTY,
     )
     parser.add_argument(

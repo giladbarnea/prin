@@ -7,7 +7,6 @@ from fnmatch import fnmatch
 from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING, Iterable
 
-from prin import core
 from prin.binary_detection import is_binary_file
 from prin.core import Entry, NodeKind, SourceAdapter
 from prin.filters import GitIgnoreEngine, extension_match, is_excluded
@@ -112,12 +111,9 @@ class FileSystemSource(SourceAdapter):
         return self.resolve(path).exists()
 
     def is_empty(self, file_path) -> bool:
-        # Read bytes and use shared semantic emptiness check
+        # Check if file is empty (zero bytes)
         blob = self.read_file_bytes(file_path)
-        if not blob.strip():
-            return True
-        path = self.resolve(file_path)
-        return core.is_blob_semantically_empty(blob, path)
+        return not blob.strip()
 
     # Depth-first traversal delegated to the adapter. Yields files only, in stable order.
     def _walk_dfs(self, root) -> Iterable[Entry]:
@@ -374,5 +370,8 @@ class FileSystemSource(SourceAdapter):
 
         # File is text - read and decode it
         blob = self.read_file_bytes(entry.abs_path or entry.path)
-        text = core._decode_text(blob)
-        return text, False
+        try:
+            text = blob.decode("utf-8")
+            return text, False
+        except UnicodeDecodeError:
+            return blob.decode("latin-1"), False

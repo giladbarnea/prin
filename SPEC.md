@@ -117,7 +117,7 @@ This allows combining explicit file output with pattern-based search in a single
 - `-H`, `--hidden`: include dot-files and dot-directories.
 - `-T`, `--include-tests`: include `test`/`tests` directories and related test files (e.g., `*.spec.*`).
 - `-K`, `--include-lock`: include lock files.
-- `-M`, `--include-empty`: include empty files (and semantically-empty Python files).
+- `-M`, `--include-empty`: include empty files.
 - `-a`, `--binary`, `--include-binary` (alias: `--text`): include binary files.
 - `-I`, `--no-ignore` (aliases: `--no-gitignore`, `-u`, `--unrestricted`): do not honor VCS ignore files (.gitignore, .git/info/exclude, ~/.config/git/ignore, plus .ignore and .fdignore are ignored by default unless this is set).
 - `--no-exclude`, `-uuu`, `--include-all`: include everything (disable all default exclusions).

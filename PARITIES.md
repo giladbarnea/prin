@@ -119,26 +119,13 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 #### Contract
 - Adapters implement a uniform interface: `configure(Context)`, `walk_pattern`, `should_print`, `read_body_text`, `resolve`, `exists`; shared `Entry`/`NodeKind` shapes.
 - `configure(Context)` must consume the flag-derived fields defined in Set 1.
-- `resolve`/`exists` keep lexical resolution rules; `is_empty` adheres to Set 7.
+- `resolve`/`exists` keep lexical resolution rules.
 
 #### Triggers
 - Changing the protocol, method contracts, or `Entry`/`NodeKind` shapes; adding a new adapter.
 
  
 
-## Set 7 [SEMANTIC-EMPTINESS-ADAPTERS]: Shared definition across adapters
-
-#### Members
-- `src/prin/core.py`: `is_blob_semantically_empty`, `_is_text_semantically_empty`.
-- Adapter usage: filesystem and GitHub `is_empty` delegate to shared function; Website returns False at routing time and defers to shared logic post-fetch when applicable.
-
-#### Contract
-- A single definition of “semantically empty” governs all adapters; the `--include-empty` CLI flag toggles printing of otherwise empty blobs (flag mapping: Set 1).
-
-#### Triggers
-- Changing emptiness heuristics or language coverage.
-
- 
 
 ## Set 8 [BINARY-FILE-DETECTION]: Automatic binary detection for filesystem
 
@@ -271,7 +258,7 @@ See "Maintaining `PARITIES.md`" section at the bottom of this file for detailed 
 ---
 
 ### Notes on interplay
-- **Sets 1, 5, 7, and 8** together govern filtering and content classification: flag/context/defaults & docs (Set 1), classifier and filter mechanics (Set 5), semantic-emptiness toggling (Set 7), and binary file detection (Set 8).
+- **Sets 1, 5, and 8** together govern filtering and content classification: flag/context/defaults & docs (Set 1), classifier and filter mechanics (Set 5), and binary file detection (Set 8).
 - **Set 1 and Set 10** together ensure the CLI shape (flags, defaults, aliases) stays truthful; formatter/output examples live in their domain sets (Set 2, Set 17/18).
 - **Set 6 (protocol)** and **Set 13 (routing)** ensure adapters are both selectable and interoperable once selected.
 - **Set 9 (budget)** must be honored by all traversal code paths, including explicit force-includes (Set 15) and website fetching (Set 12).

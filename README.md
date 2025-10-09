@@ -201,7 +201,7 @@ See [Development Cycle (Tight TDD Loop)](AGENTS.md) for more details.
 - [x] `--no-scripts`: Exclude shell and automation scripts (e.g., *.sh, *.ps1, *.bat) and `scripts/` directories.
 - [x] `--no-style`, `--no-css`: Exclude stylesheet files (e.g., *.css, *.scss, *.sass, *.less, *.styl, *.stylus, *.pcss, *.postcss, *.sss).
 
-- [x] `-M`, `--include-empty`: Include empty files and semantically-empty Python files.
+- [x] `-M`, `--include-empty`: Include empty files.
 
 - [x] `-l`, `--only-headers`, `--list-details`: Print only file paths (no bodies).
 

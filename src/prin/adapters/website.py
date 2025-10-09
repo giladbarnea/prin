@@ -15,7 +15,7 @@ import requests
 from prin.cli_common import Context
 from prin.types import Pattern
 
-from ..core import Entry, NodeKind, SourceAdapter, _decode_text, _is_text_bytes
+from ..core import Entry, NodeKind, SourceAdapter
 from ..filters import extension_match, is_excluded
 
 
@@ -252,9 +252,11 @@ class WebsiteSource(SourceAdapter):
 
     def read_body_text(self, entry: Entry) -> tuple[str | None, bool]:
         blob = self.read_file_bytes(entry.abs_path or entry.path)
-        if _is_text_bytes(blob):
-            return _decode_text(blob), False
-        return None, True
+        try:
+            text = blob.decode("utf-8")
+            return text, False
+        except UnicodeDecodeError:
+            return None, True
 
     # endregion --- Adapter SRP additions ---
 

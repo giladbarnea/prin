@@ -18,7 +18,7 @@ import requests
 
 from prin.types import Pattern
 
-from ..core import Entry, NodeKind, SourceAdapter, _decode_text, _is_text_bytes
+from ..core import Entry, NodeKind, SourceAdapter
 from ..filters import extension_match, is_excluded
 from ..path_classifier import classify_pattern
 
@@ -405,9 +405,11 @@ class GitHubRepoSource(SourceAdapter):
 
     def read_body_text(self, entry: Entry) -> tuple[str | None, bool]:
         blob = self.read_file_bytes(entry.abs_path or entry.path)
-        if _is_text_bytes(blob):
-            return _decode_text(blob), False
-        return None, True
+        try:
+            text = blob.decode("utf-8")
+            return text, False
+        except UnicodeDecodeError:
+            return None, True
 
     # endregion --- Adapter SRP additions ---
 
@@ -507,8 +509,6 @@ class GitHubRepoSource(SourceAdapter):
         return b""
 
     def is_empty(self, file_path: PurePosixPath) -> bool:
-        # We need content to decide emptiness; download and apply the shared check.
+        # Check if blob is empty (zero bytes)
         blob = self.read_file_bytes(file_path)
-        from ..core import is_blob_semantically_empty
-
-        return is_blob_semantically_empty(blob, file_path)
+        return not blob.strip()
