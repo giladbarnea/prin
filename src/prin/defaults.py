@@ -29,7 +29,7 @@ DEFAULT_EXCLUSIONS: list[Pattern] = [
     # Build artifacts and dependencies
     re.compile("target"),
     re.compile("vendor"),
-    re.compile("out"),
+    re.compile(r"(^|/)out(/|$)"),
     re.compile("coverage"),
     re.compile(r"(^|/)te?mp(/|$)"),  # tmp/ and temp/ directories
     re.compile(r"(^|/)CMakeFiles(/|$)"),  # CMake build metadata
