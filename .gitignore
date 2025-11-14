@@ -1,3 +1,20 @@
+#############################
+# OS / Editor
+#############################
+.DS_Store
+*~
+*.sw?
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+#############################
+# Environment / Secrets (extended)
+#############################
+.env.*
+.env*.local
+.env.sh
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
